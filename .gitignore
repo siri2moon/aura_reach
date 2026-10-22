@@ -7,3 +7,4 @@ aura-reach.zip
 # Added by code-review-graph
 .code-review-graph/
 .env
+.DS_Store
