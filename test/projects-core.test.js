@@ -27,6 +27,10 @@ test("scopedDefaults builds platform search sources from project keywords", () =
   assert.equal(d.xPostTopicsText.split("**").length, mct().postTopics.length);
   // Bài đăng nhóm Facebook cũng lấy chủ đề từ hồ sơ dự án.
   assert.equal(d.postTopicsText, d.xPostTopicsText);
+  // Trả lời bình luận tìm bài theo từ khoá và lọc theo bộ lọc của dự án, không lướt feed chung.
+  assert.equal(d.xReplySourcesText, d.xSourcesText);
+  assert.equal(d.threadsReplySourcesText, d.threadsSourcesText);
+  assert.equal(d.xReplyFilterPrompt, mct().filterPrompt);
 });
 
 test("group relevance for Nadezhno matches nadezhno-core", () => {

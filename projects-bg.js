@@ -30,6 +30,21 @@ async function projectPromptSuffix(platform, kind = "comment") {
   return { suffix: ProjectsCore.buildPromptBlock(project, { platform, kind, mention }), project, mention };
 }
 
+/**
+ * Ô project-scoped bị để trống (nguồn bài, từ khoá, chủ đề đăng bài) thì lúc chạy lấy giá trị suy ra từ
+ * hồ sơ dự án đang chọn, để job không rơi về feed chung / chủ đề chung không dính gì tới dự án.
+ * Chỉ đổi bản state trong bộ nhớ của lượt chạy, không ghi đè ô người dùng.
+ */
+async function withProjectFallbacks(state, keys) {
+  if (keys.every((k) => String(state[k] || "").trim())) return state;
+  const active = await getActiveProject();
+  if (!active) return state;
+  const defaults = ProjectsCore.scopedDefaults(active);
+  const next = { ...state };
+  for (const k of keys) if (!String(state[k] || "").trim() && defaults[k]) next[k] = defaults[k];
+  return next;
+}
+
 async function handleProjectMessage(message) {
   switch (message.type) {
     case "PROJECT_GET":

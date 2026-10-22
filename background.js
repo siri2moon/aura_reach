@@ -3026,8 +3026,7 @@ async function sendAction(tabId, action) {
 
 // Chủ đề bài đăng Facebook: ô «Chủ đề gợi ý» của dự án; để trống thì lấy thẳng postTopics trong hồ sơ dự án.
 async function pickFacebookPostTopic(state) {
-  const own = parseTemplates(state.postTopicsText);
-  const topics = own.length ? own : (await getActiveProject())?.postTopics || [];
+  const topics = parseTemplates((await withProjectFallbacks(state, ["postTopicsText"])).postTopicsText);
   return topics.length ? pickOne(topics) : "";
 }
 
@@ -4357,7 +4356,7 @@ async function runThreadsCycle(source) {
 }
 
 async function runThreadsCycleNow(source) {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["threadsSourcesText"]);
   const sources = threadsSourceList(state);
   if (!sources.length) {
     await log("error", "Không có nguồn Threads hợp lệ.");
@@ -4695,6 +4694,8 @@ async function interactWithThreadsPost(item, feedTab, skipKeys) {
 async function runThreadsCommentSession(feedTab, sourceUrl) {
   let currentFeedTab = feedTab;
   const state0 = await getState();
+  // Ô bộ lọc để trống thì lọc theo bộ lọc của dự án đang chọn (đọc một lần cho cả phiên).
+  const projectFilterPrompt = (await withProjectFallbacks({}, ["threadsFilterPrompt"])).threadsFilterPrompt;
   const maxPosts = Math.max(1, Number(state0.threadsSessionMaxPosts) || 2);
   const intervalMin = Math.max(1, Number(state0.threadsSessionIntervalMin) || 2);
   const intervalMax = Math.max(intervalMin, Number(state0.threadsSessionIntervalMax) || 5);
@@ -4761,7 +4762,7 @@ async function runThreadsCommentSession(feedTab, sourceUrl) {
       sessionSeenKeys.push(...(item.aliases?.length ? item.aliases : [item.key]));
     }
 
-    const filterPrompt = String(state.threadsFilterPrompt || "").trim();
+    const filterPrompt = String(state.threadsFilterPrompt || projectFilterPrompt || "").trim();
     let allowed;
     if (!filterPrompt) {
       allowed = items.map(() => true);
@@ -5220,7 +5221,7 @@ function pickThreadsPostContent(state) {
 }
 
 async function runThreadsPostOnce() {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["threadsPostTopicsText"]);
   const content = pickThreadsPostContent(state);
   let text = "";
   if (content.ai) {
@@ -5239,7 +5240,7 @@ async function runThreadsPostOnce() {
     const userMsg = [
       content.topic
         ? `Hãy đăng một thread ngắn về chủ đề: ${content.topic}`
-        : "Hãy đăng một thread ngắn tự nhiên, đời thường, như một người dùng Threads đang chia sẻ điều gì đó.",
+        : "Hãy đăng một thread ngắn về một chủ đề thuộc dự án đang quảng bá mà người đọc thật sự cần.",
       "",
       postVariation,
       "",
@@ -5305,7 +5306,7 @@ function pickThreadsReplyContent(state, commentText) {
 }
 
 async function runThreadsReplyOnce() {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["threadsReplySourcesText", "threadsReplyFilterPrompt"]);
   const explicitSources = parseThreadsSources(state.threadsReplySourcesText);
   const isBrowsingFeed = explicitSources.length === 0;
   const sources = isBrowsingFeed ? ["https://www.threads.com/"] : explicitSources;
@@ -5769,7 +5770,7 @@ function buildMapsReviewUserMessage(ctx) {
 }
 
 function buildXAiPostUserMessage(topic) {
-  const topicText = topic ? `Chủ đề: ${topic}` : "Hãy tự chọn một chủ đề hữu ích về công việc, cuộc sống hoặc kinh nghiệm cá nhân.";
+  const topicText = topic ? `Chủ đề: ${topic}` : "Hãy tự chọn một chủ đề thuộc dự án đang quảng bá mà người đọc thật sự cần.";
   return [
     topicText,
     "",
@@ -5818,7 +5819,7 @@ async function runYoutubeKeywordCommentOnce() {
 // hiện tại không tìm được video phù hợp (hết kết quả, video đã bình luận, tắt
 // bình luận, giới hạn tuổi...).
 async function runYoutubeKeywordSingleComment() {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["youtubeKeywordsText"]);
   const keywords = parseUrlList(state.youtubeKeywordsText);
   if (!keywords.length) throw new Error("Chưa có từ khoá nào được cấu hình cho bình luận YouTube theo từ khoá.");
 
@@ -6132,7 +6133,7 @@ async function runYoutubeSubscribeOnce() {
 }
 
 async function runInstagramCommentOnce() {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["instagramSourcesText"]);
   const sources = parseUrlList(state.instagramSourcesText);
   const targetUrl = sources.length ? sources[Math.floor(Math.random() * sources.length)] : "https://www.instagram.com/";
   const tab = await openWorkTab(targetUrl, { active: true, tabIdKey: "instagramWorkTabId" });
@@ -6347,6 +6348,8 @@ async function interactWithXPost(item, feedTab, skipKeys) {
 async function runXCommentSession(feedTab, sourceUrl) {
   let currentFeedTab = feedTab;
   const state0 = await getState();
+  // Ô bộ lọc để trống thì lọc theo bộ lọc của dự án đang chọn (đọc một lần cho cả phiên).
+  const projectFilterPrompt = (await withProjectFallbacks({}, ["xFilterPrompt"])).xFilterPrompt;
   const maxPosts = Math.max(1, Number(state0.xSessionMaxPosts) || 2);
   const intervalMin = Math.max(1, Number(state0.xSessionIntervalMin) || 2);
   const intervalMax = Math.max(intervalMin, Number(state0.xSessionIntervalMax) || 5);
@@ -6409,7 +6412,7 @@ async function runXCommentSession(feedTab, sourceUrl) {
       sessionSeenKeys.push(...(item.aliases?.length ? item.aliases : [item.key]));
     }
 
-    const filterPrompt = String(state.xFilterPrompt || "").trim();
+    const filterPrompt = String(state.xFilterPrompt || projectFilterPrompt || "").trim();
     let allowed;
     if (!filterPrompt) {
       allowed = items.map(() => true);
@@ -6465,7 +6468,7 @@ async function runXCommentSession(feedTab, sourceUrl) {
 }
 
 async function runXCommentOnce() {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["xSourcesText"]);
   const sources = parseUrlList(state.xSourcesText);
   const sourceUrl = sources.length ? sources[Math.floor(Math.random() * sources.length)] : "https://x.com/home";
   const tab = await openWorkTab(sourceUrl, { active: true, tabIdKey: "xWorkTabId" });
@@ -6504,7 +6507,7 @@ async function runXScrollOnce() {
 }
 
 async function runXPostOnce() {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["xPostTopicsText"]);
   let text = "";
   if (state.xPostAi) {
     const topics = parseTemplates(state.xPostTopicsText);
@@ -7363,7 +7366,7 @@ async function typeYoutubeCommentTrusted(tabId, text) {
 }
 
 async function runTiktokCommentOnce() {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["tiktokSourcesText"]);
   const sources = parseUrlList(state.tiktokSourcesText);
   const targetUrl = sources.length ? tiktokSourceUrl(sources[Math.floor(Math.random() * sources.length)]) : "https://www.tiktok.com/foryou";
   const tab = await openWorkTab(targetUrl, { active: true, tabIdKey: "tiktokWorkTabId" });
@@ -7572,7 +7575,7 @@ function pickXReplyContent(state, commentText) {
 // Luồng Trả lời bình luận cho X — bản sao 1:1 của runThreadsReplyOnce, chỉ
 // đổi message type (EXTRACT_X_REPLY_TARGET/REPLY_X_COMMENT) và tên field.
 async function runXReplyOnce() {
-  const state = await getState();
+  const state = await withProjectFallbacks(await getState(), ["xReplySourcesText", "xReplyFilterPrompt"]);
   const explicitSources = parseUrlList(state.xReplySourcesText);
   const isBrowsingFeed = explicitSources.length === 0;
   const sources = isBrowsingFeed ? ["https://x.com/home"] : explicitSources;

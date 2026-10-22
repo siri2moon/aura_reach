@@ -588,7 +588,7 @@
               <div class="card-header">
                 <div class="card-title-group">
                   <h2>Kiểm duyệt phạm vi nội dung trước khi bình luận</h2>
-                  <p class="card-subtitle">Để trống để bỏ qua bước cân nhắc này và bình luận như bình thường</p>
+                  <p class="card-subtitle">Để trống thì dùng bộ lọc trong hồ sơ dự án đang chọn</p>
                 </div>
               </div>
               <div class="field">
@@ -653,10 +653,10 @@
                 </div>
               </div>
               <div class="field">
-                <label class="field-label" for="threadsSourcesText">Mỗi dòng 1 URL hoặc <code class="code-badge">@username</code> (để trống để lướt For You)</label>
+                <label class="field-label" for="threadsSourcesText">Mỗi dòng 1 URL hoặc <code class="code-badge">@username</code> (để trống thì tìm theo từ khoá dự án)</label>
                 <textarea id="threadsSourcesText" rows="4" placeholder="https://www.threads.net/&#10;https://www.threads.net/following&#10;@nguoidung123"></textarea>
               </div>
-              <p class="field-hint">Nếu để trống, extension sẽ tự động quét bảng tin For You để tương tác.</p>
+              <p class="field-hint">Nếu để trống, extension tìm bài theo từ khoá trong hồ sơ dự án đang chọn.</p>
             </section>
 
             <!-- ACTION BAR CHO BÌNH LUẬN AI -->
@@ -873,7 +873,7 @@
               <div id="threadsPostAiWrap" class="prompt-wrap">
                 <div class="field">
                   <label class="field-label" for="threadsPostTopicsText">Chủ đề gợi ý cho AI (cách nhau bởi <code class="code-badge">**</code>)</label>
-                  <textarea id="threadsPostTopicsText" rows="3" placeholder="cách quản lý tiền lương hàng tháng&#10;**&#10;sai lầm khi mới bắt đầu đầu tư&#10;**&#10;thói quen buổi sáng giúp tập trung hơn"></textarea>
+                  <textarea id="threadsPostTopicsText" rows="3" placeholder="Để trống thì AI lấy chủ đề trong hồ sơ dự án."></textarea>
                 </div>
                 <div class="field">
                   <div class="field-header-row">
@@ -936,9 +936,9 @@
                 </div>
               </div>
               <div class="field">
-                <label class="field-label" for="threadsReplySourcesText">Nguồn bài viết (mỗi dòng 1 link bài hoặc <code class="code-badge">@username</code>) — Để trống để tự động lướt For You</label>
-                <textarea id="threadsReplySourcesText" rows="3" placeholder="Để trống để tự động lướt For You tìm bài có bình luận&#10;https://www.threads.com/@user/post/xxx&#10;@username"></textarea>
-                <p class="field-hint">Nếu để trống, extension sẽ tự động lướt bảng tin For You, tìm bài có bình luận của người khác để trả lời.</p>
+                <label class="field-label" for="threadsReplySourcesText">Nguồn bài viết (mỗi dòng 1 link bài hoặc <code class="code-badge">@username</code>) — Để trống thì tìm theo từ khoá dự án</label>
+                <textarea id="threadsReplySourcesText" rows="3" placeholder="Để trống thì tìm bài theo từ khoá dự án&#10;https://www.threads.com/@user/post/xxx&#10;@username"></textarea>
+                <p class="field-hint">Nếu để trống, extension tìm bài theo từ khoá dự án, mở bài có bình luận của người khác để trả lời.</p>
               </div>
 
               <div class="divider"></div>
@@ -988,7 +988,7 @@
               <div class="card-header">
                 <div class="card-title-group">
                   <h2>Kiểm duyệt phạm vi nội dung trước khi trả lời</h2>
-                  <p class="card-subtitle">Để trống để bỏ qua bước cân nhắc này và trả lời như bình thường</p>
+                  <p class="card-subtitle">Để trống thì dùng bộ lọc trong hồ sơ dự án đang chọn</p>
                 </div>
               </div>
               <div class="field">
@@ -1174,7 +1174,7 @@
                 </div>
               </div>
               <div class="field">
-                <label class="field-label" for="youtubeKeywordsText">Mỗi dòng 1 từ khoá tìm kiếm — bắt buộc, không được để trống</label>
+                <label class="field-label" for="youtubeKeywordsText">Mỗi dòng 1 từ khoá tìm kiếm — để trống thì dùng từ khoá của dự án</label>
                 <textarea id="youtubeKeywordsText" rows="4" placeholder="review iphone 16&#10;nau an ngon moi ngay"></textarea>
               </div>
               <p class="field-hint">Mỗi chu kỳ chạy: chọn ngẫu nhiên 1 từ khoá, tìm kiếm trên YouTube rồi bình luận 1 video phù hợp trong kết quả.</p>
@@ -1443,10 +1443,10 @@
                 </div>
               </div>
               <div class="field">
-                <label class="field-label" for="instagramSourcesText">Mỗi dòng 1 link bài viết hoặc <code class="code-badge">@username</code> (để trống để lướt bảng tin chính)</label>
+                <label class="field-label" for="instagramSourcesText">Mỗi dòng 1 link bài viết hoặc <code class="code-badge">@username</code> (để trống thì theo hashtag của dự án)</label>
                 <textarea id="instagramSourcesText" rows="4" placeholder="https://www.instagram.com/p/xxx/&#10;@username"></textarea>
               </div>
-              <p class="field-hint">Nếu để trống, extension sẽ tự động quét bảng tin chính Instagram để tương tác.</p>
+              <p class="field-hint">Nếu để trống, extension mở các hashtag trong hồ sơ dự án đang chọn.</p>
             </section>
 
             <div class="action-bar">
@@ -1662,10 +1662,10 @@
                 </div>
               </div>
               <div class="field">
-                <label class="field-label" for="xSourcesText">Mỗi dòng 1 link Tweet hoặc <code class="code-badge">@username</code> (để trống để lướt dòng thời gian chính)</label>
+                <label class="field-label" for="xSourcesText">Mỗi dòng 1 link Tweet hoặc <code class="code-badge">@username</code> (để trống thì tìm theo từ khoá dự án)</label>
                 <textarea id="xSourcesText" rows="4" placeholder="https://x.com/username/status/xxx&#10;@username"></textarea>
               </div>
-              <p class="field-hint">Nếu để trống, extension sẽ tự động chọn các tweet trên dòng thời gian chính.</p>
+              <p class="field-hint">Nếu để trống, extension tìm tweet theo từ khoá trong hồ sơ dự án đang chọn.</p>
             </section>
 
             <!-- CARD: KIỂM DUYỆT PHẠM VI NỘI DUNG (BÌNH LUẬN AI) -->
@@ -1673,7 +1673,7 @@
               <div class="card-header">
                 <div class="card-title-group">
                   <h2>Kiểm duyệt phạm vi nội dung trước khi bình luận</h2>
-                  <p class="card-subtitle">Để trống để bỏ qua bước cân nhắc này và bình luận như bình thường</p>
+                  <p class="card-subtitle">Để trống thì dùng bộ lọc trong hồ sơ dự án đang chọn</p>
                 </div>
               </div>
               <div class="field">
@@ -1867,7 +1867,7 @@
               <div id="xPostAiWrap" class="prompt-wrap">
                 <div class="field">
                   <label class="field-label" for="xPostTopicsText">Chủ đề gợi ý cho AI (phân tách bởi <code class="code-badge">**</code>)</label>
-                  <textarea id="xPostTopicsText" rows="3" placeholder="kinh nghiệm làm việc hiệu quả&#10;**&#10;thói quen đọc sách mỗi ngày"></textarea>
+                  <textarea id="xPostTopicsText" rows="3" placeholder="Để trống thì AI lấy chủ đề trong hồ sơ dự án."></textarea>
                 </div>
                 <div class="field">
                   <div class="field-header-row">
@@ -1979,9 +1979,9 @@
                 </div>
               </div>
               <div class="field">
-                <label class="field-label" for="xReplySourcesText">Nguồn Tweet (mỗi dòng 1 link Tweet hoặc <code class="code-badge">@username</code>) — Để trống để tự động lướt dòng thời gian chính</label>
-                <textarea id="xReplySourcesText" rows="3" placeholder="Để trống để tự động lướt dòng thời gian chính tìm tweet có bình luận&#10;https://x.com/username/status/xxx&#10;@username"></textarea>
-                <p class="field-hint">Nếu để trống, extension sẽ tự động lướt dòng thời gian chính, tìm tweet có bình luận của người khác để trả lời.</p>
+                <label class="field-label" for="xReplySourcesText">Nguồn Tweet (mỗi dòng 1 link Tweet hoặc <code class="code-badge">@username</code>) — Để trống thì tìm theo từ khoá dự án</label>
+                <textarea id="xReplySourcesText" rows="3" placeholder="Để trống thì tìm tweet theo từ khoá dự án&#10;https://x.com/username/status/xxx&#10;@username"></textarea>
+                <p class="field-hint">Nếu để trống, extension tìm tweet theo từ khoá dự án, mở tweet có bình luận của người khác để trả lời.</p>
               </div>
 
               <div class="divider"></div>
@@ -2031,7 +2031,7 @@
               <div class="card-header">
                 <div class="card-title-group">
                   <h2>Kiểm duyệt phạm vi nội dung trước khi trả lời</h2>
-                  <p class="card-subtitle">Để trống để bỏ qua bước cân nhắc này và trả lời như bình thường</p>
+                  <p class="card-subtitle">Để trống thì dùng bộ lọc trong hồ sơ dự án đang chọn</p>
                 </div>
               </div>
               <div class="field">
@@ -2911,11 +2911,11 @@
               <div class="card-header">
                 <div class="card-title-group">
                   <h2>Nguồn video TikTok</h2>
-                  <p class="card-subtitle">Link video hoặc @username. Để trống để lướt For You</p>
+                  <p class="card-subtitle">Link video hoặc @username. Để trống thì tìm theo từ khoá dự án</p>
                 </div>
               </div>
               <div class="field">
-                <label class="field-label" for="tiktokSourcesText">Mỗi dòng 1 link video hoặc <code class="code-badge">@username</code></label>
+                <label class="field-label" for="tiktokSourcesText">Mỗi dòng 1 link video hoặc <code class="code-badge">@username</code> (để trống thì tìm theo từ khoá dự án)</label>
                 <textarea id="tiktokSourcesText" rows="4" placeholder="https://www.tiktok.com/@user/video/123&#10;@username"></textarea>
               </div>
             </section>
