@@ -1,0 +1,94 @@
+{
+  "exportedAtUtc": "2026-09-02T02:56:58.872324+00:00",
+  "sourceFunctions": [
+    "handleMessage",
+    "queueTelegramSessionPing",
+    "notifyTelegramSession",
+    "getSessionIdentity",
+    "getTelegramConfig"
+  ],
+  "note": "facebookUserId và sessionId chỉ có lúc extension chạy trong Chrome (cookie c_user + chrome.storage.local). Repo không lưu danh sách user ID thật.",
+  "telegramApi": {
+    "method": "POST",
+    "endpoint": "https://api.telegram.org/bot<token>/sendMessage",
+    "bodyFields": [
+      "chat_id",
+      "text",
+      "disable_web_page_preview"
+    ],
+    "format": "text message, not zip/document"
+  },
+  "identityFields": [
+    {
+      "key": "when",
+      "label": "Thời điểm",
+      "source": "new Date().toLocaleString('vi-VN', { timeZone, hour12: false })",
+      "example": "02/09/2026, 09:56:58"
+    },
+    {
+      "key": "timeZone",
+      "label": "Múi giờ",
+      "source": "Intl.DateTimeFormat().resolvedOptions().timeZone",
+      "example": "Asia/Ho_Chi_Minh"
+    },
+    {
+      "key": "sessionId",
+      "label": "Mã phiên",
+      "source": "chrome.storage.local.sessionId (UUID, tạo mới nếu chưa có)",
+      "example": "<uuid-v4>"
+    },
+    {
+      "key": "facebookUserId",
+      "label": "Tài khoản Facebook",
+      "source": "chrome.cookies.get facebook.com cookie name=c_user",
+      "example": "<c_user cookie value>"
+    },
+    {
+      "key": "platform",
+      "label": "Máy",
+      "source": "chrome.runtime.getPlatformInfo() -> os/arch",
+      "example": "mac/arm64"
+    },
+    {
+      "key": "language",
+      "label": "Ngôn ngữ",
+      "source": "navigator.language",
+      "example": "vi-VN"
+    },
+    {
+      "key": "version",
+      "label": "Extension",
+      "source": "chrome.runtime.getManifest().version",
+      "example": "1.5.7"
+    },
+    {
+      "key": "userAgent",
+      "label": "UA",
+      "source": "navigator.userAgent",
+      "example": "<Chrome UA>"
+    },
+    {
+      "key": "action",
+      "label": "Chức năng",
+      "source": "TELEGRAM_ACTION_LABELS[message.type] + extras",
+      "example": "Bắt đầu lịch Facebook (bình luận)"
+    }
+  ],
+  "triggerMessageTypes": [
+    "START",
+    "STOP",
+    "RUN_ONCE",
+    "SCAN_GROUPS",
+    "ADD_GROUP_URLS",
+    "SET_ALL_GROUPS",
+    "CLEAR_LOGS",
+    "START_JOIN",
+    "START_LEAVE",
+    "STOP_MEMBERSHIP",
+    "START_THREADS",
+    "STOP_THREADS",
+    "RUN_THREADS_ONCE",
+    "EXPORT_GROUPS"
+  ],
+  "records": []
+}

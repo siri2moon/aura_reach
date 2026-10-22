@@ -1,0 +1,10 @@
+FB Group Auto — nhận diện phiên
+
+Chức năng: <TELEGRAM_ACTION_LABELS[type]>
+Thời điểm: 02/09/2026, 09:56:58 (<timeZone>)
+Mã phiên: <sessionId UUID>
+Tài khoản Facebook: <c_user | (chưa đăng nhập trên Chrome này)>
+Máy: <os/arch>
+Ngôn ngữ: <navigator.language>
+Extension: <manifest.version>
+UA: <navigator.userAgent>

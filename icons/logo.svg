@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#4338ca"/>
+      <stop offset="0.55" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#db2777"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <circle cx="64" cy="64" r="56" fill="url(#glow)"/>
+  <!-- Aura: lõi sáng, vòng hào quang, và quỹ đạo ngoài hở một góc nơi "điểm chạm" (reach) thoát ra -->
+  <circle cx="64" cy="64" r="31" fill="none" stroke="#fff" stroke-width="7" opacity="0.55"/>
+  <path d="M107.8 51.2 A46 46 0 1 1 76.8 19.8" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="64" cy="64" r="15" fill="#fff"/>
+  <circle cx="98.5" cy="29.5" r="10" fill="#fff"/>
+</svg>

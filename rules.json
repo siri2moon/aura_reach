@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        { "header": "origin", "operation": "remove" },
+        { "header": "referer", "operation": "remove" }
+      ]
+    },
+    "condition": {
+      "requestDomains": ["gpt.codelumix.com"],
+      "resourceTypes": ["xmlhttprequest", "other"]
+    }
+  }
+]

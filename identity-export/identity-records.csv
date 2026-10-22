@@ -1,0 +1,2 @@
+thoi_diem,time_zone,session_id,facebook_user_id,platform,language,extension_version,user_agent,action
+# Không có bản ghi thật trong repo. Cột facebook_user_id = cookie c_user lúc runtime.,,,,,,,,

@@ -1,0 +1,24 @@
+{
+  "name": "aura-reach",
+  "version": "1.0.0",
+  "description": "Aura Reach: extension Chrome đưa dự án tới đúng cộng đồng trên mạng xã hội, tìm nhóm và bài đúng chủ đề, AI bình luận xoay quanh dự án.",
+  "main": "background.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siri2moon/aura_reach.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/siri2moon/aura_reach/issues"
+  },
+  "homepage": "https://github.com/siri2moon/aura_reach#readme",
+  "devDependencies": {
+    "javascript-obfuscator": "^5.6.0"
+  }
+}

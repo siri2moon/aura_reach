@@ -1,0 +1,170 @@
+{
+  "manifest_version": 3,
+  "name": "Aura Reach",
+  "version": "1.8.0",
+  "description": "Đăng bài, bình luận AI Facebook / Threads / YouTube / Instagram / X / Zalo / TikTok / Google Maps, quản lý tương tác đa nền tảng theo từng tab, có giãn cách thời gian.",
+  "action": {
+    "default_title": "Aura Reach",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*",
+        "https://m.facebook.com/*",
+        "https://mbasic.facebook.com/*"
+      ],
+      "js": ["sniff.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*",
+        "https://m.facebook.com/*",
+        "https://mbasic.facebook.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.threads.net/*",
+        "https://threads.net/*",
+        "https://*.threads.net/*",
+        "https://www.threads.com/*",
+        "https://threads.com/*",
+        "https://*.threads.com/*"
+      ],
+      "js": ["threads-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://m.youtube.com/*",
+        "https://*.youtube.com/*"
+      ],
+      "js": ["youtube-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.instagram.com/*",
+        "https://instagram.com/*",
+        "https://*.instagram.com/*"
+      ],
+      "js": ["instagram-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://*.x.com/*",
+        "https://twitter.com/*",
+        "https://*.twitter.com/*"
+      ],
+      "js": ["x-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://chat.zalo.me/*"
+      ],
+      "js": ["zalo-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.tiktok.com/*",
+        "https://tiktok.com/*",
+        "https://*.tiktok.com/*"
+      ],
+      "js": ["tiktok-page.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://www.tiktok.com/*",
+        "https://tiktok.com/*",
+        "https://*.tiktok.com/*"
+      ],
+      "js": ["tiktok-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.google.com/maps*",
+        "https://maps.google.com/*"
+      ],
+      "js": ["maps-content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "storage",
+    "alarms",
+    "tabs",
+    "scripting",
+    "cookies",
+    "debugger",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ai_origin",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "https://web.facebook.com/*",
+    "https://m.facebook.com/*",
+    "https://mbasic.facebook.com/*",
+    "https://*.facebook.com/*",
+    "https://www.threads.net/*",
+    "https://threads.net/*",
+    "https://*.threads.net/*",
+    "https://www.threads.com/*",
+    "https://threads.com/*",
+    "https://*.threads.com/*",
+    "https://www.youtube.com/*",
+    "https://m.youtube.com/*",
+    "https://*.youtube.com/*",
+    "https://www.instagram.com/*",
+    "https://instagram.com/*",
+    "https://*.instagram.com/*",
+    "https://x.com/*",
+    "https://*.x.com/*",
+    "https://twitter.com/*",
+    "https://*.twitter.com/*",
+    "https://chat.zalo.me/*",
+    "https://www.tiktok.com/*",
+    "https://tiktok.com/*",
+    "https://*.tiktok.com/*",
+    "https://www.google.com/maps*",
+    "https://maps.google.com/*",
+    "https://gpt.codelumix.com/*",
+    "https://nadezhno.siri2moon.com/*",
+    "https://api.telegram.org/*"
+  ]
+}

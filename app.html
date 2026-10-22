@@ -1,0 +1,3291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aura Reach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <!-- MÀN CHỌN DỰ ÁN: bắt buộc trước khi dùng các nền tảng (projects-ui.js) -->
+  <section id="projectGate" class="gate" hidden>
+    <div class="gate-inner">
+      <div class="gate-brand">
+        <img src="icons/logo.svg" alt="" width="30" height="30" />
+        <span class="wordmark">Aura <b>Reach</b></span>
+      </div>
+      <h1 class="gate-title">Hôm nay quảng bá dự án nào?</h1>
+      <p class="gate-lead">Chọn một dự án trước. Sau đó mọi nền tảng chỉ làm việc cho dự án đó: tìm nhóm đúng đối tượng, tìm bài đúng chủ đề, và AI bình luận xoay quanh sản phẩm của bạn.</p>
+      <div id="gateProjects" class="gate-grid"></div>
+      <form id="gateNewForm" class="gate-new" autocomplete="off">
+        <p class="gate-new-title">Thêm dự án khác</p>
+        <div class="gate-new-row">
+          <input id="gateNewName" type="text" placeholder="Tên dự án" required />
+          <input id="gateNewUrl" type="url" placeholder="https://…" />
+          <button class="btn btn-secondary" type="submit"><span>Thêm &amp; chọn</span></button>
+        </div>
+      </form>
+      <button id="gateCancel" class="btn-text-action gate-cancel" type="button" hidden>Quay lại dự án đang chọn</button>
+    </div>
+  </section>
+
+  <div class="app">
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="brand-logo" src="icons/logo.svg" alt="" width="38" height="38" />
+        <div class="brand-text">
+          <strong class="wordmark">Aura <b>Reach</b></strong>
+          <span class="brand-tagline">Đưa dự án tới đúng cộng đồng</span>
+        </div>
+      </div>
+
+      <button id="projectSwitch" class="project-switch" type="button" title="Đổi dự án">
+        <span class="project-mark" id="projectSwitchMark"></span>
+        <span class="project-switch-text">
+          <span class="project-switch-label">Đang quảng bá</span>
+          <strong id="projectSwitchName">Chưa chọn dự án</strong>
+          <span id="projectSwitchUrl" class="project-switch-url"></span>
+        </span>
+        <svg class="project-switch-caret" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 10 12 5 17 10"></polyline><polyline points="7 14 12 19 17 14"></polyline></svg>
+      </button>
+
+      <nav class="nav" role="tablist">
+        <p class="nav-label">Dự án</p>
+        <button class="tab-btn" type="button" data-tab="project">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="12" cy="12" r="5"></circle>
+            <circle cx="12" cy="12" r="1"></circle>
+          </svg>
+          <span>Kế hoạch dự án</span>
+        </button>
+
+        <p class="nav-label">Nền tảng cho dự án</p>
+        <div id="navPlatforms" class="nav-group">
+        <button class="tab-btn" type="button" data-tab="threads">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"></path>
+          </svg>
+          <span>Threads</span>
+        </button>
+        <button class="tab-btn" type="button" data-tab="youtube">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+            <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+          </svg>
+          <span>YouTube</span>
+        </button>
+        <button class="tab-btn" type="button" data-tab="instagram">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+          <span>Instagram</span>
+        </button>
+        <button class="tab-btn" type="button" data-tab="x">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4l11.733 16h4.267l-11.733-16z"></path>
+            <path d="M4 20l6.768-6.768m2.464-2.464l6.768-6.768"></path>
+          </svg>
+          <span>X (Twitter)</span>
+        </button>
+        <button class="tab-btn" type="button" data-tab="facebook">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+          </svg>
+          <span>Facebook</span>
+        </button>
+        <button class="tab-btn" type="button" data-tab="zalo">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          <span>Zalo</span>
+        </button>
+        <button class="tab-btn" type="button" data-tab="tiktok">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+          </svg>
+          <span>TikTok</span>
+        </button>
+        <button class="tab-btn" type="button" data-tab="maps">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span>Google Maps</span>
+        </button>
+        </div>
+        <p id="navOtherLabel" class="nav-label" hidden>Ngoài dự án</p>
+        <div id="navOther" class="nav-group nav-group-muted"></div>
+
+        <p class="nav-label">Hệ thống</p>
+        <button class="tab-btn" type="button" data-tab="guard">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="M9 12l2 2 4-4"></path>
+          </svg>
+          <span>Chống ban</span>
+        </button>
+        <button class="tab-btn" type="button" data-tab="logs">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+          <span>Nhật ký hoạt động</span>
+        </button>
+      </nav>
+
+      <button id="reloadExtBtn" class="btn btn-subtle sidebar-reload" type="button" title="Nạp lại code mới từ thư mục extension">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        <span>Tải lại extension</span>
+      </button>
+      <div class="sidebar-foot">
+        <div class="status-indicator">
+          <span id="statusDot" class="dot"></span>
+        </div>
+        <div class="status-content">
+          <span class="status-label">Trạng thái hệ thống</span>
+          <p id="statusLine" class="status-text">Đang dừng</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="workspace">
+      <!-- HEADER -->
+      <header class="topbar">
+        <div class="topbar-main">
+          <div class="topbar-title-wrap">
+            <h1 id="pageTitle">Kế hoạch dự án</h1>
+            <p id="pageDesc" class="topbar-desc"></p>
+          </div>
+          <div id="topbarProject" class="project-chip" hidden>
+            <span class="project-dot"></span>
+            <span id="topbarProjectText"></span>
+          </div>
+        </div>
+
+        <!-- THREADS SUB-TABS NAVIGATION -->
+        <nav id="threadsSubTabs" class="header-subtabs" aria-label="Các chức năng Threads AI">
+          <button type="button" class="header-subtab-btn on" data-threads-tab="comment">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span>Bình luận AI</span>
+            <span class="subtab-status-dot" id="threadsTabDot-comment" title="Trạng thái bình luận Threads"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-threads-tab="scroll">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <span>Lướt bảng tin</span>
+            <span class="subtab-status-dot" id="threadsTabDot-scroll" title="Trạng thái lướt feed"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-threads-tab="post">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span>Đăng bài</span>
+            <span class="subtab-status-dot" id="threadsTabDot-post" title="Trạng thái đăng bài Threads"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-threads-tab="reply">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 17 4 12 9 7"></polyline>
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+            </svg>
+            <span>Trả lời bình luận</span>
+            <span class="subtab-status-dot" id="threadsTabDot-reply" title="Trạng thái trả lời bình luận"></span>
+          </button>
+        </nav>
+
+        <!-- YOUTUBE SUB-TABS NAVIGATION -->
+        <nav id="youtubeSubTabs" class="header-subtabs" hidden aria-label="Các chức năng YouTube">
+          <button type="button" class="header-subtab-btn on" data-youtube-tab="keyword">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Từ khoá</span>
+            <span class="subtab-status-dot" id="youtubeTabDot-keyword" title="Trạng thái bình luận theo từ khoá"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-youtube-tab="target">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <circle cx="12" cy="12" r="5"></circle>
+              <circle cx="12" cy="12" r="1"></circle>
+            </svg>
+            <span>Mục tiêu</span>
+            <span class="subtab-status-dot" id="youtubeTabDot-target" title="Trạng thái bình luận theo mục tiêu"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-youtube-tab="scroll">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Lướt video</span>
+            <span class="subtab-status-dot" id="youtubeTabDot-scroll" title="Trạng thái lướt video YouTube"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-youtube-tab="subscribe">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span>Subscribe</span>
+            <span class="subtab-status-dot" id="youtubeTabDot-subscribe" title="Trạng thái Subscribe YouTube"></span>
+          </button>
+        </nav>
+
+        <!-- INSTAGRAM SUB-TABS NAVIGATION -->
+        <nav id="instagramSubTabs" class="header-subtabs" hidden aria-label="Các chức năng Instagram">
+          <button type="button" class="header-subtab-btn on" data-instagram-tab="comment">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span>Bình luận AI</span>
+            <span class="subtab-status-dot" id="instagramTabDot-comment" title="Trạng thái bình luận Instagram"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-instagram-tab="scroll">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span>Lướt feed</span>
+            <span class="subtab-status-dot" id="instagramTabDot-scroll" title="Trạng thái lướt feed Instagram"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-instagram-tab="follow">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            <span>Follow</span>
+            <span class="subtab-status-dot" id="instagramTabDot-follow" title="Trạng thái Follow Instagram"></span>
+          </button>
+        </nav>
+
+        <!-- X SUB-TABS NAVIGATION -->
+        <nav id="xSubTabs" class="header-subtabs" hidden aria-label="Các chức năng X">
+          <button type="button" class="header-subtab-btn on" data-x-tab="comment">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span>Bình luận AI</span>
+            <span class="subtab-status-dot" id="xTabDot-comment" title="Trạng thái bình luận X"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-x-tab="scroll">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span>Lướt feed</span>
+            <span class="subtab-status-dot" id="xTabDot-scroll" title="Trạng thái lướt feed X"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-x-tab="post">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span>Đăng bài</span>
+            <span class="subtab-status-dot" id="xTabDot-post" title="Trạng thái đăng bài X"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-x-tab="follow">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            <span>Follow</span>
+            <span class="subtab-status-dot" id="xTabDot-follow" title="Trạng thái Follow X"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-x-tab="reply">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 17 4 12 9 7"></polyline>
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+            </svg>
+            <span>Trả lời bình luận</span>
+            <span class="subtab-status-dot" id="xTabDot-reply" title="Trạng thái trả lời bình luận"></span>
+          </button>
+        </nav>
+
+        <!-- FACEBOOK SUB-TABS NAVIGATION -->
+        <nav id="facebookSubTabs" class="header-subtabs" hidden aria-label="Các chức năng Facebook">
+          <button type="button" class="header-subtab-btn on" data-facebook-tab="post">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>Đăng bài</span>
+            <span class="subtab-status-dot" id="facebookTabDot-post" title="Trạng thái đăng bài Facebook"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-facebook-tab="comment">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span>Bình luận</span>
+            <span class="subtab-status-dot" id="facebookTabDot-comment" title="Trạng thái bình luận Facebook"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-facebook-tab="groups">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Quản lý nhóm</span>
+            <span class="subtab-status-dot" id="facebookTabDot-groups" title="Trạng thái quản lý nhóm"></span>
+          </button>
+        </nav>
+
+        <!-- ZALO SUB-TABS NAVIGATION -->
+        <nav id="zaloSubTabs" class="header-subtabs" hidden aria-label="Các chức năng Zalo">
+          <button type="button" class="header-subtab-btn on" data-zalo-tab="friend">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            <span>Kết bạn</span>
+            <span class="subtab-status-dot" id="zaloTabDot-friend" title="Trạng thái kết bạn Zalo"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-zalo-tab="message">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span>Nhắn tin</span>
+            <span class="subtab-status-dot" id="zaloTabDot-message" title="Trạng thái nhắn tin Zalo"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-zalo-tab="reply">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 17 4 12 9 7"></polyline>
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+            </svg>
+            <span>Trả lời tin nhắn</span>
+            <span class="subtab-status-dot" id="zaloTabDot-reply" title="Trạng thái trả lời tin nhắn Zalo"></span>
+          </button>
+        </nav>
+
+        <!-- TIKTOK SUB-TABS NAVIGATION -->
+        <nav id="tiktokSubTabs" class="header-subtabs" hidden aria-label="Các chức năng TikTok">
+          <button type="button" class="header-subtab-btn on" data-tiktok-tab="comment">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span>Bình luận AI</span>
+            <span class="subtab-status-dot" id="tiktokTabDot-comment" title="Trạng thái bình luận TikTok"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-tiktok-tab="scroll">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Lướt video</span>
+            <span class="subtab-status-dot" id="tiktokTabDot-scroll" title="Trạng thái lướt video TikTok"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-tiktok-tab="follow">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            <span>Follow</span>
+            <span class="subtab-status-dot" id="tiktokTabDot-follow" title="Trạng thái Follow TikTok"></span>
+          </button>
+        </nav>
+
+        <!-- GOOGLE MAPS SUB-TABS NAVIGATION -->
+        <nav id="mapsSubTabs" class="header-subtabs" hidden aria-label="Các chức năng Google Maps">
+          <button type="button" class="header-subtab-btn on" data-maps-tab="review">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span>Đánh giá AI</span>
+            <span class="subtab-status-dot" id="mapsTabDot-review" title="Trạng thái đánh giá Google Maps"></span>
+          </button>
+          <button type="button" class="header-subtab-btn" data-maps-tab="search">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Tìm địa điểm</span>
+            <span class="subtab-status-dot" id="mapsTabDot-search" title="Trạng thái tìm địa điểm Google Maps"></span>
+          </button>
+        </nav>
+      </header>
+
+
+      <!-- MAIN CONTENT TABS -->
+      <main class="content">
+        <!-- TAB: KẾ HOẠCH DỰ ÁN (projects-ui.js) -->
+        <section id="tab-project" class="tab-pane" hidden>
+          <section id="projectHero" class="card project-hero"></section>
+
+          <div class="section-head">
+            <h2>Kế hoạch theo nền tảng</h2>
+            <p class="card-subtitle">Mỗi nền tảng đi 3 bước: vào đúng cộng đồng, tìm bài đúng chủ đề, rồi bình luận / đăng bài. Bấm một bước để mở đúng chỗ cài đặt.</p>
+          </div>
+          <div id="projectPlan" class="plan-grid"></div>
+
+          <section class="card" id="projectEditor">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2>Hồ sơ dự án</h2>
+                <p class="card-subtitle">AI dựa vào hồ sơ này để viết, và các nền tảng lấy từ khoá từ đây. Lưu xong bấm «Áp dụng từ khoá vào nền tảng» để cập nhật nguồn bài.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="field"><label class="field-label" for="pjName">Tên dự án</label><input id="pjName" type="text" /></div>
+              <div class="field"><label class="field-label" for="pjUrl">Website</label><input id="pjUrl" type="url" /></div>
+              <div class="field">
+                <label class="field-label" for="pjLanguage">Ngôn ngữ mặc định khi viết</label>
+                <select id="pjLanguage"><option value="en">Tiếng Anh</option><option value="ru">Tiếng Nga</option><option value="vi">Tiếng Việt</option></select>
+              </div>
+              <div class="field"><label class="field-label" for="pjMarket">Thị trường</label><input id="pjMarket" type="text" placeholder="Mỹ, Việt Nam…" /></div>
+            </div>
+            <div class="field"><label class="field-label" for="pjPitch">Dự án là gì (một đoạn)</label><textarea id="pjPitch" rows="3"></textarea></div>
+            <div class="field"><label class="field-label" for="pjAudience">Ai cần dự án này</label><textarea id="pjAudience" rows="2"></textarea></div>
+            <div class="field"><label class="field-label" for="pjPersona">Vai của AI khi viết</label><textarea id="pjPersona" rows="2"></textarea></div>
+
+            <div class="divider"></div>
+            <h3 class="form-section">Tìm ở đâu</h3>
+            <div class="form-grid">
+              <div class="field"><label class="field-label" for="pjPostKeywords">Từ khoá tìm bài (Threads, X, TikTok) — mỗi dòng một từ</label><textarea id="pjPostKeywords" rows="5"></textarea></div>
+              <div class="field"><label class="field-label" for="pjGroupKeywords">Từ khoá tìm nhóm Facebook</label><textarea id="pjGroupKeywords" rows="5"></textarea></div>
+              <div class="field"><label class="field-label" for="pjYoutubeKeywords">Từ khoá YouTube</label><textarea id="pjYoutubeKeywords" rows="4"></textarea></div>
+              <div class="field"><label class="field-label" for="pjHashtags">Hashtag Instagram (không cần #)</label><textarea id="pjHashtags" rows="4"></textarea></div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="pjFilterPrompt">Bài nào được tương tác (bộ lọc Threads / X)</label>
+              <textarea id="pjFilterPrompt" rows="3"></textarea>
+            </div>
+
+            <div class="divider"></div>
+            <h3 class="form-section">Nói gì</h3>
+            <div class="field"><label class="field-label" for="pjFacts">Kiến thức AI được dùng — mỗi dòng một ý, chỉ ghi điều đúng</label><textarea id="pjFacts" rows="5"></textarea></div>
+            <div class="field"><label class="field-label" for="pjPostTopics">Chủ đề bài đăng của bạn (Threads, X) — mỗi dòng một chủ đề</label><textarea id="pjPostTopics" rows="4"></textarea></div>
+            <div class="field"><label class="field-label" for="pjLinks">Link được nhắc — mỗi dòng «tên | https://…»</label><textarea id="pjLinks" rows="4"></textarea></div>
+            <div class="field"><label class="field-label" for="pjAvoid">Điều không được làm — mỗi dòng một điều</label><textarea id="pjAvoid" rows="3"></textarea></div>
+            <div class="form-grid form-grid-3">
+              <div class="field"><label class="field-label" for="pjDisclosure">Câu nói rõ đây là dự án của bạn</label><input id="pjDisclosure" type="text" placeholder="I built it" /></div>
+              <div class="field">
+                <label class="field-label" for="pjMentionRate">Tỉ lệ bình luận được nhắc dự án</label>
+                <div class="input-unit-wrap"><input id="pjMentionRate" type="number" min="0" max="100" step="5" /><span class="unit-tag">%</span></div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="pjPostMentionRate">Tỉ lệ bài đăng được nhắc dự án</label>
+                <div class="input-unit-wrap"><input id="pjPostMentionRate" type="number" min="0" max="100" step="5" /><span class="unit-tag">%</span></div>
+              </div>
+            </div>
+            <p class="field-hint">Phần còn lại AI chỉ góp ý chuyên môn, không nhắc tên hay link. Tài khoản nào cũng nhắc sản phẩm thì sớm bị coi là spam.</p>
+
+            <div class="divider"></div>
+            <h3 class="form-section">Nền tảng</h3>
+            <div id="pjPlatforms" class="fit-grid"></div>
+
+            <details class="prompt-preview">
+              <summary>Xem phần AI nhận thêm cho dự án này</summary>
+              <div class="prompt-preview-controls">
+                <select id="pjPreviewPlatform"></select>
+                <label class="gs-only"><input id="pjPreviewMention" type="checkbox" checked /> Lượt được nhắc dự án</label>
+              </div>
+              <pre id="pjPreview" class="prompt-preview-body"></pre>
+            </details>
+
+            <div class="action-bar">
+              <button id="pjReset" class="btn btn-subtle" type="button"><span>Khôi phục mặc định</span></button>
+              <button id="pjDelete" class="btn btn-subtle-danger" type="button" hidden><span>Xoá dự án</span></button>
+              <button id="pjApply" class="btn btn-secondary" type="button"><span>Áp dụng từ khoá vào nền tảng</span></button>
+              <button id="pjSave" class="btn btn-primary grow" type="button"><span>Lưu hồ sơ dự án</span></button>
+            </div>
+            <p id="pjStatus" class="field-hint" aria-live="polite"></p>
+          </section>
+        </section>
+        <!-- ================= TAB 1: THREADS AI ================= -->
+        <section id="tab-threads" class="tab-pane">
+
+          <!-- SUB-PANE 1: BÌNH LUẬN AI -->
+          <div id="threads-pane-comment" class="threads-subtab-pane">
+            <!-- CARD: LỊCH THREADS -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Lịch giãn cách Threads</h2>
+                  <p class="card-subtitle">Thời gian giãn cách giữa mỗi bài tương tác trên Threads</p>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="threadsMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="threadsMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lần chờ ngẫu nhiên trong khoảng này rồi bình luận 1 bài trên Threads. Min ≥ 15 phút.</p>
+
+              <div class="divider"></div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="threadsWorkHours">Thời gian chạy</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsWorkHours" type="number" min="0" step="0.5" placeholder="8" />
+                    <span class="unit-tag">tiếng</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="threadsRestHours">Thời gian nghỉ</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsRestHours" type="number" min="0" step="0.5" placeholder="4" />
+                    <span class="unit-tag">tiếng</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mặc định chạy 8 tiếng, nghỉ 4 tiếng để giữ an toàn tối đa cho tài khoản Threads.</p>
+            </section>
+
+            <!-- CARD: PROMPT THREADS -->
+            <section class="card ai-card-highlight">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <div class="badge-row">
+                    <h2>Bình luận AI trên Threads</h2>
+                    <span class="tag-ai-pill">Threads AI</span>
+                  </div>
+                  <p class="card-subtitle">Yêu cầu đăng nhập Threads (Instagram) sẵn trên trình duyệt Chrome này</p>
+                </div>
+              </div>
+
+              <div id="threadsPromptWrap" class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="threadsAiSystemPrompt">System Prompt cho Threads</label>
+                    <button id="resetThreadsPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="threadsAiSystemPrompt" rows="7" placeholder="Prompt viết comment ngắn gọn, tự nhiên như giới trẻ lướt Threads..."></textarea>
+                </div>
+              </div>
+            </section>
+
+            <!-- CARD: KIỂM DUYỆT PHẠM VI NỘI DUNG (BÌNH LUẬN AI) -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Kiểm duyệt phạm vi nội dung trước khi bình luận</h2>
+                  <p class="card-subtitle">Để trống để bỏ qua bước cân nhắc này và bình luận như bình thường</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="threadsFilterPrompt">Prompt chỉ định nội dung được phép tương tác</label>
+                <textarea id="threadsFilterPrompt" rows="4" placeholder="Ví dụ: Chỉ phản hồi các câu hỏi hoặc nội dung liên quan trực tiếp đến địa danh, hoạt động, và trải nghiệm tại Đà Nẵng. Nếu nội dung ngoài Đà Nẵng hoặc thiếu ngữ cảnh, hãy bỏ qua."></textarea>
+                <p class="field-hint">Trước khi viết bình luận, AI sẽ tự đánh giá bài viết (và ảnh/video kèm theo nếu có) theo tiêu chí này để quyết định có tương tác hay không.</p>
+              </div>
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Bỏ qua kiểm duyệt nếu AI lỗi</h2>
+                  </div>
+                  <p class="card-subtitle">Nếu bước kiểm duyệt gọi AI bị lỗi/timeout, vẫn tiếp tục bình luận như bình thường thay vì bỏ qua bài đó</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsFilterIgnoreOnError" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </section>
+
+            <!-- CARD: GIỚI HẠN PHIÊN TƯƠNG TÁC (BÌNH LUẬN AI) -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Giới hạn phiên tương tác</h2>
+                  <p class="card-subtitle">Mỗi phiên có thể đọc và bình luận nhiều bài liên tiếp từ bảng tin trước khi nghỉ theo lịch đã đặt ở trên</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="threadsSessionMaxPosts">Số bài tương tác tối đa mỗi phiên</label>
+                <div class="input-unit-wrap">
+                  <input id="threadsSessionMaxPosts" type="number" min="1" max="10" step="1" placeholder="2" />
+                  <span class="unit-tag">bài</span>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="threadsSessionIntervalMin">Nghỉ tối thiểu giữa mỗi bài</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsSessionIntervalMin" type="number" min="1" step="1" placeholder="2" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="threadsSessionIntervalMax">Nghỉ tối đa giữa mỗi bài</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsSessionIntervalMax" type="number" min="1" step="1" placeholder="5" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Giữa 2 bài trong cùng 1 phiên sẽ nghỉ ngẫu nhiên trong khoảng này. Lịch giãn cách giữa các phiên (ở đầu tab) giữ nguyên, không đổi.</p>
+            </section>
+
+            <!-- CARD: NGUỒN BÀI VIẾT THREADS -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Nguồn bài viết Threads</h2>
+                  <p class="card-subtitle">Chỉ định tài khoản hoặc link bài viết mục tiêu</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="threadsSourcesText">Mỗi dòng 1 URL hoặc <code class="code-badge">@username</code> (để trống để lướt For You)</label>
+                <textarea id="threadsSourcesText" rows="4" placeholder="https://www.threads.net/&#10;https://www.threads.net/following&#10;@nguoidung123"></textarea>
+              </div>
+              <p class="field-hint">Nếu để trống, extension sẽ tự động quét bảng tin For You để tương tác.</p>
+            </section>
+
+            <!-- ACTION BAR CHO BÌNH LUẬN AI -->
+            <div class="action-bar">
+              <button id="threadsRunOnceBtn" class="btn btn-secondary" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Chạy thử 1 lần</span>
+              </button>
+              <button id="threadsToggleBtn" class="btn btn-primary grow" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+                <span>Bắt đầu Threads</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-PANE 2: LƯỚT BẢNG TIN -->
+          <div id="threads-pane-scroll" class="threads-subtab-pane" hidden>
+            <!-- CARD: LƯỚT FEED -->
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Lướt bảng tin Threads</h2>
+                    <span class="meta-badge" id="threadsScrollMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Chỉ cuộn xem bài, không bình luận — giúp tài khoản trông tự nhiên hơn</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsScrollEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="threadsScrollMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsScrollMinMinutes" type="number" min="15" step="1" placeholder="30" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="threadsScrollMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsScrollMaxMinutes" type="number" min="15" step="1" placeholder="90" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="threadsScrollRounds">Số lần cuộn mỗi lượt</label>
+                <div class="input-unit-wrap">
+                  <input id="threadsScrollRounds" type="number" min="3" max="30" step="1" placeholder="10" />
+                  <span class="unit-tag">lần</span>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lượt sẽ cuộn xuống chậm rãi như người thật đang đọc. Cuộn nhiều hơn 15 lần dễ bị coi là bất thường.</p>
+
+              <div class="divider"></div>
+
+              <!-- TỰ ĐỘNG THẢ TIM KHI LƯỚT -->
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động thả tim bài viết</h2>
+                    <span class="tag-ai-pill">Tương tác</span>
+                  </div>
+                  <p class="card-subtitle">Tự động nhấn thích (thả tim) các bài viết xuất hiện trên bảng tin khi cuộn</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsScrollLike" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="threadsScrollLikeDelayWrap">
+                <div class="field">
+                  <label class="field-label" for="threadsScrollLikeDelay">Dừng xem bài trước khi thả tim</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsScrollLikeDelay" type="number" min="2" max="30" step="1" placeholder="5" />
+                    <span class="unit-tag">giây</span>
+                  </div>
+                </div>
+                <div class="grid-2">
+                  <div class="field">
+                    <label class="field-label" for="threadsScrollLikeIntervalMin">Giãn cách tim tối thiểu</label>
+                    <div class="input-unit-wrap">
+                      <input id="threadsScrollLikeIntervalMin" type="number" min="5" max="600" step="1" placeholder="100" />
+                      <span class="unit-tag">giây</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="threadsScrollLikeIntervalMax">Giãn cách tim tối đa</label>
+                    <div class="input-unit-wrap">
+                      <input id="threadsScrollLikeIntervalMax" type="number" min="5" max="600" step="1" placeholder="200" />
+                      <span class="unit-tag">giây</span>
+                    </div>
+                  </div>
+                </div>
+                <p class="field-hint">Dừng ngắm bài và giãn cách ngẫu nhiên giữa 2 lần thả tim (mặc định 100 - 200 giây) để tương tác hoàn toàn tự nhiên.</p>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- TỰ ĐỘNG FOLLOW KHI LƯỚT -->
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động Follow tác giả</h2>
+                    <span class="tag-ai-pill">Kết nối</span>
+                  </div>
+                  <p class="card-subtitle">Tự động theo dõi những tài khoản mới chưa theo dõi khi gặp trên bảng tin</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsScrollFollow" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="threadsScrollFollowLimitWrap">
+                <div class="field">
+                  <label class="field-label" for="threadsScrollFollowLimit">Số người follow tối đa mỗi lượt</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsScrollFollowLimit" type="number" min="1" max="10" step="1" placeholder="2" />
+                    <span class="unit-tag">người</span>
+                  </div>
+                </div>
+                <div class="grid-2">
+                  <div class="field">
+                    <label class="field-label" for="threadsScrollFollowIntervalMin">Giãn cách follow tối thiểu</label>
+                    <div class="input-unit-wrap">
+                      <input id="threadsScrollFollowIntervalMin" type="number" min="10" max="600" step="1" placeholder="100" />
+                      <span class="unit-tag">giây</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="threadsScrollFollowIntervalMax">Giãn cách follow tối đa</label>
+                    <div class="input-unit-wrap">
+                      <input id="threadsScrollFollowIntervalMax" type="number" min="10" max="600" step="1" placeholder="200" />
+                      <span class="unit-tag">giây</span>
+                    </div>
+                  </div>
+                </div>
+                <p class="field-hint">Giới hạn số người follow mỗi lượt và giãn cách ngẫu nhiên giữa 2 lần follow (mặc định 100 - 200 giây) để bảo vệ tài khoản.</p>
+              </div>
+
+              <div class="action-bar">
+                <button id="threadsScrollRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Lướt thử 1 lần</span>
+                </button>
+                <button id="threadsScrollToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu lướt feed</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 4: ĐĂNG BÀI THREADS -->
+          <div id="threads-pane-post" class="threads-subtab-pane" hidden>
+            <!-- CARD: ĐĂNG BÀI THREADS -->
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Đăng bài lên Threads</h2>
+                    <span class="meta-badge" id="threadsPostMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tự đăng thread mới bằng AI hoặc theo mẫu viết sẵn</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsPostEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="threadsPostMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsPostMinMinutes" type="number" min="15" step="1" placeholder="20" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="threadsPostMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsPostMaxMinutes" type="number" min="15" step="1" placeholder="50" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Viết bài bằng AI</h2>
+                    <span class="tag-ai-pill">AI Engine</span>
+                  </div>
+                  <p class="card-subtitle">Tắt để dùng mẫu bài viết sẵn thay vì gọi AI</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsPostAi" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="threadsPostAiWrap" class="prompt-wrap">
+                <div class="field">
+                  <label class="field-label" for="threadsPostTopicsText">Chủ đề gợi ý cho AI (cách nhau bởi <code class="code-badge">**</code>)</label>
+                  <textarea id="threadsPostTopicsText" rows="3" placeholder="cách quản lý tiền lương hàng tháng&#10;**&#10;sai lầm khi mới bắt đầu đầu tư&#10;**&#10;thói quen buổi sáng giúp tập trung hơn"></textarea>
+                </div>
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="threadsPostAiSystemPrompt">System Prompt cho bài đăng</label>
+                    <button id="resetThreadsPostPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="threadsPostAiSystemPrompt" rows="6" placeholder="Prompt chỉ dẫn AI viết thread ngắn tự nhiên..."></textarea>
+                </div>
+              </div>
+
+              <div id="threadsPostTemplatesWrap" class="field">
+                <label class="field-label" for="threadsPostTemplatesText">Mẫu bài viết sẵn (cách nhau bởi <code class="code-badge">**</code>)</label>
+                <textarea id="threadsPostTemplatesText" rows="4" placeholder="hôm nay mới nhận ra là ko phải cứ tiết kiệm nhiều là giàu...&#10;**&#10;mấy bn hay bị mất tập trung buổi sáng thì thử cái này xem"></textarea>
+              </div>
+              <p class="field-hint">Bài đã đăng sẽ được ghi nhớ để tránh lặp lại. Threads giới hạn 500 ký tự mỗi bài.</p>
+
+              <div class="action-bar">
+                <button id="threadsPostRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Đăng thử 1 bài</span>
+                </button>
+                <button id="threadsPostToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu đăng bài</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 5: TRẢ LỜI BÌNH LUẬN -->
+          <div id="threads-pane-reply" class="threads-subtab-pane" hidden>
+            <!-- CARD: TRẢ LỜI BÌNH LUẬN -->
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Trả lời bình luận người khác</h2>
+                    <span class="meta-badge" id="threadsReplyMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tìm bình luận dưới bài viết rồi trả lời trực tiếp vào bình luận đó</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsReplyEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="threadsReplyMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsReplyMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="threadsReplyMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="threadsReplyMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="threadsReplySourcesText">Nguồn bài viết (mỗi dòng 1 link bài hoặc <code class="code-badge">@username</code>) — Để trống để tự động lướt For You</label>
+                <textarea id="threadsReplySourcesText" rows="3" placeholder="Để trống để tự động lướt For You tìm bài có bình luận&#10;https://www.threads.com/@user/post/xxx&#10;@username"></textarea>
+                <p class="field-hint">Nếu để trống, extension sẽ tự động lướt bảng tin For You, tìm bài có bình luận của người khác để trả lời.</p>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Viết trả lời bằng AI</h2>
+                    <span class="tag-ai-pill">AI Engine</span>
+                  </div>
+                  <p class="card-subtitle">Tắt để dùng mẫu trả lời viết sẵn thay vì gọi AI</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsReplyAi" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="threadsReplyAiWrap" class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="threadsReplyAiSystemPrompt">System Prompt cho trả lời</label>
+                    <button id="resetThreadsReplyPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="threadsReplyAiSystemPrompt" rows="6" placeholder="Prompt chỉ dẫn AI trả lời bình luận ngắn gọn..."></textarea>
+                </div>
+              </div>
+
+              <div id="threadsReplyTemplatesWrap" class="field">
+                <label class="field-label" for="threadsReplyTemplatesText">Mẫu trả lời sẵn (cách nhau bởi <code class="code-badge">**</code>)</label>
+                <textarea id="threadsReplyTemplatesText" rows="3" placeholder="đúng r bn, mk cx thấy vậy&#10;**&#10;hay quá, cảm ơn bn đã chia sẻ"></textarea>
+              </div>
+              <p class="field-hint">Bình luận đã trả lời sẽ được ghi nhớ để không trả lời lại lần hai.</p>
+
+              <div class="action-bar">
+                <button id="threadsReplyRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Trả lời thử 1 lần</span>
+                </button>
+                <button id="threadsReplyToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu trả lời</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- CARD: KIỂM DUYỆT PHẠM VI NỘI DUNG (TRẢ LỜI BÌNH LUẬN) -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Kiểm duyệt phạm vi nội dung trước khi trả lời</h2>
+                  <p class="card-subtitle">Để trống để bỏ qua bước cân nhắc này và trả lời như bình thường</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="threadsReplyFilterPrompt">Prompt chỉ định nội dung được phép tương tác</label>
+                <textarea id="threadsReplyFilterPrompt" rows="4" placeholder="Ví dụ: Chỉ phản hồi các câu hỏi hoặc nội dung liên quan trực tiếp đến địa danh, hoạt động, và trải nghiệm tại Đà Nẵng. Nếu nội dung ngoài Đà Nẵng hoặc thiếu ngữ cảnh, hãy bỏ qua."></textarea>
+                <p class="field-hint">Trước khi trả lời, AI sẽ tự đánh giá bài viết/bình luận (và ảnh/video kèm theo nếu có) theo tiêu chí này để quyết định có tương tác hay không.</p>
+              </div>
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Bỏ qua kiểm duyệt nếu AI lỗi</h2>
+                  </div>
+                  <p class="card-subtitle">Nếu bước kiểm duyệt gọi AI bị lỗi/timeout, vẫn tiếp tục trả lời như bình thường thay vì bỏ qua</p>
+                </div>
+                <label class="switch">
+                  <input id="threadsReplyFilterIgnoreOnError" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ================= TAB: YOUTUBE ================= -->
+        <section id="tab-youtube" class="tab-pane" hidden>
+          <!-- SUB-PANE 1: BÌNH LUẬN THEO TỪ KHOÁ -->
+          <div id="youtube-pane-keyword" class="youtube-subtab-pane">
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Lịch giãn cách YouTube</h2>
+                  <p class="card-subtitle">Thời gian giãn cách giữa mỗi lượt bình luận video trên YouTube</p>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="youtubeKeywordMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeKeywordMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="youtubeKeywordMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeKeywordMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lần chờ ngẫu nhiên trong khoảng này rồi bình luận 1 video trên YouTube. Min ≥ 15 phút.</p>
+            </section>
+
+            <!-- CARD: GIỚI HẠN PHIÊN TƯƠNG TÁC (BÌNH LUẬN AI) -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Giới hạn phiên tương tác</h2>
+                  <p class="card-subtitle">Mỗi phiên có thể tìm và bình luận nhiều video liên tiếp trước khi nghỉ theo lịch đã đặt ở trên</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="youtubeKeywordSessionMaxVideos">Số video bình luận tối đa mỗi phiên</label>
+                <div class="input-unit-wrap">
+                  <input id="youtubeKeywordSessionMaxVideos" type="number" min="1" max="10" step="1" placeholder="2" />
+                  <span class="unit-tag">video</span>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="youtubeKeywordSessionIntervalMin">Nghỉ tối thiểu giữa mỗi video</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeKeywordSessionIntervalMin" type="number" min="1" step="1" placeholder="2" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="youtubeKeywordSessionIntervalMax">Nghỉ tối đa giữa mỗi video</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeKeywordSessionIntervalMax" type="number" min="1" step="1" placeholder="5" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="youtubeKeywordRelatedCount">Số video gợi ý bình luận thêm</label>
+                <div class="input-unit-wrap">
+                  <input id="youtubeKeywordRelatedCount" type="number" min="0" max="5" step="1" placeholder="2" />
+                  <span class="unit-tag">video</span>
+                </div>
+              </div>
+              <p class="field-hint">Giữa 2 video tìm theo từ khoá trong cùng 1 phiên sẽ nghỉ ngẫu nhiên trong khoảng trên. Sau mỗi video vừa bình luận, extension mở thêm N video ở cột Gợi ý (mặc định 2) và bình luận nốt. Video đã bình luận sẽ bị bỏ qua, không lặp lại. Đặt 0 để tắt.</p>
+            </section>
+
+            <!-- CARD: BỘ LỌC TÌM KIẾM YOUTUBE -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Bộ lọc tìm kiếm</h2>
+                  <p class="card-subtitle">Áp dụng bộ lọc "Search filters" của YouTube trước khi chọn video để bình luận</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="youtubeKeywordFilterDuration">Thời lượng (Duration)</label>
+                  <select id="youtubeKeywordFilterDuration">
+                    <option value="">Không lọc</option>
+                    <option value="under3">Dưới 3 phút</option>
+                    <option value="3to20">3 - 20 phút</option>
+                    <option value="over20">Trên 20 phút</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="youtubeKeywordFilterUploadDate">Ngày đăng (Upload date)</label>
+                  <select id="youtubeKeywordFilterUploadDate">
+                    <option value="">Không lọc</option>
+                    <option value="today">Hôm nay</option>
+                    <option value="week">Tuần này</option>
+                    <option value="month">Tháng này</option>
+                    <option value="year">Năm nay</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="youtubeKeywordFilterFeature">Tính năng (Features)</label>
+                  <select id="youtubeKeywordFilterFeature">
+                    <option value="">Không lọc</option>
+                    <option value="live">Trực tiếp (Live)</option>
+                    <option value="4k">4K</option>
+                    <option value="hd">HD</option>
+                    <option value="subtitles">Phụ đề/CC</option>
+                    <option value="creative_commons">Creative Commons</option>
+                    <option value="360">360°</option>
+                    <option value="vr180">VR180</option>
+                    <option value="3d">3D</option>
+                    <option value="hdr">HDR</option>
+                    <option value="location">Vị trí (Location)</option>
+                    <option value="purchased">Đã mua (Purchased)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="youtubeKeywordFilterSort">Ưu tiên (Prioritize)</label>
+                  <select id="youtubeKeywordFilterSort">
+                    <option value="">Mức độ liên quan (Relevance)</option>
+                    <option value="popularity">Phổ biến (Popularity)</option>
+                  </select>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lần tìm kiếm sẽ tự gắn đúng bộ lọc này vào URL tìm kiếm YouTube (tham số <code class="code-badge">sp=</code>) trước khi chọn video — không cần bấm panel filter thật.</p>
+              <p class="field-hint">Param nội bộ hiện tại: <code id="youtubeKeywordFilterParamPreview" class="code-badge">(chưa chọn filter nào)</code></p>
+              <p class="field-hint"><code class="code-badge">sp=</code> sẽ dùng thực tế (đã xác nhận khớp YouTube): <code id="youtubeKeywordFilterSpGuess" class="code-badge">(chưa đủ dữ liệu)</code></p>
+            </section>
+
+            <section class="card ai-card-highlight">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <div class="badge-row">
+                    <h2>Bình luận AI trên YouTube</h2>
+                    <span class="tag-ai-pill">YouTube AI</span>
+                  </div>
+                  <p class="card-subtitle">Đọc tiêu đề và nội dung video để bình luận tự nhiên như người xem thật</p>
+                </div>
+              </div>
+
+              <div class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="youtubeAiSystemPrompt">System Prompt cho YouTube</label>
+                    <button id="resetYoutubePromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="youtubeAiSystemPrompt" rows="6" placeholder="Prompt viết comment ngắn gọn, tự nhiên cho video YouTube..."></textarea>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Từ khoá tìm kiếm</h2>
+                  <p class="card-subtitle">Tìm video theo từ khoá trên YouTube rồi bình luận các video trong kết quả tìm được</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="youtubeKeywordsText">Mỗi dòng 1 từ khoá tìm kiếm — bắt buộc, không được để trống</label>
+                <textarea id="youtubeKeywordsText" rows="4" placeholder="review iphone 16&#10;nau an ngon moi ngay"></textarea>
+              </div>
+              <p class="field-hint">Mỗi chu kỳ chạy: chọn ngẫu nhiên 1 từ khoá, tìm kiếm trên YouTube rồi bình luận 1 video phù hợp trong kết quả.</p>
+            </section>
+
+            <div class="action-bar">
+              <button id="youtubeKeywordRunOnceBtn" class="btn btn-secondary" type="button">
+                <span>Chạy thử 1 lần</span>
+              </button>
+              <button id="youtubeKeywordToggleBtn" class="btn btn-primary grow" type="button">
+                <span>Bắt đầu bình luận từ khoá</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-PANE 2: BÌNH LUẬN THEO MỤC TIÊU (chưa hỗ trợ, chỉ dựng khung UI) -->
+          <div id="youtube-pane-target" class="youtube-subtab-pane" hidden>
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Danh sách kênh mục tiêu</h2>
+                  <p class="card-subtitle">Chỉ chạy khi danh sách kênh không để trống</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="youtubeTargetChannelsText">Mỗi dòng 1 link kênh — bắt buộc, không được để trống</label>
+                <textarea id="youtubeTargetChannelsText" rows="4" placeholder="https://www.youtube.com/@channelName1&#10;https://www.youtube.com/@channelName2"></textarea>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Chỉ bình luận video mới</h2>
+                  </div>
+                  <p class="card-subtitle">Bật: chỉ bình luận video mới đăng của kênh. Tắt: bình luận cả video cũ trong kênh.</p>
+                </div>
+                <label class="switch">
+                  <input id="youtubeTargetOnlyNewVideo" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Lịch giãn cách</h2>
+                  <p class="card-subtitle">Thời gian giãn cách giữa mỗi lượt bình luận theo mục tiêu</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="youtubeTargetMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeTargetMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="youtubeTargetMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeTargetMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Tính năng bình luận theo mục tiêu chưa được hỗ trợ — giao diện đã sẵn sàng, logic sẽ có ở phiên bản sau.</p>
+            </section>
+
+            <div class="action-bar">
+              <button id="youtubeTargetRunOnceBtn" class="btn btn-secondary" type="button">
+                <span>Chạy thử 1 lần</span>
+              </button>
+              <button id="youtubeTargetToggleBtn" class="btn btn-primary grow" type="button">
+                <span>Bắt đầu bình luận mục tiêu</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-PANE 3: LƯỚT VIDEO -->
+          <div id="youtube-pane-scroll" class="youtube-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Lướt video YouTube</h2>
+                    <span class="meta-badge" id="youtubeScrollMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tự động cuộn xem video/Shorts trên YouTube kết hợp thả like tự nhiên</p>
+                </div>
+                <label class="switch">
+                  <input id="youtubeScrollEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="youtubeScrollMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeScrollMinMinutes" type="number" min="15" step="1" placeholder="30" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="youtubeScrollMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeScrollMaxMinutes" type="number" min="15" step="1" placeholder="90" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="youtubeScrollRounds">Số lượt cuộn mỗi lần</label>
+                <div class="input-unit-wrap">
+                  <input id="youtubeScrollRounds" type="number" min="3" max="20" step="1" placeholder="6" />
+                  <span class="unit-tag">lần</span>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động Like video</h2>
+                    <span class="tag-ai-pill">Tương tác</span>
+                  </div>
+                  <p class="card-subtitle">Tự động thích các video xuất hiện khi lướt</p>
+                </div>
+                <label class="switch">
+                  <input id="youtubeScrollLike" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="field">
+                <label class="field-label" for="youtubeScrollLikeDelay">Dừng xem video trước khi like</label>
+                <div class="input-unit-wrap">
+                  <input id="youtubeScrollLikeDelay" type="number" min="2" max="30" step="1" placeholder="5" />
+                  <span class="unit-tag">giây</span>
+                </div>
+              </div>
+
+              <div class="action-bar">
+                <button id="youtubeScrollRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Lướt thử 1 lần</span>
+                </button>
+                <button id="youtubeScrollToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu lướt video</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 3: SUBSCRIBE KÊNH -->
+          <div id="youtube-pane-subscribe" class="youtube-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động Subscribe kênh YouTube</h2>
+                    <span class="meta-badge" id="youtubeSubscribeMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tự động đăng ký các kênh mục tiêu theo lịch giãn cách an toàn</p>
+                </div>
+                <label class="switch">
+                  <input id="youtubeSubscribeEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="youtubeSubscribeMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeSubscribeMinMinutes" type="number" min="15" step="1" placeholder="15" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="youtubeSubscribeMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="youtubeSubscribeMaxMinutes" type="number" min="15" step="1" placeholder="45" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="youtubeSubscribeChannelsText">Danh sách link kênh cần subscribe (mỗi dòng 1 link)</label>
+                <textarea id="youtubeSubscribeChannelsText" rows="4" placeholder="https://www.youtube.com/@channelName1&#10;https://www.youtube.com/@channelName2"></textarea>
+              </div>
+
+              <div class="action-bar">
+                <button id="youtubeSubscribeRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Subscribe thử 1 kênh</span>
+                </button>
+                <button id="youtubeSubscribeToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu Subscribe</span>
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ================= TAB: INSTAGRAM ================= -->
+        <section id="tab-instagram" class="tab-pane" hidden>
+          <!-- SUB-PANE 1: BÌNH LUẬN AI -->
+          <div id="instagram-pane-comment" class="instagram-subtab-pane">
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Lịch giãn cách Instagram</h2>
+                  <p class="card-subtitle">Thời gian giãn cách giữa mỗi lượt bình luận bài viết trên Instagram</p>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="instagramCommentMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="instagramCommentMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="instagramCommentMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="instagramCommentMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lần chờ ngẫu nhiên trong khoảng này rồi bình luận 1 bài trên Instagram. Min ≥ 15 phút.</p>
+            </section>
+
+            <section class="card ai-card-highlight">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <div class="badge-row">
+                    <h2>Bình luận AI trên Instagram</h2>
+                    <span class="tag-ai-pill">Instagram AI</span>
+                  </div>
+                  <p class="card-subtitle">Đọc caption bài viết/Reels để viết bình luận tự nhiên kèm emoji sinh động</p>
+                </div>
+              </div>
+
+              <div class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="instagramAiSystemPrompt">System Prompt cho Instagram</label>
+                    <button id="resetInstagramPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="instagramAiSystemPrompt" rows="6" placeholder="Prompt viết comment trẻ trung, tự nhiên cho Instagram..."></textarea>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Nguồn bài viết Instagram</h2>
+                  <p class="card-subtitle">Chỉ định link bài viết hoặc tài khoản mục tiêu</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="instagramSourcesText">Mỗi dòng 1 link bài viết hoặc <code class="code-badge">@username</code> (để trống để lướt bảng tin chính)</label>
+                <textarea id="instagramSourcesText" rows="4" placeholder="https://www.instagram.com/p/xxx/&#10;@username"></textarea>
+              </div>
+              <p class="field-hint">Nếu để trống, extension sẽ tự động quét bảng tin chính Instagram để tương tác.</p>
+            </section>
+
+            <div class="action-bar">
+              <button id="instagramCommentRunOnceBtn" class="btn btn-secondary" type="button">
+                <span>Chạy thử 1 lần</span>
+              </button>
+              <button id="instagramCommentToggleBtn" class="btn btn-primary grow" type="button">
+                <span>Bắt đầu Instagram</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-PANE 2: LƯỚT FEED -->
+          <div id="instagram-pane-scroll" class="instagram-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Lướt feed Instagram</h2>
+                    <span class="meta-badge" id="instagramScrollMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Cuộn lướt feed Instagram kết hợp thả tim và follow tự nhiên</p>
+                </div>
+                <label class="switch">
+                  <input id="instagramScrollEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="instagramScrollMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="instagramScrollMinMinutes" type="number" min="15" step="1" placeholder="30" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="instagramScrollMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="instagramScrollMaxMinutes" type="number" min="15" step="1" placeholder="90" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="instagramScrollRounds">Số lượt cuộn mỗi lần</label>
+                <div class="input-unit-wrap">
+                  <input id="instagramScrollRounds" type="number" min="3" max="20" step="1" placeholder="8" />
+                  <span class="unit-tag">lần</span>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động thả tim bài viết</h2>
+                    <span class="tag-ai-pill">Tương tác</span>
+                  </div>
+                  <p class="card-subtitle">Tự động thích các bài viết xuất hiện trên feed</p>
+                </div>
+                <label class="switch">
+                  <input id="instagramScrollLike" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="field">
+                <label class="field-label" for="instagramScrollLikeDelay">Dừng ngắm bài trước khi tim</label>
+                <div class="input-unit-wrap">
+                  <input id="instagramScrollLikeDelay" type="number" min="2" max="30" step="1" placeholder="4" />
+                  <span class="unit-tag">giây</span>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động Follow khi gặp bài hay</h2>
+                    <span class="tag-ai-pill">Kết nối</span>
+                  </div>
+                  <p class="card-subtitle">Tự động theo dõi tác giả bài viết khi lướt feed</p>
+                </div>
+                <label class="switch">
+                  <input id="instagramScrollFollow" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="action-bar">
+                <button id="instagramScrollRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Lướt thử 1 lần</span>
+                </button>
+                <button id="instagramScrollToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu lướt feed</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 3: FOLLOW -->
+          <div id="instagram-pane-follow" class="instagram-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động Follow Instagram</h2>
+                    <span class="meta-badge" id="instagramFollowMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tự động follow danh sách các tài khoản Instagram chỉ định</p>
+                </div>
+                <label class="switch">
+                  <input id="instagramFollowEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="instagramFollowMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="instagramFollowMinMinutes" type="number" min="15" step="1" placeholder="15" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="instagramFollowMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="instagramFollowMaxMinutes" type="number" min="15" step="1" placeholder="45" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="instagramFollowTargetsText">Danh sách tài khoản (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link trang cá nhân)</label>
+                <textarea id="instagramFollowTargetsText" rows="4" placeholder="@user1&#10;https://www.instagram.com/user2/"></textarea>
+              </div>
+
+              <div class="action-bar">
+                <button id="instagramFollowRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Follow thử 1 người</span>
+                </button>
+                <button id="instagramFollowToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu Follow</span>
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ================= TAB: X (TWITTER) ================= -->
+        <section id="tab-x" class="tab-pane" hidden>
+          <!-- SUB-PANE 1: BÌNH LUẬN / PHẢN HỒI AI -->
+          <div id="x-pane-comment" class="x-subtab-pane">
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Lịch giãn cách X (Twitter)</h2>
+                  <p class="card-subtitle">Thời gian giãn cách giữa mỗi lượt phản hồi Tweet trên X</p>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="xCommentMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="xCommentMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="xCommentMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="xCommentMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lần chờ ngẫu nhiên trong khoảng này rồi phản hồi 1 tweet. Min ≥ 15 phút.</p>
+            </section>
+
+            <section class="card ai-card-highlight">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <div class="badge-row">
+                    <h2>Phản hồi AI trên X</h2>
+                    <span class="tag-ai-pill">X AI</span>
+                  </div>
+                  <p class="card-subtitle">Đọc tweet để phản hồi sắc sảo, tự nhiên dưới 280 ký tự</p>
+                </div>
+              </div>
+
+              <div class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="xAiSystemPrompt">System Prompt cho X</label>
+                    <button id="resetXPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="xAiSystemPrompt" rows="6" placeholder="Prompt viết tweet reply ngắn gọn, sắc sảo..."></textarea>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Nguồn Tweet mục tiêu</h2>
+                  <p class="card-subtitle">Chỉ định link tweet hoặc tài khoản mục tiêu</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="xSourcesText">Mỗi dòng 1 link Tweet hoặc <code class="code-badge">@username</code> (để trống để lướt dòng thời gian chính)</label>
+                <textarea id="xSourcesText" rows="4" placeholder="https://x.com/username/status/xxx&#10;@username"></textarea>
+              </div>
+              <p class="field-hint">Nếu để trống, extension sẽ tự động chọn các tweet trên dòng thời gian chính.</p>
+            </section>
+
+            <!-- CARD: KIỂM DUYỆT PHẠM VI NỘI DUNG (BÌNH LUẬN AI) -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Kiểm duyệt phạm vi nội dung trước khi bình luận</h2>
+                  <p class="card-subtitle">Để trống để bỏ qua bước cân nhắc này và bình luận như bình thường</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="xFilterPrompt">Prompt chỉ định nội dung được phép tương tác</label>
+                <textarea id="xFilterPrompt" rows="4" placeholder="Ví dụ: Chỉ phản hồi các câu hỏi hoặc nội dung liên quan trực tiếp đến địa danh, hoạt động, và trải nghiệm tại Đà Nẵng. Nếu nội dung ngoài Đà Nẵng hoặc thiếu ngữ cảnh, hãy bỏ qua."></textarea>
+                <p class="field-hint">Trước khi viết bình luận, AI sẽ tự đánh giá tweet (và ảnh/video kèm theo nếu có) theo tiêu chí này để quyết định có tương tác hay không.</p>
+              </div>
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Bỏ qua kiểm duyệt nếu AI lỗi</h2>
+                  </div>
+                  <p class="card-subtitle">Nếu bước kiểm duyệt gọi AI bị lỗi/timeout, vẫn tiếp tục bình luận như bình thường thay vì bỏ qua bài đó</p>
+                </div>
+                <label class="switch">
+                  <input id="xFilterIgnoreOnError" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </section>
+
+            <!-- CARD: GIỚI HẠN PHIÊN TƯƠNG TÁC (BÌNH LUẬN AI) -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Giới hạn phiên tương tác</h2>
+                  <p class="card-subtitle">Mỗi phiên có thể đọc và bình luận nhiều tweet liên tiếp từ dòng thời gian trước khi nghỉ theo lịch đã đặt ở trên</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="xSessionMaxPosts">Số bài tương tác tối đa mỗi phiên</label>
+                <div class="input-unit-wrap">
+                  <input id="xSessionMaxPosts" type="number" min="1" max="10" step="1" placeholder="2" />
+                  <span class="unit-tag">bài</span>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="xSessionIntervalMin">Nghỉ tối thiểu giữa mỗi bài</label>
+                  <div class="input-unit-wrap">
+                    <input id="xSessionIntervalMin" type="number" min="1" step="1" placeholder="2" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="xSessionIntervalMax">Nghỉ tối đa giữa mỗi bài</label>
+                  <div class="input-unit-wrap">
+                    <input id="xSessionIntervalMax" type="number" min="1" step="1" placeholder="5" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Giữa 2 bài trong cùng 1 phiên sẽ nghỉ ngẫu nhiên trong khoảng này. Lịch giãn cách giữa các phiên (ở đầu tab) giữ nguyên, không đổi.</p>
+            </section>
+
+            <div class="action-bar">
+              <button id="xCommentRunOnceBtn" class="btn btn-secondary" type="button">
+                <span>Chạy thử 1 lần</span>
+              </button>
+              <button id="xCommentToggleBtn" class="btn btn-primary grow" type="button">
+                <span>Bắt đầu X (Twitter)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-PANE 2: LƯỚT FEED -->
+          <div id="x-pane-scroll" class="x-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Lướt dòng thời gian X</h2>
+                    <span class="meta-badge" id="xScrollMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Cuộn lướt dòng thời gian X kết hợp like tweet tự nhiên</p>
+                </div>
+                <label class="switch">
+                  <input id="xScrollEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="xScrollMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="xScrollMinMinutes" type="number" min="15" step="1" placeholder="30" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="xScrollMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="xScrollMaxMinutes" type="number" min="15" step="1" placeholder="90" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="xScrollRounds">Số lượt cuộn mỗi lần</label>
+                <div class="input-unit-wrap">
+                  <input id="xScrollRounds" type="number" min="3" max="20" step="1" placeholder="8" />
+                  <span class="unit-tag">lần</span>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động Like Tweet</h2>
+                    <span class="tag-ai-pill">Tương tác</span>
+                  </div>
+                  <p class="card-subtitle">Tự động thả tim các tweet xuất hiện khi lướt</p>
+                </div>
+                <label class="switch">
+                  <input id="xScrollLike" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="field">
+                <label class="field-label" for="xScrollLikeDelay">Dừng đọc tweet trước khi like</label>
+                <div class="input-unit-wrap">
+                  <input id="xScrollLikeDelay" type="number" min="2" max="30" step="1" placeholder="4" />
+                  <span class="unit-tag">giây</span>
+                </div>
+              </div>
+
+              <div class="action-bar">
+                <button id="xScrollRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Lướt thử 1 lần</span>
+                </button>
+                <button id="xScrollToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu lướt feed</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 3: ĐĂNG BÀI X -->
+          <div id="x-pane-post" class="x-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Đăng bài lên X (Twitter)</h2>
+                    <span class="meta-badge" id="xPostMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tự động đăng tweet mới bằng AI hoặc theo mẫu viết sẵn</p>
+                </div>
+                <label class="switch">
+                  <input id="xPostEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="xPostMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="xPostMinMinutes" type="number" min="15" step="1" placeholder="20" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="xPostMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="xPostMaxMinutes" type="number" min="15" step="1" placeholder="50" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Viết tweet bằng AI</h2>
+                    <span class="tag-ai-pill">AI Engine</span>
+                  </div>
+                  <p class="card-subtitle">Tắt để dùng mẫu tweet soạn sẵn</p>
+                </div>
+                <label class="switch">
+                  <input id="xPostAi" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="xPostAiWrap" class="prompt-wrap">
+                <div class="field">
+                  <label class="field-label" for="xPostTopicsText">Chủ đề gợi ý cho AI (phân tách bởi <code class="code-badge">**</code>)</label>
+                  <textarea id="xPostTopicsText" rows="3" placeholder="kinh nghiệm làm việc hiệu quả&#10;**&#10;thói quen đọc sách mỗi ngày"></textarea>
+                </div>
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="xPostAiSystemPrompt">System Prompt cho Tweet</label>
+                    <button id="resetXPostPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="xPostAiSystemPrompt" rows="6" placeholder="Prompt hướng dẫn AI viết tweet ngắn gọn, hấp dẫn..."></textarea>
+                </div>
+              </div>
+
+              <div id="xPostTemplatesWrap" class="field" style="display: none;">
+                <label class="field-label" for="xPostTemplatesText">Mẫu Tweet soạn sẵn (phân tách bởi <code class="code-badge">**</code>)</label>
+                <textarea id="xPostTemplatesText" rows="4" placeholder="Mẫu tweet số 1&#10;**&#10;Mẫu tweet số 2"></textarea>
+              </div>
+
+              <div class="action-bar">
+                <button id="xPostRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Đăng thử 1 bài</span>
+                </button>
+                <button id="xPostToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu đăng bài</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 4: FOLLOW -->
+          <div id="x-pane-follow" class="x-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động Follow X (Twitter)</h2>
+                    <span class="meta-badge" id="xFollowMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tự động follow danh sách các tài khoản X chỉ định</p>
+                </div>
+                <label class="switch">
+                  <input id="xFollowEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="xFollowMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="xFollowMinMinutes" type="number" min="15" step="1" placeholder="15" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="xFollowMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="xFollowMaxMinutes" type="number" min="15" step="1" placeholder="45" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="xFollowTargetsText">Danh sách tài khoản (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link profile)</label>
+                <textarea id="xFollowTargetsText" rows="4" placeholder="@user1&#10;https://x.com/user2"></textarea>
+              </div>
+
+              <div class="action-bar">
+                <button id="xFollowRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Follow thử 1 người</span>
+                </button>
+                <button id="xFollowToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu Follow</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 5: TRẢ LỜI BÌNH LUẬN -->
+          <div id="x-pane-reply" class="x-subtab-pane" hidden>
+            <!-- CARD: TRẢ LỜI BÌNH LUẬN -->
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Trả lời bình luận người khác</h2>
+                    <span class="meta-badge" id="xReplyMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tìm bình luận dưới Tweet rồi trả lời trực tiếp vào bình luận đó</p>
+                </div>
+                <label class="switch">
+                  <input id="xReplyEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="xReplyMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="xReplyMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="xReplyMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="xReplyMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="xReplySourcesText">Nguồn Tweet (mỗi dòng 1 link Tweet hoặc <code class="code-badge">@username</code>) — Để trống để tự động lướt dòng thời gian chính</label>
+                <textarea id="xReplySourcesText" rows="3" placeholder="Để trống để tự động lướt dòng thời gian chính tìm tweet có bình luận&#10;https://x.com/username/status/xxx&#10;@username"></textarea>
+                <p class="field-hint">Nếu để trống, extension sẽ tự động lướt dòng thời gian chính, tìm tweet có bình luận của người khác để trả lời.</p>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Viết trả lời bằng AI</h2>
+                    <span class="tag-ai-pill">AI Engine</span>
+                  </div>
+                  <p class="card-subtitle">Tắt để dùng mẫu trả lời viết sẵn thay vì gọi AI</p>
+                </div>
+                <label class="switch">
+                  <input id="xReplyAi" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="xReplyAiWrap" class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="xReplyAiSystemPrompt">System Prompt cho trả lời</label>
+                    <button id="resetXReplyPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="xReplyAiSystemPrompt" rows="6" placeholder="Prompt chỉ dẫn AI trả lời bình luận ngắn gọn..."></textarea>
+                </div>
+              </div>
+
+              <div id="xReplyTemplatesWrap" class="field">
+                <label class="field-label" for="xReplyTemplatesText">Mẫu trả lời sẵn (cách nhau bởi <code class="code-badge">**</code>)</label>
+                <textarea id="xReplyTemplatesText" rows="3" placeholder="đúng r bn, mk cx thấy vậy&#10;**&#10;hay quá, cảm ơn bn đã chia sẻ"></textarea>
+              </div>
+              <p class="field-hint">Bình luận đã trả lời sẽ được ghi nhớ để không trả lời lại lần hai.</p>
+
+              <div class="action-bar">
+                <button id="xReplyRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Trả lời thử 1 lần</span>
+                </button>
+                <button id="xReplyToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu trả lời</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- CARD: KIỂM DUYỆT PHẠM VI NỘI DUNG (TRẢ LỜI BÌNH LUẬN) -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Kiểm duyệt phạm vi nội dung trước khi trả lời</h2>
+                  <p class="card-subtitle">Để trống để bỏ qua bước cân nhắc này và trả lời như bình thường</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="xReplyFilterPrompt">Prompt chỉ định nội dung được phép tương tác</label>
+                <textarea id="xReplyFilterPrompt" rows="4" placeholder="Ví dụ: Chỉ phản hồi các câu hỏi hoặc nội dung liên quan trực tiếp đến địa danh, hoạt động, và trải nghiệm tại Đà Nẵng. Nếu nội dung ngoài Đà Nẵng hoặc thiếu ngữ cảnh, hãy bỏ qua."></textarea>
+                <p class="field-hint">Trước khi trả lời, AI sẽ tự đánh giá tweet/bình luận (và ảnh/video kèm theo nếu có) theo tiêu chí này để quyết định có tương tác hay không.</p>
+              </div>
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Bỏ qua kiểm duyệt nếu AI lỗi</h2>
+                  </div>
+                  <p class="card-subtitle">Nếu bước kiểm duyệt gọi AI bị lỗi/timeout, vẫn tiếp tục trả lời như bình thường thay vì bỏ qua</p>
+                </div>
+                <label class="switch">
+                  <input id="xReplyFilterIgnoreOnError" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ================= TAB: FACEBOOK ================= -->
+        <section id="tab-facebook" class="tab-pane" hidden>
+          <!-- SUB-PANE 1: ĐĂNG BÀI FB -->
+          <div id="facebook-pane-post" class="facebook-subtab-pane">
+            <!-- CARD: LỊCH ĐĂNG -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Lịch giãn cách & Chu kỳ chạy</h2>
+                  <p class="card-subtitle">Cấu hình thời gian ngẫu nhiên giữa các lần đăng và chu kỳ nghỉ ngơi</p>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="postMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="postMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="postMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="postMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lần chờ ngẫu nhiên trong khoảng này rồi đăng đúng 1 bài. Khuyến nghị Min ≥ 15 phút.</p>
+
+              <div class="divider"></div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="postWorkHours">Thời gian chạy</label>
+                  <div class="input-unit-wrap">
+                    <input id="postWorkHours" type="number" min="0" step="0.5" placeholder="0 = liên tục" />
+                    <span class="unit-tag">tiếng</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="postRestHours">Thời gian nghỉ</label>
+                  <div class="input-unit-wrap">
+                    <input id="postRestHours" type="number" min="0" step="0.5" placeholder="0 = không nghỉ" />
+                    <span class="unit-tag">tiếng</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- CARD: NỘI DUNG ĐĂNG BÀI -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Nội dung bài đăng</h2>
+                  <p class="card-subtitle">Hỗ trợ nhiều mẫu bài viết ngẫu nhiên xoay vòng</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="postsText">Danh sách mẫu bài viết (phân tách bởi ký tự <code class="code-badge">**</code>)</label>
+                <textarea id="postsText" rows="6" placeholder="Xin chào mọi người, mình là thành viên mới rất vui được giao lưu!&#10;**&#10;Hôm nay chia sẻ với cả nhà một chủ đề thú vị..."></textarea>
+              </div>
+              <p class="field-hint">Các mẫu bài sẽ được chọn lần lượt theo thứ tự, không trùng lặp vào cùng một nhóm trong một vòng.</p>
+            </section>
+
+            <!-- CARD: CHỌN NHÓM ĐĂNG -->
+            <section class="card">
+              <div class="card-header flex-between">
+                <div class="card-title-group">
+                  <h2>Nhóm mục tiêu đăng bài</h2>
+                  <p id="postGroupMeta" class="meta-badge">0/0 nhóm được chọn</p>
+                </div>
+                <div class="btn-group-pill">
+                  <button class="btn-subtle js-select-all" type="button">Chọn tất cả</button>
+                  <button class="btn-subtle js-select-none" type="button">Bỏ chọn</button>
+                </div>
+              </div>
+
+              <div class="search-input-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input class="js-group-filter" type="search" placeholder="Tìm kiếm nhanh tên hoặc ID nhóm..." />
+              </div>
+
+              <div id="postGroupList" class="group-list"></div>
+            </section>
+
+            <!-- BOTTOM ACTION BAR -->
+            <div class="action-bar">
+              <button id="postRunOnceBtn" class="btn btn-secondary" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Chạy thử 1 lần</span>
+              </button>
+              <button id="postToggleBtn" class="btn btn-primary grow" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+                <span>Bắt đầu đăng bài</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-PANE 2: BÌNH LUẬN FB -->
+          <div id="facebook-pane-comment" class="facebook-subtab-pane" hidden>
+            <!-- CARD: LỊCH BÌNH LUẬN -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Lịch giãn cách bình luận</h2>
+                  <p class="card-subtitle">Thời gian giãn cách giữa mỗi lượt bình luận tự động trên nhóm</p>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="commentMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="commentMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="commentMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="commentMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lần chờ ngẫu nhiên trong khoảng này rồi bình luận 1 bài. Khuyến nghị Min ≥ 15 phút.</p>
+
+              <div class="divider"></div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="commentWorkHours">Thời gian chạy</label>
+                  <div class="input-unit-wrap">
+                    <input id="commentWorkHours" type="number" min="0" step="0.5" placeholder="0 = liên tục" />
+                    <span class="unit-tag">tiếng</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="commentRestHours">Thời gian nghỉ</label>
+                  <div class="input-unit-wrap">
+                    <input id="commentRestHours" type="number" min="0" step="0.5" placeholder="0 = không nghỉ" />
+                    <span class="unit-tag">tiếng</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- CARD: BÌNH LUẬN AI -->
+            <section id="aiCard" class="card ai-card-highlight">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Bình luận AI thông minh</h2>
+                    <span class="tag-ai-pill">AI Engine</span>
+                  </div>
+                  <p class="card-subtitle">Tự động đọc bài viết và viết bình luận tự nhiên theo phong cách cá nhân</p>
+                </div>
+                <label class="switch">
+                  <input id="aiComment" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="aiPromptWrap" class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="aiSystemPrompt">System Prompt (Chỉ dẫn phong cách AI)</label>
+                    <button id="resetPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="aiSystemPrompt" rows="8" placeholder="Viết prompt chỉ dẫn AI đóng vai người dùng thật..."></textarea>
+                </div>
+              </div>
+            </section>
+
+            <!-- CARD: DỰ ÁN NADEZHNO -->
+            <section id="nadezhnoCard" class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Dùng cho dự án Nadezhno</h2>
+                    <span class="meta-badge" id="nzQuota"></span>
+                  </div>
+                  <p class="card-subtitle">Thay vì bình luận bài ngẫu nhiên, mỗi lượt sẽ tìm trong nhóm một bài đang hỏi xin địa chỉ tin cậy (nha sĩ, thuê xe, khách sạn, quán ăn...) và trả lời bằng tiếng Nga, kèm link tới đúng danh mục trên nadezhno.siri2moon.com. Bài không đúng chủ đề thì bỏ qua.</p>
+                </div>
+                <label class="switch">
+                  <input id="nzEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="nzOptions">
+                <div class="toggle-card-row">
+                  <div class="toggle-info">
+                    <h2>Duyệt trước khi đăng</h2>
+                    <p class="card-subtitle">Bật: câu trả lời vào hàng chờ bên dưới, bạn sửa rồi bấm điền sẵn và tự Enter. Tắt: job tự đăng, trong giới hạn mỗi ngày và giãn cách theo nhóm.</p>
+                  </div>
+                  <label class="switch">
+                    <input id="nzReviewFirst" type="checkbox" checked />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="grid-2">
+                  <div class="field">
+                    <label class="field-label" for="nzDefaultCity">Thành phố mặc định (khi bài không nói rõ)</label>
+                    <select id="nzDefaultCity"></select>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="nzLinkMode">Loại link</label>
+                    <select id="nzLinkMode">
+                      <option value="web">Trang web (có ảnh xem trước trên Facebook)</option>
+                      <option value="telegram">Mở thẳng mini-app Telegram</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="grid-2">
+                  <div class="field">
+                    <label class="field-label" for="nzDailyLimit">Tối đa mỗi ngày</label>
+                    <div class="input-unit-wrap">
+                      <input id="nzDailyLimit" type="number" min="1" max="15" step="1" placeholder="5" />
+                      <span class="unit-tag">bình luận</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="nzGroupGap">Giãn cách trong cùng nhóm</label>
+                    <div class="input-unit-wrap">
+                      <input id="nzGroupGap" type="number" min="2" max="48" step="1" placeholder="4" />
+                      <span class="unit-tag">giờ</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-card-row">
+                  <div class="toggle-info">
+                    <h2>Viết bằng AI</h2>
+                    <p class="card-subtitle">AI trả lời đúng câu hỏi của bài và chỉ nhắc địa điểm có thật trên Nadezhno. Tắt đi thì dùng câu mẫu có biến thể.</p>
+                  </div>
+                  <label class="switch">
+                    <input id="nzUseAi" type="checkbox" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="prompt-wrap">
+                  <div class="field">
+                    <div class="field-header-row">
+                      <label class="field-label" for="nzPrompt">System Prompt cho Nadezhno (tiếng Nga)</label>
+                      <button id="nzResetPrompt" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                    </div>
+                    <textarea id="nzPrompt" rows="6"></textarea>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="card-header flex-between">
+                  <div class="card-title-group">
+                    <h2>Câu trả lời chờ duyệt</h2>
+                    <p class="card-subtitle" id="nzScanSummary"></p>
+                  </div>
+                  <div class="nz-draft-actions">
+                    <button id="nzClearDone" class="btn btn-subtle" type="button"><span>Xoá mục đã xử lý</span></button>
+                    <button id="nzScanBtn" class="btn btn-secondary" type="button"><span>Quét ngay các nhóm đã chọn</span></button>
+                  </div>
+                </div>
+                <div id="nzDrafts" class="nz-drafts"></div>
+
+                <div class="divider"></div>
+
+                <div class="card-header flex-between">
+                  <div class="card-title-group">
+                    <h2>Người hỏi mà Nadezhno chưa có địa chỉ</h2>
+                    <p class="card-subtitle">Bổ sung địa điểm cho các danh mục này trước, lần sau sẽ trả lời được.</p>
+                  </div>
+                  <button id="nzClearMisses" class="btn btn-subtle" type="button"><span>Xoá</span></button>
+                </div>
+                <div id="nzMisses" class="nz-misses"></div>
+              </div>
+            </section>
+
+            <!-- CARD: MẪU BÌNH LUẬN TĨNH -->
+            <section id="commentsWrap" class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Mẫu bình luận tĩnh (Khi không dùng AI)</h2>
+                  <p class="card-subtitle">Danh sách câu bình luận viết sẵn xoay vòng</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="commentsText">Các câu bình luận (cách nhau bởi <code class="code-badge">**</code>)</label>
+                <textarea id="commentsText" rows="5" placeholder="Cảm ơn bạn đã chia sẻ bài viết hay!&#10;**&#10;Thông tin rất hữu ích, cảm ơn chủ thớt."></textarea>
+              </div>
+            </section>
+
+            <!-- CARD: CHỌN NHÓM BÌNH LUẬN -->
+            <section class="card">
+              <div class="card-header flex-between">
+                <div class="card-title-group">
+                  <h2>Nhóm mục tiêu bình luận</h2>
+                  <p id="commentGroupMeta" class="meta-badge">0/0 nhóm được chọn</p>
+                </div>
+                <div class="btn-group-pill">
+                  <button class="btn-subtle js-select-all" type="button">Chọn tất cả</button>
+                  <button class="btn-subtle js-select-none" type="button">Bỏ chọn</button>
+                </div>
+              </div>
+
+              <div class="search-input-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input class="js-group-filter" type="search" placeholder="Tìm kiếm nhanh tên hoặc ID nhóm..." />
+              </div>
+
+              <div id="commentGroupList" class="group-list"></div>
+            </section>
+
+            <!-- BOTTOM ACTION BAR -->
+            <div class="action-bar">
+              <button id="commentRunOnceBtn" class="btn btn-secondary" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Chạy thử 1 lần</span>
+              </button>
+              <button id="commentToggleBtn" class="btn btn-primary grow" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+                <span>Bắt đầu bình luận</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-PANE 3: QUẢN LÝ NHÓM FB -->
+          <div id="facebook-pane-groups" class="facebook-subtab-pane" hidden>
+            <!-- CARD: QUÉT & RỜI NHÓM -->
+            <section class="card">
+              <div class="card-header flex-between">
+                <div class="card-title-group">
+                  <h2>Danh sách nhóm Facebook đã tham gia</h2>
+                  <p id="groupMeta" class="meta-badge">Chưa quét nhóm</p>
+                </div>
+                <div class="btn-group-pill">
+                  <button id="exportGroupsBtn" class="btn-subtle" type="button">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Xuất file</span>
+                  </button>
+                  <button id="scanBtn" class="btn btn-primary-sm" type="button">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"></polyline>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                    <span>Quét nhóm</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="search-input-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input id="groupFilter" type="search" placeholder="Lọc nhóm theo tên hoặc ID..." />
+              </div>
+
+              <div id="groupList" class="group-list group-list-tall"></div>
+
+              <div class="group-actions-footer">
+                <div class="btn-group-pill">
+                  <button id="leaveSelectAll" class="btn-subtle" type="button">Chọn tất cả</button>
+                  <button id="leaveSelectNone" class="btn-subtle" type="button">Bỏ chọn</button>
+                </div>
+                <button id="leaveBtn" class="btn btn-danger-sm" type="button">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Rời các nhóm đã chọn</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- CARD: TÌM NHÓM THEO TỪ KHOÁ -->
+            <section id="groupSearchCard" class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Tìm nhóm theo từ khoá</h2>
+                  <p class="card-subtitle">Tìm nhóm trên Facebook (chỉ đọc kết quả), chọn nhóm phù hợp rồi thêm vào danh sách tham gia bên dưới. Nhóm đã tham gia được bỏ qua.</p>
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-header-row">
+                  <label class="field-label" for="gsKeywords">Từ khoá (mỗi dòng một từ, tối đa 10)</label>
+                  <button id="gsSuggestBtn" class="btn-text-action" type="button">Dùng từ khoá của dự án</button>
+                </div>
+                <textarea id="gsKeywords" rows="4" placeholder="Русские во Вьетнаме&#10;Русские в Нячанге"></textarea>
+              </div>
+              <div class="action-bar">
+                <span id="gsSummary" class="card-subtitle grow"></span>
+                <button id="gsRunBtn" class="btn btn-primary" type="button"><span>Tìm nhóm</span></button>
+              </div>
+              <div id="gsResultsWrap" hidden>
+                <div class="divider"></div>
+                <label class="gs-only"><input id="gsOnlyRelevant" type="checkbox" checked /> <span id="gsOnlyRelevantText">Chỉ hiện nhóm rất hợp với dự án</span></label>
+                <div id="gsResults" class="group-list group-list-tall"></div>
+                <div class="group-actions-footer">
+                  <div class="btn-group-pill">
+                    <button id="gsSelectAll" class="btn-subtle" type="button">Chọn tất cả</button>
+                    <button id="gsSelectNone" class="btn-subtle" type="button">Bỏ chọn</button>
+                  </div>
+                  <button id="gsAddBtn" class="btn btn-primary-sm" type="button"><span>Thêm vào danh sách tham gia</span></button>
+                </div>
+              </div>
+            </section>
+
+            <!-- CARD: THAM GIA NHÓM MỚI -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Tự động tham gia nhóm mới</h2>
+                  <p class="card-subtitle">Dán danh sách đường link các nhóm Facebook muốn tham gia</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="joinUrls">Link nhóm (mỗi dòng một URL)</label>
+                <textarea id="joinUrls" rows="3" placeholder="https://www.facebook.com/groups/123456789/&#10;https://www.facebook.com/groups/congdongvietnam/"></textarea>
+              </div>
+              <button id="joinBtn" class="btn btn-primary" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <line x1="19" y1="8" x2="19" y2="14"></line>
+                  <line x1="22" y1="11" x2="16" y2="11"></line>
+                </svg>
+                <span>Tham gia danh sách nhóm</span>
+              </button>
+            </section>
+
+            <!-- CARD: CHỈ THÊM LINK VÀO LIST -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Thêm link vào danh sách thủ công</h2>
+                  <p class="card-subtitle">Chỉ thêm vào bộ nhớ để chọn đăng bài, không thực hiện bấm tham gia</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="groupUrls">Link nhóm (mỗi dòng một URL)</label>
+                <textarea id="groupUrls" rows="3" placeholder="https://www.facebook.com/groups/123456789/"></textarea>
+              </div>
+              <button id="addUrlsBtn" class="btn btn-secondary" type="button">
+                <span>Thêm vào danh sách</span>
+              </button>
+            </section>
+
+            <!-- CARD: GIÃN CÁCH THAM GIA / RỜI -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Giãn cách tham gia / rời nhóm</h2>
+                  <p class="card-subtitle">Tối thiểu ≥ 3 phút để tránh checkpoint tài khoản</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="membershipMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="membershipMinMinutes" type="number" min="3" step="1" placeholder="5" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="membershipMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="membershipMaxMinutes" type="number" min="3" step="1" placeholder="12" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <button id="membershipStopBtn" class="btn btn-secondary full-width mt-2" type="button">
+                <span>Dừng tiến trình tham gia / rời</span>
+              </button>
+            </section>
+          </div>
+        </section>
+
+
+        <!-- ================= TAB: ZALO ================= -->
+        <section id="tab-zalo" class="tab-pane" hidden>
+          <!-- SUB-PANE 1: KẾT BẠN -->
+          <div id="zalo-pane-friend" class="zalo-subtab-pane">
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Kết bạn Zalo theo số điện thoại</h2>
+                    <span class="meta-badge" id="zaloFriendMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Gửi lời mời kết bạn trên chat.zalo.me, có giãn cách để tránh spam</p>
+                </div>
+                <label class="switch">
+                  <input id="zaloFriendEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="zaloFriendMinMinutes">Giãn cách tối thiểu giữa các phiên</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloFriendMinMinutes" type="number" min="15" step="1" placeholder="15" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="zaloFriendMaxMinutes">Giãn cách tối đa giữa các phiên</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloFriendMaxMinutes" type="number" min="15" step="1" placeholder="30" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi phiên gửi vài lời mời rồi nghỉ. Min ≥ 15 phút. Cần đăng nhập sẵn trên chat.zalo.me.</p>
+
+              <div class="divider"></div>
+
+              <div class="field">
+                <label class="field-label" for="zaloFriendPhonesText">Danh sách số điện thoại (mỗi dòng 1 số)</label>
+                <textarea id="zaloFriendPhonesText" rows="5" placeholder="0912345678&#10;0987654321"></textarea>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="zaloFriendSessionMax">Số lời mời mỗi phiên</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloFriendSessionMax" type="number" min="1" max="10" step="1" placeholder="3" />
+                    <span class="unit-tag">người</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="zaloFriendDelayMin">Nghỉ giữa mỗi lời mời</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloFriendDelayMin" type="number" min="30" step="1" placeholder="60" />
+                    <span class="unit-tag">giây</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="zaloFriendDelayMax">Nghỉ tối đa giữa mỗi lời mời</label>
+                <div class="input-unit-wrap">
+                  <input id="zaloFriendDelayMax" type="number" min="30" step="1" placeholder="120" />
+                  <span class="unit-tag">giây</span>
+                </div>
+              </div>
+              <p class="field-hint">Nghỉ ngẫu nhiên trong khoảng này sau mỗi lời mời để không spam.</p>
+
+              <div class="action-bar">
+                <button id="zaloFriendRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Kết bạn thử 1 lần</span>
+                </button>
+                <button id="zaloFriendToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu kết bạn</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 2: NHẮN TIN -->
+          <div id="zalo-pane-message" class="zalo-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Nhắn tin bạn bè / nhóm Zalo</h2>
+                    <span class="meta-badge" id="zaloMessageMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Chỉ nhắn hội thoại bạn bè hoặc nhóm có sẵn, có giãn cách chống spam</p>
+                </div>
+                <label class="switch">
+                  <input id="zaloMessageEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="zaloMessageMinMinutes">Giãn cách tối thiểu giữa các phiên</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloMessageMinMinutes" type="number" min="15" step="1" placeholder="15" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="zaloMessageMaxMinutes">Giãn cách tối đa giữa các phiên</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloMessageMaxMinutes" type="number" min="15" step="1" placeholder="30" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="zaloMessageTargetsText">Tên bạn bè hoặc tên nhóm (mỗi dòng 1 tên, khớp với hội thoại trên Zalo)</label>
+                <textarea id="zaloMessageTargetsText" rows="4" placeholder="Nguyễn Văn A&#10;Nhóm gia đình"></textarea>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Soạn tin bằng AI</h2>
+                    <span class="tag-ai-pill">Zalo AI</span>
+                  </div>
+                  <p class="card-subtitle">Tắt để dùng mẫu tin nhắn soạn sẵn</p>
+                </div>
+                <label class="switch">
+                  <input id="zaloMessageAi" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div id="zaloMessageAiWrap" class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="zaloMessageAiSystemPrompt">System Prompt soạn tin nhắn</label>
+                    <button id="resetZaloMessagePromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="zaloMessageAiSystemPrompt" rows="6" placeholder="Prompt hướng dẫn AI soạn tin nhắn Zalo ngắn, tự nhiên..."></textarea>
+                </div>
+              </div>
+
+              <div id="zaloMessageTemplatesWrap" class="field" style="display: none;">
+                <label class="field-label" for="zaloMessageTemplatesText">Mẫu tin nhắn soạn sẵn (phân tách bởi <code class="code-badge">**</code>)</label>
+                <textarea id="zaloMessageTemplatesText" rows="4" placeholder="Tin mẫu 1&#10;**&#10;Tin mẫu 2"></textarea>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="zaloMessageSessionMax">Số tin mỗi phiên</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloMessageSessionMax" type="number" min="1" max="10" step="1" placeholder="3" />
+                    <span class="unit-tag">tin</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="zaloMessageDelayMin">Nghỉ giữa mỗi tin</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloMessageDelayMin" type="number" min="30" step="1" placeholder="60" />
+                    <span class="unit-tag">giây</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="zaloMessageDelayMax">Nghỉ tối đa giữa mỗi tin</label>
+                <div class="input-unit-wrap">
+                  <input id="zaloMessageDelayMax" type="number" min="30" step="1" placeholder="120" />
+                  <span class="unit-tag">giây</span>
+                </div>
+              </div>
+
+              <div class="action-bar">
+                <button id="zaloMessageRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Nhắn thử 1 lần</span>
+                </button>
+                <button id="zaloMessageToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu nhắn tin</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 3: TRẢ LỜI TIN NHẮN AI -->
+          <div id="zalo-pane-reply" class="zalo-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Trả lời tin nhắn bạn bè bằng AI</h2>
+                    <span class="meta-badge" id="zaloReplyMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Quét tin mới từ chat riêng, bỏ qua nhóm. Chrome tối thiểu 1 phút/lần quét</p>
+                </div>
+                <label class="switch">
+                  <input id="zaloReplyEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="zaloReplyMinMinutes">Giãn cách quét tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloReplyMinMinutes" type="number" min="1" step="1" placeholder="1" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="zaloReplyMaxMinutes">Giãn cách quét tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloReplyMaxMinutes" type="number" min="1" step="1" placeholder="2" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Đặt 1–2 phút để gần với “trả lời ngay khi có tin mới”. Chỉ trả lời chat 1-1, không rep nhóm.</p>
+
+              <div class="divider"></div>
+
+              <div class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="zaloReplyAiSystemPrompt">System Prompt trả lời tin nhắn</label>
+                    <button id="resetZaloReplyPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="zaloReplyAiSystemPrompt" rows="7" placeholder="Prompt hướng dẫn AI trả lời tin nhắn Zalo tự nhiên..."></textarea>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="zaloReplySessionMax">Số hội thoại mỗi lần quét</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloReplySessionMax" type="number" min="1" max="10" step="1" placeholder="5" />
+                    <span class="unit-tag">hội thoại</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="zaloReplyDelayMin">Nghỉ giữa mỗi tin trả lời</label>
+                  <div class="input-unit-wrap">
+                    <input id="zaloReplyDelayMin" type="number" min="5" step="1" placeholder="8" />
+                    <span class="unit-tag">giây</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="zaloReplyDelayMax">Nghỉ tối đa giữa mỗi tin trả lời</label>
+                <div class="input-unit-wrap">
+                  <input id="zaloReplyDelayMax" type="number" min="5" step="1" placeholder="20" />
+                  <span class="unit-tag">giây</span>
+                </div>
+              </div>
+
+              <div class="action-bar">
+                <button id="zaloReplyRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Quét thử 1 lần</span>
+                </button>
+                <button id="zaloReplyToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu trả lời</span>
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+
+        <!-- ================= TAB: TIKTOK ================= -->
+        <section id="tab-tiktok" class="tab-pane" hidden>
+          <div id="tiktok-pane-comment" class="tiktok-subtab-pane">
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Lịch giãn cách TikTok</h2>
+                  <p class="card-subtitle">Thời gian giãn cách giữa mỗi lượt bình luận video TikTok</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="tiktokCommentMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="tiktokCommentMinMinutes" type="number" min="15" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="tiktokCommentMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="tiktokCommentMaxMinutes" type="number" min="15" step="1" placeholder="55" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p class="field-hint">Mỗi lần chờ ngẫu nhiên trong khoảng này rồi bình luận 1 video. Min ≥ 15 phút. Cần đăng nhập tiktok.com.</p>
+            </section>
+
+            <section class="card ai-card-highlight">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <div class="badge-row">
+                    <h2>Bình luận AI trên TikTok</h2>
+                    <span class="tag-ai-pill">TikTok AI</span>
+                  </div>
+                  <p class="card-subtitle">Đọc caption video rồi viết bình luận ngắn, tự nhiên</p>
+                </div>
+              </div>
+              <div class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="tiktokAiSystemPrompt">System Prompt cho TikTok</label>
+                    <button id="resetTiktokPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="tiktokAiSystemPrompt" rows="6" placeholder="Prompt viết comment TikTok ngắn, trẻ..."></textarea>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Nguồn video TikTok</h2>
+                  <p class="card-subtitle">Link video hoặc @username. Để trống để lướt For You</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="tiktokSourcesText">Mỗi dòng 1 link video hoặc <code class="code-badge">@username</code></label>
+                <textarea id="tiktokSourcesText" rows="4" placeholder="https://www.tiktok.com/@user/video/123&#10;@username"></textarea>
+              </div>
+            </section>
+
+            <div class="action-bar">
+              <button id="tiktokCommentRunOnceBtn" class="btn btn-secondary" type="button">
+                <span>Chạy thử 1 lần</span>
+              </button>
+              <button id="tiktokCommentToggleBtn" class="btn btn-primary grow" type="button">
+                <span>Bắt đầu bình luận</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="tiktok-pane-scroll" class="tiktok-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Lướt video For You</h2>
+                    <span class="meta-badge" id="tiktokScrollMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Cuộn For You và tuỳ chọn thả tim</p>
+                </div>
+                <label class="switch">
+                  <input id="tiktokScrollEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="tiktokScrollMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="tiktokScrollMinMinutes" type="number" min="15" step="1" placeholder="30" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="tiktokScrollMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="tiktokScrollMaxMinutes" type="number" min="15" step="1" placeholder="90" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="tiktokScrollRounds">Số video mỗi lần lướt</label>
+                <div class="input-unit-wrap">
+                  <input id="tiktokScrollRounds" type="number" min="3" max="20" step="1" placeholder="8" />
+                  <span class="unit-tag">video</span>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động thả tim</h2>
+                    <span class="tag-ai-pill">Tương tác</span>
+                  </div>
+                  <p class="card-subtitle">Tim video đang xem trước khi chuyển video tiếp</p>
+                </div>
+                <label class="switch">
+                  <input id="tiktokScrollLike" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="field">
+                <label class="field-label" for="tiktokScrollLikeDelay">Xem video trước khi tim</label>
+                <div class="input-unit-wrap">
+                  <input id="tiktokScrollLikeDelay" type="number" min="2" max="30" step="1" placeholder="4" />
+                  <span class="unit-tag">giây</span>
+                </div>
+              </div>
+              <div class="action-bar">
+                <button id="tiktokScrollRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Lướt thử 1 lần</span>
+                </button>
+                <button id="tiktokScrollToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu lướt video</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div id="tiktok-pane-follow" class="tiktok-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự động Follow TikTok</h2>
+                    <span class="meta-badge" id="tiktokFollowMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Follow lần lượt danh sách tài khoản chỉ định</p>
+                </div>
+                <label class="switch">
+                  <input id="tiktokFollowEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="tiktokFollowMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="tiktokFollowMinMinutes" type="number" min="15" step="1" placeholder="15" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="tiktokFollowMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="tiktokFollowMaxMinutes" type="number" min="15" step="1" placeholder="45" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="tiktokFollowTargetsText">Danh sách tài khoản (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link profile)</label>
+                <textarea id="tiktokFollowTargetsText" rows="4" placeholder="@user1&#10;https://www.tiktok.com/@user2"></textarea>
+              </div>
+              <div class="action-bar">
+                <button id="tiktokFollowRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Follow thử 1 người</span>
+                </button>
+                <button id="tiktokFollowToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu Follow</span>
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ================= TAB: GOOGLE MAPS ================= -->
+        <section id="tab-maps" class="tab-pane" hidden>
+          <div id="maps-pane-review" class="maps-subtab-pane">
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Đánh giá địa điểm bằng AI</h2>
+                    <span class="meta-badge" id="mapsReviewMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Mở link Google Maps rồi viết đánh giá tự nhiên. Cần đăng nhập Google</p>
+                </div>
+                <label class="switch">
+                  <input id="mapsReviewEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="mapsReviewMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="mapsReviewMinMinutes" type="number" min="15" step="1" placeholder="20" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="mapsReviewMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="mapsReviewMaxMinutes" type="number" min="15" step="1" placeholder="50" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="mapsReviewStars">Số sao</label>
+                <div class="input-unit-wrap">
+                  <input id="mapsReviewStars" type="number" min="1" max="5" step="1" placeholder="5" />
+                  <span class="unit-tag">sao</span>
+                </div>
+              </div>
+              <div class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="mapsReviewAiSystemPrompt">System Prompt đánh giá Maps</label>
+                    <button id="resetMapsReviewPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="mapsReviewAiSystemPrompt" rows="6" placeholder="Prompt viết đánh giá Google Maps tự nhiên..."></textarea>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="mapsReviewPlacesText">Danh sách địa điểm (mỗi dòng 1 link Google Maps)</label>
+                <textarea id="mapsReviewPlacesText" rows="4" placeholder="https://www.google.com/maps/place/..."></textarea>
+              </div>
+              <div class="action-bar">
+                <button id="mapsReviewRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Đánh giá thử 1 lần</span>
+                </button>
+                <button id="mapsReviewToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu đánh giá</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div id="maps-pane-search" class="maps-subtab-pane" hidden>
+            <section class="card">
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tìm và mở địa điểm</h2>
+                    <span class="meta-badge" id="mapsSearchMeta">Đang tắt</span>
+                  </div>
+                  <p class="card-subtitle">Tìm theo từ khoá trên Google Maps rồi mở kết quả</p>
+                </div>
+                <label class="switch">
+                  <input id="mapsSearchEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="mapsSearchMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="mapsSearchMinMinutes" type="number" min="15" step="1" placeholder="20" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="mapsSearchMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="mapsSearchMaxMinutes" type="number" min="15" step="1" placeholder="50" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="mapsSearchKeywordsText">Từ khoá tìm kiếm (mỗi dòng 1 từ khoá)</label>
+                <textarea id="mapsSearchKeywordsText" rows="4" placeholder="quán cà phê quận 1&#10;spa gần đây"></textarea>
+              </div>
+              <div class="field">
+                <label class="field-label" for="mapsSearchSessionMax">Số địa điểm mở mỗi phiên</label>
+                <div class="input-unit-wrap">
+                  <input id="mapsSearchSessionMax" type="number" min="1" max="5" step="1" placeholder="2" />
+                  <span class="unit-tag">địa điểm</span>
+                </div>
+              </div>
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Tự đánh giá sau khi mở</h2>
+                    <span class="tag-ai-pill">Maps AI</span>
+                  </div>
+                  <p class="card-subtitle">Dùng prompt và số sao ở tab Đánh giá AI</p>
+                </div>
+                <label class="switch">
+                  <input id="mapsSearchAutoReview" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="action-bar">
+                <button id="mapsSearchRunOnceBtn" class="btn btn-secondary" type="button">
+                  <span>Tìm thử 1 lần</span>
+                </button>
+                <button id="mapsSearchToggleBtn" class="btn btn-primary grow" type="button">
+                  <span>Bắt đầu tìm địa điểm</span>
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+
+        <!-- ================= TAB 5: NHẬT KÝ HOẠT ĐỘNG ================= -->
+        <section id="tab-logs" class="tab-pane" hidden>
+          <section class="card logs-card">
+            <div class="card-header flex-between">
+              <div class="card-title-group">
+                <h2>Nhật ký hoạt động realtime</h2>
+                <p class="card-subtitle">Theo dõi chi tiết các tác vụ và phản hồi từ hệ thống</p>
+              </div>
+              <button id="clearLogs" class="btn btn-subtle-danger" type="button">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span>Xóa nhật ký</span>
+              </button>
+            </div>
+            <div id="logs" class="logs-terminal"></div>
+          </section>
+        </section>
+
+        <!-- ================= TAB: CHỐNG BAN (HUMAN GUARD) ================= -->
+        <section id="tab-guard" class="tab-pane" hidden>
+          <div class="banner">
+            <svg class="banner-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <div class="banner-text">
+              <strong>Lớp bảo vệ tài khoản.</strong> Áp dụng cho mọi lịch tự động của tất cả nền tảng (Facebook, Threads, YouTube, X, Instagram, Zalo, TikTok, Maps). Không ảnh hưởng nút «Chạy thử 1 lần».
+            </div>
+          </div>
+
+          <section class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2>Bật/tắt bảo vệ</h2>
+                <p class="card-subtitle">Công tắc tổng cho toàn bộ cơ chế chống ban</p>
+              </div>
+            </div>
+
+            <div class="toggle-card-row">
+              <div>
+                <div class="field-label">Bật Human Guard</div>
+                <p class="field-hint">Giới hạn tần suất, khung giờ và bỏ lượt ngẫu nhiên để hành vi giống người thật.</p>
+              </div>
+              <label class="switch">
+                <input id="humanGuardEnabled" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="toggle-card-row">
+              <div>
+                <div class="field-label">Warm-up theo tuổi</div>
+                <p class="field-hint">3 ngày đầu chạy rất ít (~15% trần), tăng dần tới 100% sau 30 ngày. Nên bật cho tài khoản mới.</p>
+              </div>
+              <label class="switch">
+                <input id="humanWarmupEnabled" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2>Giới hạn hành động</h2>
+                <p class="card-subtitle">Trần theo ngày (tính riêng cho từng nền tảng) và tỉ lệ bỏ lượt</p>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label class="field-label" for="humanDailyCap">Trần hành động mỗi ngày / nền tảng</label>
+                <div class="input-unit-wrap">
+                  <input id="humanDailyCap" type="number" min="0" step="1" placeholder="40" />
+                  <span class="unit-tag">lượt</span>
+                </div>
+                <p class="field-hint">Đặt 0 = không giới hạn. Với tài khoản mới nên để 20–40.</p>
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="humanSkipChance">Tỉ lệ bỏ lượt ngẫu nhiên</label>
+                <div class="input-unit-wrap">
+                  <input id="humanSkipChance" type="number" min="0" max="100" step="1" placeholder="12" />
+                  <span class="unit-tag">%</span>
+                </div>
+                <p class="field-hint">Thỉnh thoảng bỏ 1 lượt như người dùng chỉ lướt mà không tương tác.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2>Khung giờ hoạt động</h2>
+                <p class="card-subtitle">Chỉ chạy trong khoảng giờ này (theo giờ máy). Đặt 2 ô bằng nhau để chạy 24/24.</p>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label class="field-label" for="humanActiveStartHour">Giờ bắt đầu</label>
+                <div class="input-unit-wrap">
+                  <input id="humanActiveStartHour" type="number" min="0" max="24" step="1" placeholder="7" />
+                  <span class="unit-tag">giờ</span>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="humanActiveEndHour">Giờ kết thúc</label>
+                <div class="input-unit-wrap">
+                  <input id="humanActiveEndHour" type="number" min="0" max="24" step="1" placeholder="24" />
+                  <span class="unit-tag">giờ</span>
+                </div>
+              </div>
+            </div>
+            <p class="field-hint" id="guardTodayInfo" style="margin-top: 8px;"></p>
+          </section>
+
+          <div class="action-bar">
+            <button id="saveGuardBtn" class="btn btn-primary grow" type="button">
+              <span>Lưu cài đặt chống ban</span>
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="projects-core.js"></script>
+  <script src="popup.js"></script>
+  <script src="nadezhno-core.js"></script>
+  <script src="nadezhno-ui.js"></script>
+  <script src="group-search-ui.js"></script>
+  <script src="projects-ui.js"></script>
+</body>
+</html>
+

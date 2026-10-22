@@ -1,0 +1,9 @@
+
+# Build output
+dist/
+node_modules/
+aura-reach.zip
+*.zip
+# Added by code-review-graph
+.code-review-graph/
+.env
