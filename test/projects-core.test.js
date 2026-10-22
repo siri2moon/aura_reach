@@ -25,6 +25,8 @@ test("scopedDefaults builds platform search sources from project keywords", () =
   assert.equal(d.postsText, "");
   // Chủ đề đăng bài tách bằng ** như parseTemplates của background.js.
   assert.equal(d.xPostTopicsText.split("**").length, mct().postTopics.length);
+  // Bài đăng nhóm Facebook cũng lấy chủ đề từ hồ sơ dự án.
+  assert.equal(d.postTopicsText, d.xPostTopicsText);
 });
 
 test("group relevance for Nadezhno matches nadezhno-core", () => {

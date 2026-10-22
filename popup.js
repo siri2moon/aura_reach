@@ -18,6 +18,14 @@ const els = {
   commentWorkHours: document.getElementById("commentWorkHours"),
   commentRestHours: document.getElementById("commentRestHours"),
   postsText: document.getElementById("postsText"),
+  postAi: document.getElementById("postAi"),
+  postAiWrap: document.getElementById("postAiWrap"),
+  postTopicsText: document.getElementById("postTopicsText"),
+  postAiSystemPrompt: document.getElementById("postAiSystemPrompt"),
+  postsTextLabel: document.getElementById("postsTextLabel"),
+  postsTextHint: document.getElementById("postsTextHint"),
+  resetPostPromptBtn: document.getElementById("resetPostPromptBtn"),
+  resetPostTopicsBtn: document.getElementById("resetPostTopicsBtn"),
   commentsText: document.getElementById("commentsText"),
   aiComment: document.getElementById("aiComment"),
   aiSystemPrompt: document.getElementById("aiSystemPrompt"),
@@ -717,6 +725,7 @@ async function init() {
 
   setTab(state?.uiTab || "project", false);
   syncCommentUi();
+  syncPostUi();
   syncThreadsJobUi();
   syncXPostUi();
   syncZaloMessageUi();
@@ -739,6 +748,8 @@ function bind() {
     "commentWorkHours",
     "commentRestHours",
     "postsText",
+    "postTopicsText",
+    "postAiSystemPrompt",
     "commentsText",
     "aiSystemPrompt",
     "joinUrls",
@@ -919,6 +930,20 @@ function bind() {
   els.aiComment?.addEventListener("change", () => {
     syncCommentUi();
     saveSettings();
+  });
+  els.postAi?.addEventListener("change", () => {
+    syncPostUi();
+    saveSettings();
+  });
+  els.resetPostPromptBtn?.addEventListener("click", async () => {
+    const res = await chrome.runtime.sendMessage({ type: "GET_DEFAULT_FACEBOOK_POST_PROMPT" });
+    els.postAiSystemPrompt.value = res?.prompt || els.postAiSystemPrompt.value;
+    await saveSettings();
+  });
+  els.resetPostTopicsBtn?.addEventListener("click", async () => {
+    const res = await chrome.runtime.sendMessage({ type: "PROJECT_APPLY_DEFAULTS", keys: ["postTopicsText"] });
+    if (!res?.ok) return alert(res?.error || "Chưa chọn dự án.");
+    els.postTopicsText.value = res.defaults?.postTopicsText || "";
   });
   els.resetPromptBtn?.addEventListener("click", async () => {
     const res = await chrome.runtime.sendMessage({ type: "GET_DEFAULT_AI_PROMPT" });
@@ -1381,6 +1406,9 @@ function fillForm() {
   els.commentWorkHours.value = work;
   els.commentRestHours.value = rest;
   els.postsText.value = state.postsText || "";
+  els.postAi.checked = state.postAi !== false;
+  els.postTopicsText.value = state.postTopicsText || "";
+  els.postAiSystemPrompt.value = state.postAiSystemPrompt || "";
   els.commentsText.value = state.commentsText || "";
   els.aiComment.checked = state.aiComment !== false;
   els.aiSystemPrompt.value = state.aiSystemPrompt || "";
@@ -1604,10 +1632,22 @@ function fillForm() {
   if (els.xReplySourcesText) els.xReplySourcesText.value = state.xReplySourcesText || "";
 
   syncCommentUi();
+  syncPostUi();
   syncThreadsJobUi();
   syncXPostUi();
   syncZaloMessageUi();
   syncXReplyUi();
+}
+
+function syncPostUi() {
+  const ai = els.postAi.checked;
+  els.postAiWrap.style.display = ai ? "" : "none";
+  els.postsTextLabel.firstChild.textContent = ai
+    ? "Mẫu dự phòng khi AI lỗi (phân tách bởi ký tự "
+    : "Mẫu bài viết sẵn (phân tách bởi ký tự ";
+  els.postsTextHint.textContent = ai
+    ? "Chỉ dùng khi AI không trả về nội dung. Có thể để trống."
+    : "Các mẫu bài sẽ được chọn lần lượt theo thứ tự, không trùng lặp vào cùng một nhóm trong một vòng.";
 }
 
 function syncCommentUi() {
@@ -2350,6 +2390,9 @@ function collectSettings(mode) {
     workHours: Number(workEl?.value) || 0,
     restHours: Number(restEl?.value) || 0,
     postsText: els.postsText?.value || "",
+    postAi: els.postAi ? els.postAi.checked : true,
+    postTopicsText: els.postTopicsText?.value || "",
+    postAiSystemPrompt: els.postAiSystemPrompt?.value || "",
     commentsText: els.commentsText?.value || "",
     aiComment: els.aiComment ? els.aiComment.checked : true,
     aiSystemPrompt: els.aiSystemPrompt?.value || "",

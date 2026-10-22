@@ -249,6 +249,39 @@ bn có đang ghi chép mà vẫn ko để ra đc ko"
 - KHÔNG quá 450 ký tự
 - Chỉ trả về đúng nội dung thread, ko giải thích, ko tiêu đề, ko ghi chú thêm`;
 
+const DEFAULT_FACEBOOK_POST_AI_PROMPT = `Bạn là một thành viên thật của nhóm Facebook, đang tự tay đăng một bài mới vào nhóm. Bạn KHÔNG phải AI, KHÔNG phải bot, KHÔNG phải người bán hàng.
+
+## Bài phải hợp với nhóm
+
+- Bám đúng chủ đề của nhóm (xem tên nhóm) và đúng nhu cầu của người trong nhóm
+- Viết như người trong cộng đồng chia sẻ với nhau, không như trang quảng cáo
+- Admin nhóm xoá bài quảng cáo lộ liễu: giá trị phải nằm ở nội dung, không nằm ở lời mời
+
+## Mở bài
+
+- Câu đầu phải khiến người lướt dừng lại: một tình huống thật, một con số cụ thể, một sai lầm hay gặp, hoặc một câu hỏi đúng nỗi lo của nhóm
+- Tránh mở kiểu "Xin chào cả nhà", "Hôm nay mình muốn chia sẻ", "Có ai biết không ạ" chung chung
+
+## Thân bài — cho đi giá trị thật
+
+- Một chủ đề, nói cho tới: mẹo cụ thể, kinh nghiệm đã trải qua, danh sách ngắn những điều nên/không nên
+- Ưu tiên cái dùng được ngay: tên loại dịch vụ, khoảng giá, mốc thời gian, cách kiểm tra, câu cần hỏi
+- Ngắt dòng ngắn cho dễ đọc trên điện thoại. Có thể dùng 2–4 dòng gạch đầu bằng ký tự thường như "-" nếu là danh sách
+
+## Kết
+
+- Mời mọi người kể trải nghiệm của họ hoặc hỏi lại 1 câu cụ thể, để bài có bình luận
+- Không "inbox mình", không "click ngay", không "đừng bỏ lỡ"
+
+## Quy tắc tuyệt đối
+
+- KHÔNG nhận là AI
+- KHÔNG hashtag, KHÔNG markdown (**, ##), KHÔNG bọc ngoặc kép quanh bài, KHÔNG tiêu đề
+- KHÔNG bịa số liệu thống kê, nghiên cứu, tên tổ chức, tên địa điểm cụ thể không có trong dữ kiện được cho
+- Emoji tối đa 2 cái
+- Độ dài 4–12 dòng ngắn, tối đa 1200 ký tự
+- Chỉ trả về đúng nội dung bài đăng, không giải thích, không ghi chú thêm`;
+
 const DEFAULT_THREADS_REPLY_AI_PROMPT = `Bạn là chủ bài viết trên Threads, đang trả lời một người vừa vào bình luận. Bạn KHÔNG phải AI, KHÔNG phải bot.
 
 ## Đây là hội thoại, ko phải trả lời khách hàng
@@ -802,6 +835,10 @@ const DEFAULT_STATE = {
   uiTiktokTab: "comment",
   uiMapsTab: "review",
   postsText: "",
+  // Đăng bài Facebook bằng AI theo dự án đang chọn; tắt thì dùng mẫu postsText.
+  postAi: true,
+  postTopicsText: "",
+  postAiSystemPrompt: DEFAULT_FACEBOOK_POST_AI_PROMPT,
   commentsText: "",
   aiComment: true,
   aiSystemPrompt: DEFAULT_AI_SYSTEM_PROMPT,
@@ -1699,6 +1736,8 @@ async function handleMessage(message, sender) {
       return stopThreads("Đã dừng bình luận Threads.");
     case "RUN_THREADS_ONCE":
       return runThreadsOnce(message.settings);
+    case "GET_DEFAULT_FACEBOOK_POST_PROMPT":
+      return { ok: true, prompt: DEFAULT_FACEBOOK_POST_AI_PROMPT };
     case "GET_DEFAULT_THREADS_POST_PROMPT":
       return { ok: true, prompt: DEFAULT_THREADS_POST_AI_PROMPT };
     case "GET_DEFAULT_THREADS_REPLY_PROMPT":
@@ -2248,7 +2287,9 @@ async function start(settings) {
   await log("info", `Bắt đầu lịch ${next.mode === "post" ? "đăng bài" : "bình luận"}.${workLabel}`);
   const posts = parseTemplates(next.postsText);
   const comments = parseTemplates(next.commentsText);
-  if (next.mode !== "comment" && posts.length < 3) {
+  if (next.mode !== "comment" && next.postAi) {
+    await log("info", "Đăng bài AI đang bật: mỗi lượt AI viết một bài mới theo chủ đề của dự án và tên nhóm.");
+  } else if (next.mode !== "comment" && posts.length < 3) {
     await log("info", `Chỉ có ${posts.length} mẫu đăng bài. Thêm nhiều mẫu (cách nhau bởi **) để tránh trùng nội dung.`);
   }
   if (next.mode !== "post" && next.aiComment) {
@@ -2413,8 +2454,8 @@ function validateReady(state) {
   }
   const posts = parseTemplates(state.postsText);
   const comments = parseTemplates(state.commentsText);
-  if (state.mode !== "comment" && !posts.length) {
-    return { ok: false, error: "Chưa có nội dung đăng bài. Các bài cách nhau bởi dấu **." };
+  if (state.mode !== "comment" && !state.postAi && !posts.length) {
+    return { ok: false, error: "Chưa có nội dung đăng bài. Bật «Viết bài bằng AI» hoặc dán mẫu, cách nhau bởi dấu **." };
   }
   if (state.mode !== "post" && !state.aiComment && !state.nadezhnoSettings?.enabled && !comments.length) {
     return { ok: false, error: "Chưa có nội dung bình luận. Bật «Sinh bình luận bằng AI» hoặc dán mẫu, cách nhau bởi dấu **." };
@@ -2870,6 +2911,10 @@ async function runCycle(source) {
       result = generated.result;
       posted = { ...action, text: generated.text };
       postKey = generated.postKey;
+    } else if (action.aiPost) {
+      const text = await generateFacebookPost(state, group);
+      posted = { ...action, text };
+      result = await performAction(tab, posted);
     } else {
       result = await performAction(tab, action);
     }
@@ -2977,6 +3022,60 @@ async function sendAction(tabId, action) {
     if (isPortClosed(error)) return { ok: true, navigated: true };
     throw error;
   }
+}
+
+// Chủ đề bài đăng Facebook: ô «Chủ đề gợi ý» của dự án; để trống thì lấy thẳng postTopics trong hồ sơ dự án.
+async function pickFacebookPostTopic(state) {
+  const own = parseTemplates(state.postTopicsText);
+  const topics = own.length ? own : (await getActiveProject())?.postTopics || [];
+  return topics.length ? pickOne(topics) : "";
+}
+
+function buildFacebookPostUserMessage(group, topic, recentPosts) {
+  const variation = buildVariationBlock({
+    lengthHint: pickOne(["4-6 dòng, 1 mẹo chính", "6-9 dòng, có 1 danh sách ngắn", "8-12 dòng, kể 1 trải nghiệm rồi rút ra mẹo"]),
+    allowCta: false,
+    kind: "post",
+  });
+  return [
+    `Nhóm Facebook sẽ đăng: «${group.name}»`,
+    topic
+      ? `Chủ đề bài lượt này: ${topic}`
+      : "Tự chọn một chủ đề thuộc dự án đang quảng bá mà thành viên nhóm này thật sự cần.",
+    "Ngôn ngữ: viết bằng ngôn ngữ thành viên nhóm dùng (đoán từ tên nhóm); không đoán được thì theo ngôn ngữ của dự án.",
+    ...(recentPosts.length
+      ? ["", "Các bài gần đây đã đăng (KHÔNG lặp lại ý hay câu mở của chúng):", ...recentPosts.map((t) => `- ${clip(t, 160)}`)]
+      : []),
+    "",
+    variation,
+    "",
+    "Hãy viết một bài đăng mới cho nhóm này, gắn chặt với chủ đề trên và với dự án đang quảng bá.",
+    "Chỉ trả về đúng nội dung bài đăng. Không giải thích, không tiêu đề, không markdown, không hashtag, không bọc ngoặc kép.",
+  ].join("\n");
+}
+
+// Viết bài đăng nhóm bằng AI theo dự án đang chọn; AI lỗi thì lùi về mẫu postsText nếu có.
+async function generateFacebookPost(state, group) {
+  const topic = await pickFacebookPostTopic(state);
+  const recentPosts = (state.actionHistory || [])
+    .filter((item) => item.type === "CREATE_POST" && item.text)
+    .slice(0, 3)
+    .map((item) => item.text);
+  await log("info", `Đang gọi AI viết bài cho nhóm «${group.name}»${topic ? ` (chủ đề: ${clip(topic, 60)})` : ""}...`);
+  try {
+    const text = await generateAiComment(
+      state.postAiSystemPrompt || DEFAULT_FACEBOOK_POST_AI_PROMPT,
+      buildFacebookPostUserMessage(group, topic, recentPosts),
+      { platform: "facebook", kind: "post" }
+    );
+    if (text) return text;
+  } catch (error) {
+    await log("warning", `AI viết bài không thành công (${error?.message || error}). Thử dùng mẫu dự phòng...`);
+  }
+  const templates = parseTemplates(state.postsText);
+  if (!templates.length) throw new Error("AI không viết được bài và chưa có mẫu bài dự phòng.");
+  await log("info", "Đã lấy nội dung từ mẫu bài đăng dự phòng.");
+  return pickOne(templates);
 }
 
 async function performAiComment(tab, group) {
@@ -3420,7 +3519,7 @@ function pickAction(state) {
   if (!groups.length) return null;
 
   const kinds = [];
-  if (state.mode !== "comment" && posts.length) kinds.push("post");
+  if (state.mode !== "comment" && (state.postAi || posts.length)) kinds.push("post");
   if (state.mode !== "post") {
     if (state.aiComment || state.nadezhnoSettings?.enabled) kinds.push("ai-comment");
     else if (comments.length) kinds.push("comment");
@@ -3438,21 +3537,25 @@ function pickAction(state) {
   for (const rotate of [false, true]) {
     for (const kind of kinds) {
       const isAi = kind === "ai-comment";
-      const templates = kind === "post" ? posts : isAi ? ["__ai__"] : comments;
+      // Bài AI được viết lúc chạy, nên chỉ cần chọn nhóm; mẫu tĩnh không tham gia.
+      const isAiPost = kind === "post" && Boolean(state.postAi);
+      const generated = isAi || isAiPost;
+      const templates = isAiPost ? ["__ai_post__"] : kind === "post" ? posts : isAi ? ["__ai__"] : comments;
       const usedKeyName = kind === "post" ? "usedPostKeys" : "usedCommentKeys";
-      const usedKeys = isAi || rotate ? [] : pruneUsedKeys(templates, state[usedKeyName]);
+      const usedKeys = generated || rotate ? [] : pruneUsedKeys(templates, state[usedKeyName]);
       const templateKind = kind === "post" ? "post" : "comment";
-      const chosen = pickGroupAndTemplate(groups, templates, templateKind, history, usedKeys, cooldownMs, rotate || isAi);
+      const chosen = pickGroupAndTemplate(groups, templates, templateKind, history, usedKeys, cooldownMs, rotate || generated);
       if (!chosen) continue;
       return {
         action: {
           type: kind === "post" ? "CREATE_POST" : "CREATE_COMMENT",
-          label: kind === "post" ? "Đăng bài" : isAi ? "Bình luận AI" : "Bình luận",
-          text: isAi ? "" : chosen.text,
+          label: isAiPost ? "Đăng bài AI" : kind === "post" ? "Đăng bài" : isAi ? "Bình luận AI" : "Bình luận",
+          text: generated ? "" : chosen.text,
           ai: isAi,
+          aiPost: isAiPost,
         },
         group: chosen.group,
-        nextUsedKeys: isAi ? state.usedCommentKeys : chosen.nextUsedKeys,
+        nextUsedKeys: isAi ? state.usedCommentKeys : isAiPost ? state.usedPostKeys : chosen.nextUsedKeys,
         rotated: rotate,
       };
     }

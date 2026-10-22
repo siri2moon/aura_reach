@@ -182,7 +182,7 @@
         ? `<span class="project-dot"></span>
            <span>AI trên ${escapeHtml(PLATFORM_LABEL[platform])} đang viết cho <strong>${escapeHtml(p.name)}</strong>
            · ${escapeHtml(LANG_LABEL[p.language] || p.language)} theo bài gốc
-           · nhắc dự án ở khoảng ${Math.round(p.mentionRate * 100)}% bình luận</span>
+           · nhắc dự án ở khoảng ${Math.round(p.mentionRate * 100)}% bình luận, ${Math.round(p.postMentionRate * 100)}% bài đăng</span>
            <button type="button" class="btn-text-action" data-open-project>Sửa hồ sơ dự án</button>`
         : `<span>${escapeHtml(PLATFORM_LABEL[platform])} nằm ngoài kế hoạch của <strong>${escapeHtml(p.name)}</strong>: AI ở đây viết như cũ, không theo dự án.</span>
            <button type="button" class="btn-text-action" data-open-project>Đổi trong hồ sơ dự án</button>`;

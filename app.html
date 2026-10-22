@@ -2111,14 +2111,46 @@
               <div class="card-header">
                 <div class="card-title-group">
                   <h2>Nội dung bài đăng</h2>
-                  <p class="card-subtitle">Hỗ trợ nhiều mẫu bài viết ngẫu nhiên xoay vòng</p>
+                  <p class="card-subtitle">Mỗi bài xoay quanh dự án đang quảng bá và hợp với từng nhóm</p>
                 </div>
               </div>
-              <div class="field">
-                <label class="field-label" for="postsText">Danh sách mẫu bài viết (phân tách bởi ký tự <code class="code-badge">**</code>)</label>
-                <textarea id="postsText" rows="6" placeholder="Xin chào mọi người, mình là thành viên mới rất vui được giao lưu!&#10;**&#10;Hôm nay chia sẻ với cả nhà một chủ đề thú vị..."></textarea>
+
+              <div class="toggle-card-row">
+                <div class="toggle-info">
+                  <div class="badge-row">
+                    <h2>Viết bài bằng AI theo dự án</h2>
+                    <span class="tag-ai-pill">AI Engine</span>
+                  </div>
+                  <p class="card-subtitle">Mỗi lượt AI viết một bài mới theo hồ sơ dự án, chủ đề bên dưới và tên nhóm sắp đăng. Tắt để dùng mẫu viết sẵn.</p>
+                </div>
+                <label class="switch">
+                  <input id="postAi" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
               </div>
-              <p class="field-hint">Các mẫu bài sẽ được chọn lần lượt theo thứ tự, không trùng lặp vào cùng một nhóm trong một vòng.</p>
+
+              <div id="postAiWrap" class="prompt-wrap">
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="postTopicsText">Chủ đề bài đăng của dự án (cách nhau bởi <code class="code-badge">**</code>)</label>
+                    <button id="resetPostTopicsBtn" class="btn-text-action" type="button">Lấy từ hồ sơ dự án</button>
+                  </div>
+                  <textarea id="postTopicsText" rows="4" placeholder="Để trống thì AI lấy chủ đề trong hồ sơ dự án."></textarea>
+                </div>
+                <div class="field">
+                  <div class="field-header-row">
+                    <label class="field-label" for="postAiSystemPrompt">System Prompt cho bài đăng nhóm</label>
+                    <button id="resetPostPromptBtn" class="btn-text-action" type="button">Khôi phục mặc định</button>
+                  </div>
+                  <textarea id="postAiSystemPrompt" rows="6" placeholder="Prompt chỉ dẫn AI viết bài đăng nhóm..."></textarea>
+                </div>
+              </div>
+
+              <div class="field">
+                <label id="postsTextLabel" class="field-label" for="postsText">Mẫu bài viết sẵn (phân tách bởi ký tự <code class="code-badge">**</code>)</label>
+                <textarea id="postsText" rows="6" placeholder="Bài viết sẵn về dự án, mỗi bài cách nhau bởi **"></textarea>
+              </div>
+              <p id="postsTextHint" class="field-hint">Các mẫu bài sẽ được chọn lần lượt theo thứ tự, không trùng lặp vào cùng một nhóm trong một vòng.</p>
             </section>
 
             <!-- CARD: CHỌN NHÓM ĐĂNG -->
