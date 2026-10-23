@@ -89,6 +89,8 @@
       groupTopicRe: "tax|irs|usa|\\bus\\b|america|business|money|income|grow|support|help|tips",
       filterPrompt:
         "Chỉ tương tác khi nội dung nói về tiền, thu nhập hoặc thuế của creator / freelancer / người tự kinh doanh ở Mỹ: thuế 1099, self-employment tax, nộp thuế theo quý, khoản khấu trừ (write-off), nên để dành bao nhiêu tiền thuế, thu nhập từ YouTube/TikTok/Twitch/OnlyFans/sponsor, có nên thuê CPA. Bỏ qua nội dung ngoài nước Mỹ, chính trị, tin tức chung, quảng cáo, và bài không liên quan tới tiền hay thuế của người tự kinh doanh.",
+      topicFilterPrompt:
+        "Nhận nội dung về kiếm tiền, thu nhập, tài chính hoặc thuế của creator / freelancer / người tự kinh doanh (ưu tiên ở Mỹ), kể cả bài chia sẻ kinh nghiệm hay mẹo làm creator kiếm tiền. Không cần là câu hỏi, chỉ cần đúng chủ đề. Bỏ qua chính trị, tin tức chung, nội dung động lực / làm giàu chung chung và bài chỉ quảng cáo.",
       postTopics: [
         "The 15.3% self-employment tax surprise most new creators hit in their first year",
         "Why first-year creators should set aside 25-30% of every sponsor payment",
@@ -158,6 +160,8 @@
         "вьетнам|нячанг|дананг|хой\\s?ан|хюэ|фукуок|фу\\s?куок|сайгон|хошимин|ханой|муйне|далат|вунгтау|vietnam|nha\\s?trang|da\\s?nang|hoi\\s?an|phu\\s?quoc|saigon|ho\\s?chi\\s?minh|hanoi|mui\\s?ne|dalat",
       filterPrompt:
         "Chỉ tương tác khi nội dung bằng tiếng Nga (hoặc của người nói tiếng Nga) về cuộc sống / du lịch ở Việt Nam và đang hỏi xin gợi ý dịch vụ hoặc địa chỉ tin cậy: thuê nhà, thuê xe máy, nha sĩ, bác sĩ, cắt tóc, làm móng, khách sạn, quán ăn, đưa đón sân bay, sửa xe. Bỏ qua đổi tiền / USDT, visa, rao vặt, chính trị và nội dung không liên quan tới Việt Nam.",
+      topicFilterPrompt:
+        "Nhận nội dung về cuộc sống, du lịch, ăn ở, nhà cửa hoặc dịch vụ tại Việt Nam (Nha Trang, Đà Nẵng, Phú Quốc, Hội An, Sài Gòn, Hà Nội, Mũi Né…), viết bằng tiếng Nga hoặc nhắm tới người nói tiếng Nga. Không cần là câu hỏi, bài review, ảnh du lịch có chú thích về địa điểm ở Việt Nam đều được. Bỏ qua đổi tiền / USDT, visa, rao vặt, chính trị, nội dung động lực / làm giàu chung chung và bài không dính gì tới Việt Nam.",
       postTopics: [
         "Как найти надёжного стоматолога во Вьетнаме и не переплатить",
         "Аренда байка в Нячанге: на что смотреть перед тем, как платить",
@@ -224,6 +228,7 @@
     "hashtags",
     "groupKeywords",
     "filterPrompt",
+    "topicFilterPrompt",
     "postTopics",
     "avoid",
     "platforms",
@@ -294,6 +299,7 @@
       groupAudienceRe: String(p.groupAudienceRe || ""),
       groupTopicRe: String(p.groupTopicRe || ""),
       filterPrompt: String(p.filterPrompt || "").trim(),
+      topicFilterPrompt: String(p.topicFilterPrompt || "").trim(),
       postTopics: list(p.postTopics),
       avoid: list(p.avoid),
       platforms,
@@ -370,11 +376,23 @@
       postTopicsText: joinTemplates(p.postTopics),
       youtubeKeywordsText: (p.youtubeKeywords.length ? p.youtubeKeywords : p.postKeywords).join("\n"),
       instagramSourcesText: search("instagram", p.hashtags),
-      instagramFilterPrompt: p.filterPrompt,
+      instagramFilterPrompt: topicFilter(p),
       tiktokSourcesText: search("tiktok", p.postKeywords),
       groupSearchKeywords: p.groupKeywords.join("\n"),
     });
     return out;
+  }
+
+  /**
+   * Tiêu chí lọc rộng: chỉ cần đúng chủ đề, không đòi bài phải là câu hỏi. Dùng cho Instagram (bài
+   * chủ yếu là ảnh + chú thích) và để chọn người follow. filterPrompt của Threads / X thường hẹp hơn
+   * ("đang hỏi xin gợi ý…") nên gần như mọi bài Instagram đều trượt.
+   */
+  function topicFilter(project) {
+    const p = normalizeProject(project);
+    if (p.topicFilterPrompt) return p.topicFilterPrompt;
+    const base = p.filterPrompt || `Nhận nội dung thuộc chủ đề của ${p.name}${p.pitch ? `: ${p.pitch}` : ""}.`;
+    return `${base}\nKhông bắt buộc bài phải là câu hỏi hay xin gợi ý: chỉ cần đúng chủ đề và đúng đối tượng.`;
   }
 
   function safeRegExp(source) {
@@ -552,6 +570,7 @@
     buildPromptBlock,
     shouldMention,
     mentionMode,
+    topicFilter,
     mentionDirective,
     containsProjectLink,
     slugify,

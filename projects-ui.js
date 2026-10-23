@@ -373,6 +373,7 @@
     persona: "pjPersona",
     disclosure: "pjDisclosure",
     filterPrompt: "pjFilterPrompt",
+    topicFilterPrompt: "pjTopicFilterPrompt",
   };
   const LIST_IDS = {
     postKeywords: "pjPostKeywords",

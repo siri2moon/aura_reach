@@ -35,8 +35,7 @@ function followDisplayName(handle) {
 
 function followDiscoverFilterPrompt(project) {
   return [
-    project.filterPrompt ||
-      `Chỉ nhận bài viết thật sự thuộc chủ đề của ${project.name}${project.pitch ? `: ${project.pitch}` : ""}.`,
+    ProjectsCore.topicFilter(project),
     project.audience && `Người viết nên thuộc đối tượng: ${project.audience}.`,
     "Kết quả dùng để quyết định có follow tác giả hay không: loại bot, tài khoản spam, shop chỉ đăng quảng cáo, bài lạc chủ đề.",
   ]

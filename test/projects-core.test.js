@@ -31,7 +31,8 @@ test("scopedDefaults builds platform search sources from project keywords", () =
   assert.equal(d.xReplySourcesText, d.xSourcesText);
   assert.equal(d.threadsReplySourcesText, d.threadsSourcesText);
   assert.equal(d.xReplyFilterPrompt, mct().filterPrompt);
-  assert.equal(d.instagramFilterPrompt, mct().filterPrompt);
+  assert.equal(d.instagramFilterPrompt, core.topicFilter(mct()));
+  assert.notEqual(d.instagramFilterPrompt, mct().filterPrompt);
 });
 
 test("group relevance for Nadezhno matches nadezhno-core", () => {
@@ -117,4 +118,11 @@ test("full mention directive asks for one project link and detects it", () => {
   assert.doesNotMatch(plain, /https:\/\//);
   assert.equal(core.containsProjectLink(nz(), "смотри nadezhno.siri2moon.com, это мой проект"), true);
   assert.equal(core.containsProjectLink(nz(), "это мой проект Nadezhno"), false);
+});
+
+test("topicFilter uses the broad preset criterion or loosens filterPrompt", () => {
+  assert.match(core.topicFilter(nz()), /Không cần là câu hỏi/);
+  const custom = core.topicFilter({ id: "x1", name: "Demo", filterPrompt: "Chỉ bài hỏi về A." });
+  assert.match(custom, /^Chỉ bài hỏi về A\./);
+  assert.match(custom, /Không bắt buộc bài phải là câu hỏi/);
 });

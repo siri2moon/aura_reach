@@ -6152,10 +6152,18 @@ async function runYoutubeSubscribeOnce() {
 }
 
 // Số bài Instagram tối đa được mở trong một lượt khi các bài trước bị bộ lọc AI loại.
-const INSTAGRAM_FILTER_MAX_TRIES = 3;
+const INSTAGRAM_FILTER_MAX_TRIES = 5;
 
 async function runInstagramCommentOnce() {
-  const state = await withProjectFallbacks(await getState(), ["instagramSourcesText", "instagramFilterPrompt"]);
+  const raw = await getState();
+  // Bản trước lấy nguyên bộ lọc Threads / X (đòi bài phải là câu hỏi) làm bộ lọc Instagram, gần như bài
+  // nào cũng trượt. Ô vẫn giữ đúng giá trị đó thì coi như chưa đặt để dùng tiêu chí chủ đề rộng.
+  const active = await getActiveProject();
+  if (active && String(raw.instagramFilterPrompt || "").trim() === active.filterPrompt) {
+    raw.instagramFilterPrompt = "";
+    await chrome.storage.local.set({ instagramFilterPrompt: "" });
+  }
+  const state = await withProjectFallbacks(raw, ["instagramSourcesText", "instagramFilterPrompt"]);
   const sources = parseUrlList(state.instagramSourcesText);
   const targetUrl = sources.length ? sources[Math.floor(Math.random() * sources.length)] : "https://www.instagram.com/";
   const filterPrompt = String(state.instagramFilterPrompt || "").trim();
