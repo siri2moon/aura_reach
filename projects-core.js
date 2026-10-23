@@ -427,6 +427,9 @@
 
   // Nền tảng mà link trong bình luận không bấm được: chỉ ghi tên miền dạng chữ.
   const PLAIN_LINK_PLATFORMS = new Set(["instagram", "tiktok", "youtube"]);
+  // Nền tảng lọc spam gắt với bình luận có tên miền (YouTube tự giữ lại / ẩn với người khác, chỉ tác giả
+  // còn thấy): lượt nhắc đầy đủ hạ xuống nhắc khéo, không bao giờ ghi tên miền.
+  const SOFT_ONLY_PLATFORMS = new Set(["youtube"]);
 
   function plainUrl(url) {
     return String(url || "")
@@ -538,15 +541,16 @@
   /**
    * Mức nhắc dự án của một lượt: "full" (tên + link) theo mentionRate / postMentionRate, kế đến "soft"
    * (ẩn ý, không tên, không link) theo softMentionRate, còn lại "none". Bài đăng của chính mình không
-   * có mức "soft". Trả lời bình luận dùng nửa tỉ lệ cho cả hai mức.
+   * có mức "soft". Trả lời bình luận dùng nửa tỉ lệ cho cả hai mức. Bình luận trên SOFT_ONLY_PLATFORMS
+   * không bao giờ "full".
    */
-  function mentionMode(project, kind, random = Math.random) {
+  function mentionMode(project, kind, random = Math.random, platform = "") {
     const p = normalizeProject(project);
     const scale = kind === "reply" ? 0.5 : 1;
     const full = (kind === "post" ? p.postMentionRate : p.mentionRate) * scale;
     const soft = kind === "post" ? 0 : p.softMentionRate * scale;
     const r = random();
-    if (r < full) return "full";
+    if (r < full) return SOFT_ONLY_PLATFORMS.has(platform) && kind !== "post" ? "soft" : "full";
     if (r < full + soft) return "soft";
     return "none";
   }

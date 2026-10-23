@@ -126,3 +126,11 @@ test("topicFilter uses the broad preset criterion or loosens filterPrompt", () =
   assert.match(custom, /^Chỉ bài hỏi về A\./);
   assert.match(custom, /Không bắt buộc bài phải là câu hỏi/);
 });
+
+test("YouTube comments never get a full mention with a domain", () => {
+  const p = nz();
+  const r = () => p.mentionRate - 0.01;
+  assert.equal(core.mentionMode(p, "comment", r, "youtube"), "soft");
+  assert.equal(core.mentionMode(p, "comment", r, "threads"), "full");
+  assert.equal(core.mentionMode(p, "comment", () => 0.99, "youtube"), "none");
+});

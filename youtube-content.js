@@ -774,6 +774,38 @@
     return text.includes(snippet);
   }
 
+  /**
+   * Link thẳng tới bình luận vừa đăng (watch?v=…&lc=<id>), lấy từ link thời gian của thread chứa đoạn
+   * chữ vừa gõ. Mở link này bằng tài khoản khác là biết ngay bình luận có hiện công khai không.
+   * Rỗng nếu không thấy (giao diện đổi, hoặc thread chưa render).
+   */
+  function findOwnCommentUrl(snippet) {
+    if (!snippet) return "";
+    const needle = snippet.slice(0, 32);
+    const threads = document.querySelectorAll("#comments ytd-comment-thread-renderer, #comments ytd-comment-view-model, #comments ytd-comment-renderer");
+    for (const thread of threads) {
+      const body = (thread.querySelector("#content-text")?.innerText || "").replace(/\s+/g, " ");
+      if (!body.includes(needle)) continue;
+      const link = thread.querySelector("#published-time-text a[href*='lc='], a[href*='&lc='], a[href*='?lc=']");
+      if (!link) continue;
+      try {
+        return new URL(link.getAttribute("href"), location.origin).href;
+      } catch {
+        return "";
+      }
+    }
+    return "";
+  }
+
+  async function postedCommentUrl(snippet) {
+    for (let i = 0; i < 8; i += 1) {
+      const url = findOwnCommentUrl(snippet);
+      if (url) return url;
+      await sleep(500);
+    }
+    return "";
+  }
+
   async function waitUntilYoutubeCommentPosted(snippet, editor) {
     for (let i = 0; i < 20; i += 1) {
       await sleep(400);
@@ -865,8 +897,9 @@
     if (await waitUntilYoutubeCommentPosted(snippet, editor)) {
       markAction("CREATE_YOUTUBE_COMMENT", text, resolvedKey);
       showHud("Đã đăng bình luận thành công!");
+      const commentUrl = await postedCommentUrl(snippet);
       await watchBeforeLeaving();
-      return { ok: true, postKey: resolvedKey, text };
+      return { ok: true, postKey: resolvedKey, text, commentUrl };
     }
 
     const stillHasText = editor && editor.isConnected && editorText(editor).includes(snippet.slice(0, 20));
@@ -880,8 +913,9 @@
       if (await waitUntilYoutubeCommentPosted(snippet, editor)) {
         markAction("CREATE_YOUTUBE_COMMENT", text, resolvedKey);
         showHud("Đã đăng bình luận thành công!");
+        const commentUrl = await postedCommentUrl(snippet);
         await watchBeforeLeaving();
-        return { ok: true, postKey: String(resolvedKey || "").toLowerCase(), text };
+        return { ok: true, postKey: String(resolvedKey || "").toLowerCase(), text, commentUrl };
       }
     }
 

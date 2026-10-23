@@ -6018,7 +6018,7 @@ async function commentYoutubeVideoInTab(tab, { skipKeys, watchSeconds, label }) 
   });
   if (!postRes?.ok) throw new Error(postRes?.error || "Không gửi được bình luận YouTube.");
   if (ctx.postKey) await rememberYoutubeCommentedKeys([ctx.postKey]);
-  await log("success", `Bình luận YouTube${label ? ` (${label})` : ""} thành công: ${clip(commentText, 80)}`, "comment", await tabLink(tab));
+  await log("success", `Bình luận YouTube${label ? ` (${label})` : ""} thành công: ${clip(commentText, 80)}`, "comment", postRes.commentUrl || (await tabLink(tab)));
   return { posted: true, postKey: youtubeVideoKey(ctx.postKey), text: commentText };
 }
 

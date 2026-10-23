@@ -26,7 +26,7 @@ async function getActiveProject() {
 async function projectPromptSuffix(platform, kind = "comment") {
   const project = await getActiveProject();
   if (!project || !ProjectsCore.appliesTo(project, platform)) return { suffix: "", project: null, mention: "none" };
-  const mention = ProjectsCore.mentionMode(project, kind);
+  const mention = ProjectsCore.mentionMode(project, kind, Math.random, platform);
   return { suffix: ProjectsCore.buildPromptBlock(project, { platform, kind, mention }), project, mention };
 }
 
