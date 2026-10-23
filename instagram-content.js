@@ -192,6 +192,22 @@
     return document.querySelector(COMMENT_BOX_SELECTOR);
   }
 
+  // Nhịp gõ giống bình luận Facebook (content.js): 55–150ms mỗi ký tự, dừng lâu hơn sau dấu cách,
+  // dấu câu và thỉnh thoảng ngập ngừng giữa chừng.
+  async function typeLikeHuman(text) {
+    const chars = [...String(text)];
+    for (let i = 0; i < chars.length; i += 1) {
+      const ch = chars[i];
+      if (ch === "\n") document.execCommand("insertLineBreak", false, null);
+      else document.execCommand("insertText", false, ch);
+      let d = 55 + Math.round(Math.random() * 95);
+      if (ch === " ") d += 20 + Math.round(Math.random() * 55);
+      if (/[.,!?;:]/.test(ch)) d += 90 + Math.round(Math.random() * 160);
+      if (i > 6 && Math.random() < 0.06) d += 200 + Math.round(Math.random() * 300);
+      await sleep(d);
+    }
+  }
+
   // Tìm nút gửi gần ô bình luận nhất (đi ngược lên các khối cha), rồi mới tới cả trang.
   function findSubmitButton(box) {
     const isSubmit = (btn) => {
@@ -239,10 +255,10 @@
     textarea.focus();
     await sleep(300);
 
-    // Gõ như người dùng thật: insertText phát beforeinput/input mà React của Instagram nhận. Gán .value
-    // qua native setter + Event("input") giả không cập nhật state, ô vẫn bị coi là trống và nút
-    // «Post» không bao giờ hiện ra (Instagram chỉ render nút này khi ô có chữ).
-    document.execCommand("insertText", false, text);
+    // Gõ từng ký tự như người dùng thật: insertText phát beforeinput/input mà React của Instagram nhận.
+    // Gán .value qua native setter + Event("input") giả không cập nhật state, ô vẫn bị coi là trống và
+    // nút «Post» không bao giờ hiện ra (Instagram chỉ render nút này khi ô có chữ).
+    await typeLikeHuman(text);
     await sleep(600);
     const typedBox = findCommentBox() || textarea;
     if (!String(typedBox.value || "").trim()) {
