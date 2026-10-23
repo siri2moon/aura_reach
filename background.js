@@ -6122,14 +6122,11 @@ async function runYoutubeScrollOnce() {
 async function runYoutubeSubscribeOnce() {
   const state = await getState();
   const channels = parseUrlList(state.youtubeSubscribeChannelsText);
-  if (!channels.length) throw new Error("Chưa có link kênh YouTube nào trong danh sách.");
   const subscribed = new Set(state.youtubeSubscribedKeys || []);
   const available = channels.filter((c) => !subscribed.has(c.toLowerCase()));
-  if (!available.length) {
-    await log("info", "Đã subscribe hết các kênh YouTube trong danh sách.");
-    return;
-  }
-  const channelUrl = available[0];
+  // Danh sách chỉ định trống hoặc đã subscribe hết: tìm kênh làm video về chủ đề dự án theo từ khoá.
+  const channelUrl = available[0] || (await pickDiscoveredFollowHandle("youtube", state.youtubeSubscribedKeys));
+  if (!channelUrl) return;
   const tab = await openWorkTab(channelUrl, { active: true, tabIdKey: "youtubeWorkTabId" });
   await sleep(1800);
   const res = await sendToTab(tab.id, { type: "SUBSCRIBE_YOUTUBE_CHANNEL" });

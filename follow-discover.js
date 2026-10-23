@@ -3,6 +3,8 @@
  * chỉ định đang trống hoặc đã follow hết. Được background.js nạp bằng importScripts, dùng chung
  * openWorkTab, sleep, log, parseUrlList, evaluateThreadsContentGateBatch, getActiveProject, ProjectsCore.
  *
+ * "handle" của ứng viên là @username, riêng YouTube là link kênh đầy đủ (khớp youtubeSubscribedKeys).
+ *
  * Mỗi lượt: mở một trang tìm kiếm theo từ khoá dự án → đọc tác giả các bài đang hiện → AI chấm cả lô
  * một lần theo tiêu chí lọc của dự án → follow người đầu tiên đạt. Người bị chấm trượt được nhớ lại
  * (followDiscoverRejected) để lượt sau không tốn AI chấm lại.
@@ -18,7 +20,18 @@ const FOLLOW_DISCOVER_PLATFORMS = {
   instagram: { label: "Instagram", sourceKey: "instagramSourcesText", tabIdKey: "instagramWorkTabId" },
   x: { label: "X", sourceKey: "xSourcesText", tabIdKey: "xWorkTabId" },
   tiktok: { label: "TikTok", sourceKey: "tiktokSourcesText", tabIdKey: "tiktokWorkTabId" },
+  // YouTube: ô từ khoá là chữ, không phải link, nên tự dựng trang kết quả tìm kiếm.
+  youtube: {
+    label: "YouTube",
+    sourceKey: "youtubeKeywordsText",
+    tabIdKey: "youtubeWorkTabId",
+    toUrl: (keyword) => `https://www.youtube.com/results?search_query=${encodeURIComponent(keyword)}`,
+  },
 };
+
+function followDisplayName(handle) {
+  return /^https?:\/\//i.test(handle) ? handle : `@${handle}`;
+}
 
 function followDiscoverFilterPrompt(project) {
   return [
@@ -39,7 +52,8 @@ async function discoverFollowTarget(platform, followedKeys) {
   const meta = FOLLOW_DISCOVER_PLATFORMS[platform];
   const project = await getActiveProject();
   if (!project) return { error: `Danh sách follow ${meta.label} đang trống và chưa chọn dự án để tìm theo từ khoá.` };
-  const sources = parseUrlList(ProjectsCore.scopedDefaults(project)[meta.sourceKey]);
+  const raw = parseUrlList(ProjectsCore.scopedDefaults(project)[meta.sourceKey]);
+  const sources = meta.toUrl ? raw.map(meta.toUrl) : raw;
   if (!sources.length) return { error: `Hồ sơ dự án ${project.name} chưa có từ khoá tìm kiếm cho ${meta.label}.` };
 
   const source = sources[Math.floor(Math.random() * sources.length)];
@@ -117,7 +131,20 @@ async function extractFollowCandidatesInPage(platform) {
   };
   const collect = () => {
     const out = new Map();
-    if (platform === "x") {
+    if (platform === "youtube") {
+      for (const card of document.querySelectorAll("ytd-video-renderer")) {
+        const link = card.querySelector('ytd-channel-name a[href], #channel-info a[href], a.yt-simple-endpoint[href^="/@"]');
+        const url = abs(link?.getAttribute("href") || "");
+        const m = url?.pathname.match(/^\/(@[^/]+|channel\/[^/]+|c\/[^/]+|user\/[^/]+)/);
+        if (!m) continue;
+        const channel = `https://www.youtube.com/${decodeURIComponent(m[1])}`;
+        if (out.has(channel.toLowerCase())) continue;
+        const name = textOf(card.querySelector("ytd-channel-name")).split("\n")[0];
+        const title = textOf(card.querySelector("#video-title"));
+        const snippet = textOf(card.querySelector(".metadata-snippet-text, #description-text"));
+        out.set(channel.toLowerCase(), { handle: channel, text: `Kênh ${name || m[1]} — video: ${title}${snippet ? `\n${snippet}` : ""}`, url: channel });
+      }
+    } else if (platform === "x") {
       for (const art of document.querySelectorAll('article[data-testid="tweet"]')) {
         const href = art.querySelector('[data-testid="User-Name"] a[href^="/"]')?.getAttribute("href") || "";
         const m = href.match(/^\/([A-Za-z0-9_]{1,15})$/);
@@ -185,6 +212,6 @@ async function pickDiscoveredFollowHandle(platform, followedKeys) {
     );
     return null;
   }
-  await log("info", `Tìm thấy @${found.target.handle} hợp với ${found.project.name}: ${clip(found.target.text, 100)}`);
+  await log("info", `Tìm thấy ${followDisplayName(found.target.handle)} hợp với ${found.project.name}: ${clip(found.target.text, 100)}`);
   return found.target.handle;
 }

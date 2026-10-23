@@ -469,7 +469,7 @@ const YOUTUBE_TAB_META = {
   keyword: { title: "YouTube · Từ khoá", desc: "Tìm video theo từ khoá trên YouTube rồi bình luận AI." },
   target: { title: "YouTube · Mục tiêu", desc: "Bình luận theo danh sách kênh chỉ định (chưa hỗ trợ)." },
   scroll: { title: "YouTube · Lướt video", desc: "Lướt và tương tác tự động với video YouTube." },
-  subscribe: { title: "YouTube · Subscribe", desc: "Tự động subscribe các kênh YouTube chỉ định." },
+  subscribe: { title: "YouTube · Subscribe", desc: "Tự tìm và subscribe kênh làm video về chủ đề dự án, hoặc theo danh sách chỉ định." },
 };
 
 const INSTAGRAM_TAB_META = {
