@@ -86,3 +86,23 @@ test("shouldMention follows the rate per kind", () => {
   assert.equal(core.shouldMention(p, "post", () => p.postMentionRate - 0.01), true);
   assert.equal(core.shouldMention(p, "reply", () => p.mentionRate / 2), false);
 });
+
+test("mentionMode splits each turn into full, soft and none", () => {
+  const p = mct();
+  const full = p.mentionRate;
+  const soft = p.softMentionRate;
+  assert.equal(core.mentionMode(p, "comment", () => full - 0.01), "full");
+  assert.equal(core.mentionMode(p, "comment", () => full), "soft");
+  assert.equal(core.mentionMode(p, "comment", () => full + soft - 0.01), "soft");
+  assert.equal(core.mentionMode(p, "comment", () => full + soft), "none");
+  assert.equal(core.mentionMode(p, "post", () => p.postMentionRate), "none");
+  assert.equal(core.mentionMode(p, "reply", () => (full + soft) / 2 - 0.01), "soft");
+});
+
+test("soft mention hints at the project without name or link", () => {
+  const block = core.buildPromptBlock(mct(), { platform: "x", mention: "soft" });
+  assert.match(block, /KHÔNG ghi tên MyCreatorTax, không link/);
+  assert.match(block, /đang tự làm/);
+  assert.doesNotMatch(block, /quarterly-tax-due-dates/);
+  assert.doesNotMatch(block, /ĐƯỢC PHÉP nhắc/);
+});

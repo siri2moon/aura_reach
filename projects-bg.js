@@ -21,12 +21,12 @@ async function getActiveProject() {
 
 /**
  * Phần nối vào system prompt cho job AI trên `platform`. Rỗng khi chưa chọn dự án hoặc dự án không
- * nhắm nền tảng này. Xác suất nhắc dự án được tung ở đây để mỗi lượt độc lập.
+ * nhắm nền tảng này. Mức nhắc dự án (full / soft / none) được tung ở đây để mỗi lượt độc lập.
  */
 async function projectPromptSuffix(platform, kind = "comment") {
   const project = await getActiveProject();
-  if (!project || !ProjectsCore.appliesTo(project, platform)) return { suffix: "", project: null, mention: false };
-  const mention = ProjectsCore.shouldMention(project, kind);
+  if (!project || !ProjectsCore.appliesTo(project, platform)) return { suffix: "", project: null, mention: "none" };
+  const mention = ProjectsCore.mentionMode(project, kind);
   return { suffix: ProjectsCore.buildPromptBlock(project, { platform, kind, mention }), project, mention };
 }
 

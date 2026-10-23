@@ -182,7 +182,7 @@
         ? `<span class="project-dot"></span>
            <span>AI trên ${escapeHtml(PLATFORM_LABEL[platform])} đang viết cho <strong>${escapeHtml(p.name)}</strong>
            · ${escapeHtml(LANG_LABEL[p.language] || p.language)} theo bài gốc
-           · nhắc dự án ở khoảng ${Math.round(p.mentionRate * 100)}% bình luận, ${Math.round(p.postMentionRate * 100)}% bài đăng</span>
+           · nhắc dự án ở khoảng ${Math.round(p.mentionRate * 100)}% bình luận (+${Math.round(p.softMentionRate * 100)}% nhắc khéo), ${Math.round(p.postMentionRate * 100)}% bài đăng</span>
            <button type="button" class="btn-text-action" data-open-project>Sửa hồ sơ dự án</button>`
         : `<span>${escapeHtml(PLATFORM_LABEL[platform])} nằm ngoài kế hoạch của <strong>${escapeHtml(p.name)}</strong>: AI ở đây viết như cũ, không theo dự án.</span>
            <button type="button" class="btn-text-action" data-open-project>Đổi trong hồ sơ dự án</button>`;
@@ -210,7 +210,7 @@
       <dl class="hero-facts">
         <div><dt>Đối tượng</dt><dd>${escapeHtml(p.audience || "—")}</dd></div>
         <div><dt>Viết bằng</dt><dd>${escapeHtml(LANG_LABEL[p.language] || p.language)} (hoặc ngôn ngữ của bài gốc)</dd></div>
-        <div><dt>Nhắc dự án</dt><dd>~${Math.round(p.mentionRate * 100)}% bình luận, ~${Math.round(p.postMentionRate * 100)}% bài đăng, luôn nói rõ là dự án của mình</dd></div>
+        <div><dt>Nhắc dự án</dt><dd>~${Math.round(p.mentionRate * 100)}% bình luận, ~${Math.round(p.postMentionRate * 100)}% bài đăng, luôn nói rõ là dự án của mình; thêm ~${Math.round(p.softMentionRate * 100)}% bình luận nhắc khéo, không tên, không link</dd></div>
       </dl>`;
   }
 
@@ -393,6 +393,7 @@
     $("pjLinks").value = p.links.map((l) => `${l.label} | ${l.url}`).join("\n");
     $("pjMentionRate").value = Math.round(p.mentionRate * 100);
     $("pjPostMentionRate").value = Math.round(p.postMentionRate * 100);
+    $("pjSoftMentionRate").value = Math.round(p.softMentionRate * 100);
     $("pjPlatforms").innerHTML = Core.PLATFORMS.map(
       (name) => `<label class="fit-item">
         <span>${escapeHtml(PLATFORM_LABEL[name])}</span>
@@ -423,6 +424,7 @@
       .filter((l) => /^https?:\/\//i.test(l.url));
     out.mentionRate = Number($("pjMentionRate").value) / 100;
     out.postMentionRate = Number($("pjPostMentionRate").value) / 100;
+    out.softMentionRate = Number($("pjSoftMentionRate").value) / 100;
     out.platforms = {};
     for (const sel of $("pjPlatforms").querySelectorAll("select[data-platform]")) out.platforms[sel.dataset.platform] = sel.value;
     return out;
@@ -432,7 +434,7 @@
     const draft = Core.normalizeProject({ ...active(), ...readEditor() });
     $("pjPreview").textContent = Core.buildPromptBlock(draft, {
       platform: $("pjPreviewPlatform").value || "x",
-      mention: $("pjPreviewMention").checked,
+      mention: $("pjPreviewMention").value,
     }).trim();
   }
 

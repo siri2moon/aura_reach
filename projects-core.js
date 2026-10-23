@@ -217,6 +217,7 @@
     "disclosure",
     "mentionRate",
     "postMentionRate",
+    "softMentionRate",
     "postKeywords",
     "youtubeKeywords",
     "hashtags",
@@ -284,6 +285,7 @@
       disclosure: String(p.disclosure || "").trim(),
       mentionRate: clamp01(p.mentionRate, 0.25),
       postMentionRate: clamp01(p.postMentionRate, 0.4),
+      softMentionRate: clamp01(p.softMentionRate, 0.35),
       postKeywords: list(p.postKeywords),
       youtubeKeywords: list(p.youtubeKeywords),
       hashtags: list(p.hashtags).map((t) => t.replace(/^#/, "")),
@@ -415,8 +417,9 @@
   /**
    * Khối hướng dẫn nối vào cuối system prompt của mọi job AI viết nội dung.
    * @param {object} project
-   * @param {{platform?: string, kind?: "comment"|"post"|"reply", mention?: boolean}} opts
-   *   mention: lượt này có được phép nhắc tới dự án không (background tung xác suất theo mentionRate).
+   * @param {{platform?: string, kind?: "comment"|"post"|"reply", mention?: boolean|"full"|"soft"|"none"}} opts
+   *   mention: lượt này nhắc dự án tới đâu (background tung bằng mentionMode). true = "full", false = "none";
+   *   "soft" = ẩn ý mình đang làm một công cụ về chủ đề này, không tên, không link.
    */
   function buildPromptBlock(project, opts = {}) {
     const p = normalizeProject(project);
@@ -454,13 +457,19 @@
       );
     }
 
-    if (opts.mention) {
+    const mode = opts.mention === true ? "full" : opts.mention || "none";
+    if (mode === "full") {
       lines.push(
         `Lượt này ĐƯỢC PHÉP nhắc tới ${p.name} đúng một lần, chỉ khi nội dung gốc thật sự đúng nhu cầu mà dự án giải quyết. Nói rõ đây là dự án của bạn${p.disclosure ? ` (ví dụ "${p.disclosure}")` : ""}. Đặt ở cuối, một câu, như gợi ý của người quen, không giọng quảng cáo.`,
         plainLink
           ? "Nền tảng này không bấm được link: chỉ ghi tên miền dạng chữ, không có https://. Chọn đường dẫn hợp nhất:"
           : "Chọn link hợp nhất với nội dung:",
         ...linkLines
+      );
+    } else if (mode === "soft") {
+      lines.push(
+        `Lượt này KHÔNG ghi tên ${p.name}, không link, không tên miền, không kêu gọi.`,
+        `Nếu nội dung gốc đúng chủ đề của dự án, được thêm thoáng qua một ý rằng bạn đang tự làm / xây một công cụ về đúng vấn đề này (ví dụ "mình đang làm một tool tính đúng cái này" — viết bằng ngôn ngữ của bình luận), như chuyện bên lề của người trong nghề, để người đọc tò mò hỏi thêm hoặc vào trang cá nhân. Không mô tả tính năng, không khen sản phẩm. Nội dung gốc không liên quan thì bỏ ý này.`
       );
     } else {
       lines.push(`Lượt này KHÔNG nhắc tên, link hay ám chỉ ${p.name}. Chỉ góp ý chuyên môn hoặc kể trải nghiệm.`);
@@ -473,9 +482,23 @@
 
   /** Xác suất nhắc dự án theo loại nội dung. random truyền vào để test được. */
   function shouldMention(project, kind, random = Math.random) {
+    return mentionMode(project, kind, random) === "full";
+  }
+
+  /**
+   * Mức nhắc dự án của một lượt: "full" (tên + link) theo mentionRate / postMentionRate, kế đến "soft"
+   * (ẩn ý, không tên, không link) theo softMentionRate, còn lại "none". Bài đăng của chính mình không
+   * có mức "soft". Trả lời bình luận dùng nửa tỉ lệ cho cả hai mức.
+   */
+  function mentionMode(project, kind, random = Math.random) {
     const p = normalizeProject(project);
-    const rate = kind === "post" ? p.postMentionRate : kind === "reply" ? p.mentionRate / 2 : p.mentionRate;
-    return random() < rate;
+    const scale = kind === "reply" ? 0.5 : 1;
+    const full = (kind === "post" ? p.postMentionRate : p.mentionRate) * scale;
+    const soft = kind === "post" ? 0 : p.softMentionRate * scale;
+    const r = random();
+    if (r < full) return "full";
+    if (r < full + soft) return "soft";
+    return "none";
   }
 
   const api = {
@@ -496,6 +519,7 @@
     groupRelevance,
     buildPromptBlock,
     shouldMention,
+    mentionMode,
     slugify,
   };
 

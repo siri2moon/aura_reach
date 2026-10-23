@@ -349,6 +349,6 @@ async function nadezhnoFill(id, editedText) {
     nadezhnoFills: NadezhnoCore.recordFill(latest.fills, { groupUrl: draft.groupUrl }),
     nadezhnoDrafts: latest.drafts.map((d) => (d.id === id ? { ...d, text, status: "filled", filledAt: Date.now() } : d)),
   });
-  await log("success", `[Nadezhno] Đã điền sẵn bình luận, chờ bạn bấm Enter: ${clip(text, 80)}`, "draft");
+  await log("success", `[Nadezhno] Đã điền sẵn bình luận, chờ bạn bấm Enter: ${clip(text, 80)}`, "draft", draft.permalink);
   return { ok: true, nadezhno: await nadezhnoState() };
 }

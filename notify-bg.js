@@ -8,7 +8,8 @@
  *   telegramNotify           { enabled, token, chatId, events: { [event]: boolean } }
  *   telegramNotifyLastError  { at, message } lần gửi lỗi gần nhất, để trang cài đặt hiện ra
  *
- * background.js gọi notifyEvent qua log(level, message, event): event là một khoá của NOTIFY_EVENTS;
+ * background.js gọi notifyEvent qua log(level, message, event, link): event là một khoá của NOTIFY_EVENTS,
+ * link là bài / video vừa thao tác (có thì gửi kèm);
  * log("error", ...) tự tính là event "error".
  */
 
@@ -51,11 +52,11 @@ function notifyConfigReady(cfg) {
   return Boolean(cfg.token && cfg.chatId);
 }
 
-function queueNotifyEvent(event, message) {
-  notifyEvent(event, message).catch(() => {});
+function queueNotifyEvent(event, message, link) {
+  notifyEvent(event, message, link).catch(() => {});
 }
 
-async function notifyEvent(event, message) {
+async function notifyEvent(event, message, link) {
   const meta = NOTIFY_EVENTS[event];
   if (!meta) return;
   const cfg = await notifyLoad();
@@ -67,17 +68,21 @@ async function notifyEvent(event, message) {
   notifyRecent.set(dedupeKey, Date.now());
 
   try {
-    await telegramSendMessage({ token: cfg.token, chatId: cfg.chatId }, await notifyFormat(meta, message));
+    await telegramSendMessage({ token: cfg.token, chatId: cfg.chatId }, await notifyFormat(meta, message, link));
   } catch (error) {
     // Không gọi log(): log lỗi sẽ lại kích hoạt thông báo lỗi và lặp vô hạn.
     await chrome.storage.local.set({ [NOTIFY_ERROR_KEY]: { at: Date.now(), message: String(error?.message || error) } });
   }
 }
 
-async function notifyFormat(meta, message) {
+async function notifyFormat(meta, message, link) {
   const project = await getActiveProject().catch(() => null);
   const when = new Date().toLocaleString("vi-VN", { hour12: false });
-  return [`${meta.icon} ${meta.label}${project ? ` · ${project.name}` : ""}`, "", clip(message, 3500), "", `Aura Reach · ${when}`].join("\n");
+  // Telegram tự biến URL trong tin nhắn thường thành link bấm được.
+  const linkLine = /^https?:\/\//i.test(String(link || "")) ? `🔗 ${link}` : "";
+  return [`${meta.icon} ${meta.label}${project ? ` · ${project.name}` : ""}`, "", clip(message, 3500), linkLine, "", `Aura Reach · ${when}`]
+    .filter((line, i, all) => line !== "" || all[i - 1] !== "")
+    .join("\n");
 }
 
 async function handleNotifyMessage(message) {

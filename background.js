@@ -2943,12 +2943,13 @@ async function runCycle(source) {
     if (nadezhnoOutcome?.kind === "none") {
       await log("info", `[Nadezhno] «${group.name}»: ${nadezhnoOutcome.reason}`);
     } else if (nadezhnoOutcome?.kind === "draft") {
-      await log("success", `[Nadezhno] Đã soạn câu trả lời chờ duyệt trong «${group.name}»: ${clip(posted.text, 80)}`, "draft");
+      await log("success", `[Nadezhno] Đã soạn câu trả lời chờ duyệt trong «${group.name}»: ${clip(posted.text, 80)}`, "draft", group.url);
     } else {
       await log(
         "success",
         `${posted.label} thành công trong «${group.name}»: ${clip(posted.text, 80)}`,
-        posted.type === "CREATE_POST" ? "post" : "comment"
+        posted.type === "CREATE_POST" ? "post" : "comment",
+        (await tabLink(tab)) || group.url
       );
     }
   } catch (error) {
@@ -3285,7 +3286,8 @@ async function generateAiComment(systemPrompt, userContent, opts = {}) {
     const { suffix, project, mention } = await projectPromptSuffix(opts.platform, opts.kind);
     if (suffix) {
       prompt = `${prompt}\n${suffix}`;
-      await log("info", `AI viết theo dự án ${project.name}${mention ? " (lượt này được nhắc dự án)" : " (lượt này không nhắc dự án)"}.`);
+      const mentionLabel = { full: "lượt này được nhắc dự án", soft: "lượt này nhắc khéo, không tên, không link", none: "lượt này không nhắc dự án" };
+      await log("info", `AI viết theo dự án ${project.name} (${mentionLabel[mention] || mentionLabel.none}).`);
     }
   }
   const payload = {
@@ -3949,7 +3951,7 @@ async function runMembershipStep(source) {
 
     const status = result?.status === "pending" ? "đã gửi yêu cầu" : result?.already ? "đã sẵn trạng thái này" : "thành công";
     await chrome.storage.local.set({ stats, groups, membershipIndex: index + 1 });
-    await log("success", `${label} «${result?.name || group.name}» ${status}.`, "group");
+    await log("success", `${label} «${result?.name || group.name}» ${status}.`, "group", group.url);
   } catch (error) {
     const message = error.message || String(error);
     const stats = { ...(await getState()).stats };
@@ -4802,7 +4804,7 @@ async function runThreadsCommentSession(feedTab, sourceUrl) {
         texts.push(posted.text);
         keys.push(...posted.keys);
         postedCount += 1;
-        await log("success", `Đã đăng bình luận Threads (${postedCount}/${maxPosts}): ${clip(posted.text, 80)}`, "comment");
+        await log("success", `Đã đăng bình luận Threads (${postedCount}/${maxPosts}): ${clip(posted.text, 80)}`, "comment", item.url);
         if (postedCount >= maxPosts) break;
         const waitMinutes = intervalMin + Math.random() * (intervalMax - intervalMin);
         await log("info", `Nghỉ khoảng ${waitMinutes.toFixed(1)} phút trước khi qua bài tiếp theo...`);
@@ -5203,7 +5205,7 @@ async function runThreadsFollowOnce() {
     threadsFollowedKeys: rememberThreadsKeys(state.threadsFollowedKeys, [handle]),
   });
   if (res.followed) {
-    await log("success", `Đã follow @${handle} trên Threads. Còn ${pending.length - 1} người trong danh sách.`, "follow");
+    await log("success", `Đã follow @${handle} trên Threads. Còn ${pending.length - 1} người trong danh sách.`, "follow", `https://www.threads.com/@${handle}`);
   } else {
     await log("info", `@${handle} đã được follow trước đó, bỏ qua. Còn ${pending.length - 1} người.`);
   }
@@ -5289,7 +5291,7 @@ async function runThreadsPostOnce() {
   }
   const keys = rememberThreadsKeys(state.threadsPostUsedKeys, [content.key || textKey(text)]);
   await chrome.storage.local.set({ threadsPostUsedKeys: keys });
-  await log("success", `Đã đăng bài Threads: ${clip(text, 80)}`, "post");
+  await log("success", `Đã đăng bài Threads: ${clip(text, 80)}`, "post", await tabLink(tab));
 }
 
 function threadsReplySourceList(state) {
@@ -5451,7 +5453,7 @@ async function runThreadsReplyOnce() {
         threadsRepliedKeys: keys,
         threadsReplySourceIndex: (startIndex + i + 1) % sources.length,
       });
-      await log("success", `Đã trả lời bình luận Threads: ${clip(text, 80)}`, "reply");
+      await log("success", `Đã trả lời bình luận Threads: ${clip(text, 80)}`, "reply", await tabLink(tab));
       return;
     } catch (error) {
       lastError = error;
@@ -6000,7 +6002,7 @@ async function commentYoutubeVideoInTab(tab, { skipKeys, watchSeconds, label }) 
   });
   if (!postRes?.ok) throw new Error(postRes?.error || "Không gửi được bình luận YouTube.");
   if (ctx.postKey) await rememberYoutubeCommentedKeys([ctx.postKey]);
-  await log("success", `Bình luận YouTube${label ? ` (${label})` : ""} thành công: ${clip(commentText, 80)}`, "comment");
+  await log("success", `Bình luận YouTube${label ? ` (${label})` : ""} thành công: ${clip(commentText, 80)}`, "comment", await tabLink(tab));
   return { posted: true, postKey: youtubeVideoKey(ctx.postKey), text: commentText };
 }
 
@@ -6130,7 +6132,7 @@ async function runYoutubeSubscribeOnce() {
   if (res.skipped) {
     await log("info", `Đã subscribe kênh trước đó: ${channelUrl}`);
   } else {
-    await log("success", `Subscribe kênh YouTube thành công: ${channelUrl}`, "follow");
+    await log("success", `Subscribe kênh YouTube thành công: ${channelUrl}`, "follow", channelUrl);
   }
   const keys = [channelUrl.toLowerCase(), ...(state.youtubeSubscribedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ youtubeSubscribedKeys: keys });
@@ -6181,7 +6183,7 @@ async function runInstagramCommentOnce() {
 
   const commented = [ctx.postKey, ...(state.instagramCommentedKeys || []).filter((k) => k !== ctx.postKey)].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ instagramCommentedKeys: commented });
-  await log("success", `Bình luận Instagram thành công: ${clip(commentText, 80)}`, "comment");
+  await log("success", `Bình luận Instagram thành công: ${clip(commentText, 80)}`, "comment", await tabLink(tab));
 }
 
 async function runInstagramScrollOnce() {
@@ -6221,7 +6223,7 @@ async function runInstagramFollowOnce() {
   if (res.skipped) {
     await log("info", `Đã follow trước đó: @${handle}`);
   } else {
-    await log("success", `Follow tài khoản Instagram thành công: @${handle}`, "follow");
+    await log("success", `Follow tài khoản Instagram thành công: @${handle}`, "follow", `https://www.instagram.com/${handle}/`);
   }
   const keys = [handle.toLowerCase(), ...(state.instagramFollowedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ instagramFollowedKeys: keys });
@@ -6459,7 +6461,7 @@ async function runXCommentSession(feedTab, sourceUrl) {
         const latest = await getState();
         const xCommentedKeys = rememberThreadsKeys(latest.xCommentedKeys, posted.keys);
         await chrome.storage.local.set({ xCommentedKeys });
-        await log("success", `Đã đăng bình luận X (${postedCount}/${maxPosts}): ${clip(posted.text, 80)}`, "comment");
+        await log("success", `Đã đăng bình luận X (${postedCount}/${maxPosts}): ${clip(posted.text, 80)}`, "comment", item.url);
         if (postedCount >= maxPosts) break;
         const waitMinutes = intervalMin + Math.random() * (intervalMax - intervalMin);
         await log("info", `Nghỉ khoảng ${waitMinutes.toFixed(1)} phút trước khi qua bài tiếp theo...`);
@@ -6539,7 +6541,7 @@ async function runXPostOnce() {
 
   const usedKeys = [textKey(text), ...(state.xPostUsedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ xPostUsedKeys: usedKeys });
-  await log("success", `Đã đăng bài lên X: ${clip(text, 80)}`, "post");
+  await log("success", `Đã đăng bài lên X: ${clip(text, 80)}`, "post", await tabLink(tab));
 }
 
 async function runXFollowOnce() {
@@ -6562,7 +6564,7 @@ async function runXFollowOnce() {
   if (res.skipped) {
     await log("info", `Đã follow trước đó: @${handle}`);
   } else {
-    await log("success", `Follow tài khoản X thành công: @${handle}`, "follow");
+    await log("success", `Follow tài khoản X thành công: @${handle}`, "follow", `https://x.com/${handle}`);
   }
   const keys = [handle.toLowerCase(), ...(state.xFollowedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ xFollowedKeys: keys });
@@ -7418,7 +7420,7 @@ async function runTiktokCommentOnce() {
 
   const commented = [ctx.postKey, ...(state.tiktokCommentedKeys || []).filter((k) => k !== ctx.postKey)].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ tiktokCommentedKeys: commented });
-  await log("success", `Bình luận TikTok thành công (${ctx.commentCount || "?"} cmt sẵn): ${clip(commentText, 80)}`, "comment");
+  await log("success", `Bình luận TikTok thành công (${ctx.commentCount || "?"} cmt sẵn): ${clip(commentText, 80)}`, "comment", await tabLink(workTab));
 }
 
 async function runTiktokScrollOnce() {
@@ -7455,7 +7457,7 @@ async function runTiktokFollowOnce() {
   if (res.skipped) {
     await log("info", `Đã follow trước đó: @${handle}`);
   } else {
-    await log("success", `Follow TikTok thành công: @${handle}`, "follow");
+    await log("success", `Follow TikTok thành công: @${handle}`, "follow", `https://www.tiktok.com/@${handle}`);
   }
   const keys = [handle.toLowerCase(), ...(state.tiktokFollowedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ tiktokFollowedKeys: keys });
@@ -7503,7 +7505,7 @@ async function runMapsReviewOnce() {
 
   const keys = [placeKey, ...(state.mapsReviewedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ mapsReviewedKeys: keys });
-  await log("success", `Đã đánh giá ${ctx.name} (${stars}★): ${clip(reviewText, 80)}`, "review");
+  await log("success", `Đã đánh giá ${ctx.name} (${stars}★): ${clip(reviewText, 80)}`, "review", (await tabLink(tab)) || placeUrl);
 }
 
 async function runMapsSearchOnce() {
@@ -7554,7 +7556,7 @@ async function runMapsSearchOnce() {
           reviewed++;
           const reviewedKeys = [ctx.placeKey || key, ...(state.mapsReviewedKeys || [])].slice(0, MAX_HISTORY);
           await chrome.storage.local.set({ mapsReviewedKeys: reviewedKeys });
-          await log("success", `[Maps] Đã đánh giá ${ctx.name}: ${clip(reviewText, 80)}`, "review");
+          await log("success", `[Maps] Đã đánh giá ${ctx.name}: ${clip(reviewText, 80)}`, "review", await tabLink(tab));
         }
       }
     }
@@ -7709,7 +7711,7 @@ async function runXReplyOnce() {
         xRepliedKeys: keys,
         xReplySourceIndex: (startIndex + i + 1) % sources.length,
       });
-      await log("success", `Đã trả lời bình luận X: ${clip(text, 80)}`, "reply");
+      await log("success", `Đã trả lời bình luận X: ${clip(text, 80)}`, "reply", await tabLink(tab));
       return;
     } catch (error) {
       lastError = error;
@@ -7960,14 +7962,32 @@ function publicActivityLogs(logs) {
 }
 
 // event: khoá trong NOTIFY_EVENTS (notify-bg.js) để báo Telegram khi người dùng bật; lỗi tự tính là "error".
-async function log(level, message, event) {
+// link: đường dẫn tới bài / video / trang vừa thao tác, gửi kèm thông báo Telegram để bấm vào xem.
+async function log(level, message, event, link) {
   if (isHiddenActivityLog(message)) return;
   const state = await getState();
   const entry = { id: `${Date.now()}-${Math.random()}`, t: Date.now(), level, message };
   const logs = [entry, ...publicActivityLogs(state.logs)].slice(0, MAX_LOGS);
   await chrome.storage.local.set({ logs });
   const notify = event || (level === "error" ? "error" : "");
-  if (notify) queueNotifyEvent(notify, message);
+  if (notify) queueNotifyEvent(notify, message, link);
+}
+
+/**
+ * URL hiện tại của tab vừa thao tác (bài / video đang mở), dùng làm link trong thông báo.
+ * Bỏ qua trang chủ / feed vì không chỉ tới nội dung cụ thể nào.
+ */
+async function tabLink(tab) {
+  if (!tab?.id) return "";
+  const current = await chrome.tabs.get(tab.id).catch(() => null);
+  try {
+    const url = new URL(current?.url || "");
+    if (!/^https?:$/.test(url.protocol)) return "";
+    if (/^\/(home|feed|foryou|explore)?\/?$/i.test(url.pathname) && !url.search) return "";
+    return url.href;
+  } catch {
+    return "";
+  }
 }
 
 async function refreshBadge() {

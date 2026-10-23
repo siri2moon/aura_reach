@@ -479,18 +479,22 @@
             <div class="field"><label class="field-label" for="pjPostTopics">Chủ đề bài đăng của bạn (Threads, X) — mỗi dòng một chủ đề</label><textarea id="pjPostTopics" rows="4"></textarea></div>
             <div class="field"><label class="field-label" for="pjLinks">Link được nhắc — mỗi dòng «tên | https://…»</label><textarea id="pjLinks" rows="4"></textarea></div>
             <div class="field"><label class="field-label" for="pjAvoid">Điều không được làm — mỗi dòng một điều</label><textarea id="pjAvoid" rows="3"></textarea></div>
+            <div class="field"><label class="field-label" for="pjDisclosure">Câu nói rõ đây là dự án của bạn</label><input id="pjDisclosure" type="text" placeholder="I built it" /></div>
             <div class="form-grid form-grid-3">
-              <div class="field"><label class="field-label" for="pjDisclosure">Câu nói rõ đây là dự án của bạn</label><input id="pjDisclosure" type="text" placeholder="I built it" /></div>
               <div class="field">
                 <label class="field-label" for="pjMentionRate">Tỉ lệ bình luận được nhắc dự án</label>
                 <div class="input-unit-wrap"><input id="pjMentionRate" type="number" min="0" max="100" step="5" /><span class="unit-tag">%</span></div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="pjSoftMentionRate">Tỉ lệ bình luận nhắc khéo</label>
+                <div class="input-unit-wrap"><input id="pjSoftMentionRate" type="number" min="0" max="100" step="5" /><span class="unit-tag">%</span></div>
               </div>
               <div class="field">
                 <label class="field-label" for="pjPostMentionRate">Tỉ lệ bài đăng được nhắc dự án</label>
                 <div class="input-unit-wrap"><input id="pjPostMentionRate" type="number" min="0" max="100" step="5" /><span class="unit-tag">%</span></div>
               </div>
             </div>
-            <p class="field-hint">Phần còn lại AI chỉ góp ý chuyên môn, không nhắc tên hay link. Tài khoản nào cũng nhắc sản phẩm thì sớm bị coi là spam.</p>
+            <p class="field-hint">Nhắc khéo: không tên, không link, chỉ thoáng qua rằng bạn đang làm một công cụ về đúng vấn đề đó để người đọc tò mò vào trang cá nhân. Phần còn lại AI chỉ góp ý chuyên môn. Tài khoản nào cũng nhắc sản phẩm thì sớm bị coi là spam.</p>
 
             <div class="divider"></div>
             <h3 class="form-section">Nền tảng</h3>
@@ -500,7 +504,11 @@
               <summary>Xem phần AI nhận thêm cho dự án này</summary>
               <div class="prompt-preview-controls">
                 <select id="pjPreviewPlatform"></select>
-                <label class="gs-only"><input id="pjPreviewMention" type="checkbox" checked /> Lượt được nhắc dự án</label>
+                <select id="pjPreviewMention">
+                  <option value="full">Lượt được nhắc dự án</option>
+                  <option value="soft">Lượt nhắc khéo</option>
+                  <option value="none">Lượt không nhắc</option>
+                </select>
               </div>
               <pre id="pjPreview" class="prompt-preview-body"></pre>
             </details>
