@@ -123,10 +123,13 @@
       await sleep(1500);
 
       // Extract author & caption
+      // Giao diện bài mới không còn <header>: lấy handle từ meta description
+      // ("… - handle on <ngày>: \"caption\""), dự phòng các selector cũ.
+      const metaDesc = document.querySelector('meta[name="description"], meta[property="og:description"]')?.content || "";
       const authorEl = document.querySelector(
         "header a[role='link'], header span a, article header a, div[role='dialog'] header a"
       );
-      const author = (authorEl?.textContent || "").trim();
+      const author = (metaDesc.match(/ - ([A-Za-z0-9._]{1,30})(?=\s)/) || [])[1] || (authorEl?.textContent || "").trim();
 
       // Find caption
       const captionCandidates = Array.from(

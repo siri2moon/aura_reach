@@ -178,20 +178,33 @@ async function extractFollowCandidatesInPage(platform) {
   return items;
 }
 
-// Chạy trong trang một bài Instagram: lấy @handle tác giả từ link ở header và chú thích bài.
+// Chạy trong trang một bài Instagram: lấy @handle tác giả và chú thích bài.
+// Giao diện bài mới (2026) không còn thẻ <header>: đọc từ meta description
+// ("37K likes, 230 comments - handle on July 13, 2026: \"caption\""), dự phòng link hồ sơ đầu tiên trong <main>.
 function extractInstagramAuthorInPage() {
   const reserved = new Set(["explore", "reels", "reel", "p", "stories", "accounts", "direct"]);
-  let handle = "";
-  for (const a of document.querySelectorAll('header a[href^="/"], article header a[href^="/"], div[role="dialog"] header a[href^="/"]')) {
-    const m = (a.getAttribute("href") || "").match(/^\/([A-Za-z0-9._]{1,30})\/?$/);
-    if (m && !reserved.has(m[1].toLowerCase())) {
-      handle = m[1];
-      break;
+  const desc =
+    document.querySelector('meta[name="description"]')?.content ||
+    document.querySelector('meta[property="og:description"]')?.content ||
+    "";
+  let handle = (desc.match(/ - ([A-Za-z0-9._]{1,30})(?=\s)/) || [])[1] || "";
+  if (!handle) {
+    for (const a of document.querySelectorAll('main a[href^="/"], header a[href^="/"], div[role="dialog"] a[href^="/"]')) {
+      const m = (a.getAttribute("href") || "").match(/^\/([A-Za-z0-9._]{1,30})\/?$/);
+      if (m && !reserved.has(m[1].toLowerCase())) {
+        handle = m[1];
+        break;
+      }
     }
   }
-  const caption =
-    String(document.querySelector("h1")?.innerText || "").trim() ||
-    String(document.querySelector('meta[property="og:title"]')?.content || "").trim();
+  const quoted = (text) => (String(text || "").match(/:\s*"([\s\S]*)"?\s*\.?\s*$/) || [])[1] || "";
+  const caption = (
+    quoted(desc) ||
+    quoted(document.querySelector('meta[property="og:title"]')?.content) ||
+    String(document.querySelector("h1")?.innerText || "")
+  )
+    .replace(/"\s*\.?\s*$/, "")
+    .trim();
   return { handle, text: `@${handle}: ${caption.slice(0, 600)}`, url: location.href.split("?")[0] };
 }
 
