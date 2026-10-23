@@ -475,14 +475,14 @@ const YOUTUBE_TAB_META = {
 const INSTAGRAM_TAB_META = {
   comment: { title: "Instagram · Bình luận AI", desc: "Tự động bình luận AI trên các bài viết Instagram." },
   scroll: { title: "Instagram · Lướt feed", desc: "Lướt feed Instagram, tự động thả tim và follow." },
-  follow: { title: "Instagram · Follow", desc: "Tự động follow các tài khoản Instagram chỉ định." },
+  follow: { title: "Instagram · Follow", desc: "Tự tìm và follow người đăng về chủ đề dự án, hoặc theo danh sách chỉ định." },
 };
 
 const X_TAB_META = {
   comment: { title: "X · Bình luận AI", desc: "Tự động bình luận AI trên các tweet." },
   scroll: { title: "X · Lướt feed", desc: "Lướt feed X, tự động like và repost." },
   post: { title: "X · Đăng bài", desc: "Tự động đăng tweet mới bằng AI hoặc mẫu viết sẵn." },
-  follow: { title: "X · Follow", desc: "Tự động follow các tài khoản X chỉ định." },
+  follow: { title: "X · Follow", desc: "Tự tìm và follow người tweet về chủ đề dự án, hoặc theo danh sách chỉ định." },
   reply: { title: "X · Trả lời bình luận", desc: "Tìm bình luận dưới tweet rồi trả lời trực tiếp." },
 };
 
@@ -501,7 +501,7 @@ const ZALO_TAB_META = {
 const TIKTOK_TAB_META = {
   comment: { title: "TikTok · Bình luận AI", desc: "Tự động bình luận AI trên video TikTok theo nguồn hoặc For You." },
   scroll: { title: "TikTok · Lướt video", desc: "Lướt For You và tuỳ chọn thả tim." },
-  follow: { title: "TikTok · Follow", desc: "Tự động follow danh sách tài khoản TikTok." },
+  follow: { title: "TikTok · Follow", desc: "Tự tìm và follow người đăng video về chủ đề dự án, hoặc theo danh sách chỉ định." },
 };
 
 const MAPS_TAB_META = {

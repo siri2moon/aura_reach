@@ -1574,7 +1574,7 @@
                     <h2>Tự động Follow Instagram</h2>
                     <span class="meta-badge" id="instagramFollowMeta">Đang tắt</span>
                   </div>
-                  <p class="card-subtitle">Tự động follow danh sách các tài khoản Instagram chỉ định</p>
+                  <p class="card-subtitle">Follow người đăng về chủ đề dự án, tìm theo hashtag của dự án</p>
                 </div>
                 <label class="switch">
                   <input id="instagramFollowEnabled" type="checkbox" />
@@ -1600,8 +1600,9 @@
               </div>
 
               <div class="field">
-                <label class="field-label" for="instagramFollowTargetsText">Danh sách tài khoản (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link trang cá nhân)</label>
-                <textarea id="instagramFollowTargetsText" rows="4" placeholder="@user1&#10;https://www.instagram.com/user2/"></textarea>
+                <label class="field-label" for="instagramFollowTargetsText">Danh sách chỉ định — không bắt buộc (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link trang cá nhân)</label>
+                <textarea id="instagramFollowTargetsText" rows="4" placeholder="Để trống để tự tìm theo hashtag dự án&#10;@user1&#10;https://www.instagram.com/user2/"></textarea>
+                <p class="field-hint">Để trống thì tự tìm theo từ khoá của dự án đang chọn: AI đọc bài của từng người trong kết quả tìm kiếm và chỉ follow người viết đúng chủ đề. Có danh sách thì follow hết danh sách trước rồi mới tự tìm.</p>
               </div>
 
               <div class="action-bar">
@@ -1918,7 +1919,7 @@
                     <h2>Tự động Follow X (Twitter)</h2>
                     <span class="meta-badge" id="xFollowMeta">Đang tắt</span>
                   </div>
-                  <p class="card-subtitle">Tự động follow danh sách các tài khoản X chỉ định</p>
+                  <p class="card-subtitle">Follow người tweet về chủ đề dự án, tìm theo từ khoá của dự án</p>
                 </div>
                 <label class="switch">
                   <input id="xFollowEnabled" type="checkbox" />
@@ -1944,8 +1945,9 @@
               </div>
 
               <div class="field">
-                <label class="field-label" for="xFollowTargetsText">Danh sách tài khoản (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link profile)</label>
-                <textarea id="xFollowTargetsText" rows="4" placeholder="@user1&#10;https://x.com/user2"></textarea>
+                <label class="field-label" for="xFollowTargetsText">Danh sách chỉ định — không bắt buộc (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link profile)</label>
+                <textarea id="xFollowTargetsText" rows="4" placeholder="Để trống để tự tìm theo từ khoá dự án&#10;@user1&#10;https://x.com/user2"></textarea>
+                <p class="field-hint">Để trống thì tự tìm theo từ khoá của dự án đang chọn: AI đọc bài của từng người trong kết quả tìm kiếm và chỉ follow người viết đúng chủ đề. Có danh sách thì follow hết danh sách trước rồi mới tự tìm.</p>
               </div>
 
               <div class="action-bar">
@@ -3023,7 +3025,7 @@
                     <h2>Tự động Follow TikTok</h2>
                     <span class="meta-badge" id="tiktokFollowMeta">Đang tắt</span>
                   </div>
-                  <p class="card-subtitle">Follow lần lượt danh sách tài khoản chỉ định</p>
+                  <p class="card-subtitle">Follow người đăng video về chủ đề dự án, tìm theo từ khoá của dự án</p>
                 </div>
                 <label class="switch">
                   <input id="tiktokFollowEnabled" type="checkbox" />
@@ -3047,8 +3049,9 @@
                 </div>
               </div>
               <div class="field">
-                <label class="field-label" for="tiktokFollowTargetsText">Danh sách tài khoản (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link profile)</label>
-                <textarea id="tiktokFollowTargetsText" rows="4" placeholder="@user1&#10;https://www.tiktok.com/@user2"></textarea>
+                <label class="field-label" for="tiktokFollowTargetsText">Danh sách chỉ định — không bắt buộc (mỗi dòng 1 <code class="code-badge">@username</code> hoặc link profile)</label>
+                <textarea id="tiktokFollowTargetsText" rows="4" placeholder="Để trống để tự tìm theo từ khoá dự án&#10;@user1&#10;https://www.tiktok.com/@user2"></textarea>
+                <p class="field-hint">Để trống thì tự tìm theo từ khoá của dự án đang chọn: AI đọc bài của từng người trong kết quả tìm kiếm và chỉ follow người viết đúng chủ đề. Có danh sách thì follow hết danh sách trước rồi mới tự tìm.</p>
               </div>
               <div class="action-bar">
                 <button id="tiktokFollowRunOnceBtn" class="btn btn-secondary" type="button">

@@ -1,4 +1,12 @@
-importScripts("nadezhno-core.js", "nadezhno-bg.js", "group-search.js", "projects-core.js", "projects-bg.js", "notify-bg.js");
+importScripts(
+  "nadezhno-core.js",
+  "nadezhno-bg.js",
+  "group-search.js",
+  "projects-core.js",
+  "projects-bg.js",
+  "notify-bg.js",
+  "follow-discover.js"
+);
 
 const ALARM_NAME = "fb-group-auto-tick";
 const MEMBER_ALARM = "fb-group-membership-tick";
@@ -5184,14 +5192,11 @@ function parseThreadsFollowTargets(text) {
 async function runThreadsFollowOnce() {
   const state = await getState();
   const targets = parseThreadsFollowTargets(state.threadsFollowTargetsText);
-  if (!targets.length) throw new Error("Chưa có danh sách @username để follow. Dán vào ô danh sách Follow.");
   const done = new Set(state.threadsFollowedKeys || []);
   const pending = targets.filter((h) => !done.has(h));
-  if (!pending.length) {
-    await log("info", "Đã follow hết danh sách. Thêm @username mới để tiếp tục.");
-    return;
-  }
-  const handle = pending[0];
+  // Danh sách chỉ định trống hoặc đã follow hết: tìm người viết về chủ đề dự án theo từ khoá.
+  const handle = pending[0] || (await pickDiscoveredFollowHandle("threads", state.threadsFollowedKeys));
+  if (!handle) return;
   const tab = await openWorkTab(`https://www.threads.com/@${handle}`, {
     active: true,
     tabIdKey: "threadsWorkTabId",
@@ -5205,9 +5210,9 @@ async function runThreadsFollowOnce() {
     threadsFollowedKeys: rememberThreadsKeys(state.threadsFollowedKeys, [handle]),
   });
   if (res.followed) {
-    await log("success", `Đã follow @${handle} trên Threads. Còn ${pending.length - 1} người trong danh sách.`, "follow", `https://www.threads.com/@${handle}`);
+    await log("success", `Đã follow @${handle} trên Threads.${pending.length ? ` Còn ${pending.length - 1} người trong danh sách.` : " (tìm theo từ khoá dự án)"}`, "follow", `https://www.threads.com/@${handle}`);
   } else {
-    await log("info", `@${handle} đã được follow trước đó, bỏ qua. Còn ${pending.length - 1} người.`);
+    await log("info", `@${handle} đã được follow trước đó, bỏ qua.`);
   }
 }
 
@@ -6206,14 +6211,11 @@ async function runInstagramScrollOnce() {
 async function runInstagramFollowOnce() {
   const state = await getState();
   const targets = parseUrlList(state.instagramFollowTargetsText);
-  if (!targets.length) throw new Error("Chưa có tài khoản Instagram nào trong danh sách.");
   const followed = new Set(state.instagramFollowedKeys || []);
   const available = targets.filter((t) => !followed.has(t.replace(/^@/, "").toLowerCase()));
-  if (!available.length) {
-    await log("info", "Đã follow hết các tài khoản Instagram trong danh sách.");
-    return;
-  }
-  const rawTarget = available[0];
+  // Danh sách chỉ định trống hoặc đã follow hết: tìm người đăng về chủ đề dự án theo hashtag.
+  const rawTarget = available[0] || (await pickDiscoveredFollowHandle("instagram", state.instagramFollowedKeys));
+  if (!rawTarget) return;
   const handle = rawTarget.replace(/^@/, "").replace(/^https?:\/\/(?:www\.)?instagram\.com\//i, "").replace(/\/$/, "");
   const profileUrl = `https://www.instagram.com/${handle}/`;
   const tab = await openWorkTab(profileUrl, { active: true, tabIdKey: "instagramWorkTabId" });
@@ -6547,14 +6549,11 @@ async function runXPostOnce() {
 async function runXFollowOnce() {
   const state = await getState();
   const targets = parseUrlList(state.xFollowTargetsText);
-  if (!targets.length) throw new Error("Chưa có tài khoản X nào trong danh sách.");
   const followed = new Set(state.xFollowedKeys || []);
   const available = targets.filter((t) => !followed.has(t.replace(/^@/, "").toLowerCase()));
-  if (!available.length) {
-    await log("info", "Đã follow hết các tài khoản X trong danh sách.");
-    return;
-  }
-  const rawTarget = available[0];
+  // Danh sách chỉ định trống hoặc đã follow hết: tìm người tweet về chủ đề dự án theo từ khoá.
+  const rawTarget = available[0] || (await pickDiscoveredFollowHandle("x", state.xFollowedKeys));
+  if (!rawTarget) return;
   const handle = rawTarget.replace(/^@/, "").replace(/^https?:\/\/(?:www\.)?(?:x|twitter)\.com\//i, "").replace(/\/$/, "");
   const profileUrl = `https://x.com/${handle}`;
   const tab = await openWorkTab(profileUrl, { active: true, tabIdKey: "xWorkTabId" });
@@ -7440,14 +7439,12 @@ async function runTiktokScrollOnce() {
 async function runTiktokFollowOnce() {
   const state = await getState();
   const targets = parseUrlList(state.tiktokFollowTargetsText);
-  if (!targets.length) throw new Error("Chưa có tài khoản TikTok nào trong danh sách.");
   const followed = new Set((state.tiktokFollowedKeys || []).map((k) => String(k).toLowerCase()));
   const available = targets.filter((t) => !followed.has(tiktokHandleFromTarget(t).toLowerCase()));
-  if (!available.length) {
-    await log("info", "Đã follow hết các tài khoản TikTok trong danh sách.");
-    return;
-  }
-  const handle = tiktokHandleFromTarget(available[0]);
+  // Danh sách chỉ định trống hoặc đã follow hết: tìm người đăng video về chủ đề dự án theo từ khoá.
+  const raw = available[0] || (await pickDiscoveredFollowHandle("tiktok", state.tiktokFollowedKeys));
+  if (!raw) return;
+  const handle = tiktokHandleFromTarget(raw);
   if (!handle) throw new Error("Tên tài khoản TikTok không hợp lệ.");
   const profileUrl = `https://www.tiktok.com/@${handle}`;
   const tab = await openWorkTab(profileUrl, { active: true, tabIdKey: "tiktokWorkTabId" });
