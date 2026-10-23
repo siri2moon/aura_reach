@@ -429,9 +429,7 @@
     const platform = opts.platform || "";
     const plainLink = PLAIN_LINK_PLATFORMS.has(platform);
     const langName = LANGUAGE_NAMES[p.language] || "tiếng Anh";
-    const linkLines = p.links.length
-      ? p.links.map((l) => `- ${l.label}: ${plainLink ? plainUrl(l.url) : l.url}`)
-      : [`- ${plainLink ? plainUrl(p.url) : p.url}`];
+    const linkLines = projectLinkLines(p, platform);
 
     const lines = [
       "",
@@ -462,10 +460,10 @@
     const mode = opts.mention === true ? "full" : opts.mention || "none";
     if (mode === "full") {
       lines.push(
-        `Lượt này ĐƯỢC PHÉP nhắc tới ${p.name} đúng một lần, chỉ khi nội dung gốc thật sự đúng nhu cầu mà dự án giải quyết. Nói rõ đây là dự án của bạn${p.disclosure ? ` (ví dụ "${p.disclosure}")` : ""}. Đặt ở cuối, một câu, như gợi ý của người quen, không giọng quảng cáo.`,
+        `Lượt này ĐƯỢC PHÉP nhắc tới ${p.name} đúng một lần, kèm đúng MỘT link trong danh sách dưới. Nhắc tên mà không có link là sai. Nói rõ đây là dự án của bạn${p.disclosure ? ` (ví dụ "${p.disclosure}")` : ""}. Đặt ở cuối, một câu, như gợi ý của người quen, không giọng quảng cáo. Chỉ bỏ cả câu này khi nội dung gốc hoàn toàn không dính gì tới chủ đề của dự án.`,
         plainLink
-          ? "Nền tảng này không bấm được link: chỉ ghi tên miền dạng chữ, không có https://. Chọn đường dẫn hợp nhất:"
-          : "Chọn link hợp nhất với nội dung:",
+          ? "Nền tảng này không bấm được link: chỉ ghi tên miền dạng chữ, không có https://. Chép nguyên văn một đường dẫn hợp nhất:"
+          : "Chép nguyên văn một link hợp nhất với nội dung:",
         ...linkLines
       );
     } else if (mode === "soft") {
@@ -480,6 +478,38 @@
     for (const rule of p.avoid) lines.push(`Không được: ${rule}`);
     lines.push("Vẫn chỉ trả về đúng nội dung cần đăng, không giải thích.");
     return lines.filter(Boolean).join("\n");
+  }
+
+  function projectLinkLines(p, platform) {
+    const plainLink = PLAIN_LINK_PLATFORMS.has(platform);
+    return p.links.length
+      ? p.links.map((l) => `- ${l.label}: ${plainLink ? plainUrl(l.url) : l.url}`)
+      : [`- ${plainLink ? plainUrl(p.url) : p.url}`];
+  }
+
+  /**
+   * Dòng nối vào CUỐI tin nhắn user ở lượt nhắc đầy đủ. Khối biến thể trong tin nhắn user hay có
+   * "CTA: KHÔNG … ko để link"; nằm sau system prompt nên AI nghe theo nó và bỏ link của dự án.
+   * Dòng này đứng cuối cùng để ghi đè lại.
+   */
+  function mentionDirective(project, opts = {}) {
+    const p = normalizeProject(project);
+    return [
+      "### NHẮC DỰ ÁN LƯỢT NÀY (ưu tiên hơn dòng CTA ở trên)",
+      `- Kết thúc bằng đúng 1 câu ngắn nhắc ${p.name}, nói rõ là dự án của bạn${p.disclosure ? ` ("${p.disclosure}")` : ""}, kèm đúng 1 link chép nguyên văn từ danh sách:`,
+      ...projectLinkLines(p, opts.platform || ""),
+      "- Câu này phải gắn với điều vừa nói ở trên, nghe như gợi ý của người quen, không giọng quảng cáo.",
+    ].join("\n");
+  }
+
+  /** Bình luận / bài có chứa một trong các link (hoặc tên miền) của dự án không. */
+  function containsProjectLink(project, text) {
+    const p = normalizeProject(project);
+    const lower = String(text || "").toLowerCase();
+    const hosts = [p.url, ...p.links.map((l) => l.url)]
+      .filter(Boolean)
+      .map((u) => plainUrl(u).toLowerCase().split("/")[0]);
+    return hosts.some((h) => h && lower.includes(h));
   }
 
   /** Xác suất nhắc dự án theo loại nội dung. random truyền vào để test được. */
@@ -522,6 +552,8 @@
     buildPromptBlock,
     shouldMention,
     mentionMode,
+    mentionDirective,
+    containsProjectLink,
     slugify,
   };
 

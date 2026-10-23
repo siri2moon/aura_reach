@@ -3293,10 +3293,15 @@ function buildAiUserMessage(ctx) {
 async function generateAiComment(systemPrompt, userContent, opts = {}) {
   await ensureAiOriginRule();
   let prompt = String(systemPrompt || "").trim() || DEFAULT_AI_SYSTEM_PROMPT;
+  let linkProject = null;
   if (opts.platform) {
     const { suffix, project, mention } = await projectPromptSuffix(opts.platform, opts.kind);
     if (suffix) {
       prompt = `${prompt}\n${suffix}`;
+      if (mention === "full") {
+        userContent = `${userContent}\n\n${ProjectsCore.mentionDirective(project, { platform: opts.platform })}`;
+        linkProject = project;
+      }
       const mentionLabel = { full: "lượt này được nhắc dự án", soft: "lượt này nhắc khéo, không tên, không link", none: "lượt này không nhắc dự án" };
       await log("info", `AI viết theo dự án ${project.name} (${mentionLabel[mention] || mentionLabel.none}).`);
     }
@@ -3336,6 +3341,9 @@ async function generateAiComment(systemPrompt, userContent, opts = {}) {
       }
       const text = parseGenerateResponse(raw);
       if (!text) throw new Error("API AI trả về rỗng.");
+      if (linkProject && !ProjectsCore.containsProjectLink(linkProject, text)) {
+        await log("warning", `Lượt nhắc ${linkProject.name} nhưng AI không chèn link (có thể vì bài gốc lạc chủ đề).`);
+      }
       return text;
     } catch (error) {
       if (error.name === "AbortError") throw new Error("API AI hết thời gian chờ.");

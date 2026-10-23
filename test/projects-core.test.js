@@ -107,3 +107,14 @@ test("soft mention hints at the project without name or link", () => {
   assert.doesNotMatch(block, /quarterly-tax-due-dates/);
   assert.doesNotMatch(block, /ĐƯỢC PHÉP nhắc/);
 });
+
+test("full mention directive asks for one project link and detects it", () => {
+  const d = core.mentionDirective(mct(), { platform: "x" });
+  assert.match(d, /ưu tiên hơn dòng CTA/);
+  assert.match(d, /https:\/\/mycreatortax\.com/);
+  const plain = core.mentionDirective(nz(), { platform: "instagram" });
+  assert.match(plain, /nadezhno\.siri2moon\.com/);
+  assert.doesNotMatch(plain, /https:\/\//);
+  assert.equal(core.containsProjectLink(nz(), "смотри nadezhno.siri2moon.com, это мой проект"), true);
+  assert.equal(core.containsProjectLink(nz(), "это мой проект Nadezhno"), false);
+});
