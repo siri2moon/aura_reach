@@ -1,3 +1,45 @@
+/**
+ * Thông báo nhỏ góc dưới phải cho mọi thao tác lưu cài đặt. Dùng chung cho popup.js, projects-ui.js,
+ * nadezhno-ui.js, notify-ui.js qua window.AuraToast.
+ *   AuraToast.ok("Đã lưu cài đặt") · AuraToast.error(message, prefix?) · AuraToast.fromResult(res, okText)
+ */
+window.AuraToast = (() => {
+  let el = null;
+  let timer = null;
+  function show(kind, text, ms) {
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "save-toast";
+      el.setAttribute("role", "status");
+      el.setAttribute("aria-live", "polite");
+      el.innerHTML = '<span class="save-toast-dot"></span><span class="save-toast-text"></span>';
+      document.body.appendChild(el);
+    }
+    el.classList.remove("is-ok", "is-error");
+    el.classList.add(kind === "error" ? "is-error" : "is-ok", "show");
+    el.querySelector(".save-toast-text").textContent = text;
+    clearTimeout(timer);
+    timer = setTimeout(() => el.classList.remove("show"), ms);
+  }
+  // Lỗi "context invalidated" / "unknown message" nghĩa là extension vừa được nạp lại hoặc chưa nạp bản mới.
+  function explain(message) {
+    const text = String(message || "lỗi không xác định");
+    if (/context invalidated|unknown message|receiving end does not exist/i.test(text)) {
+      return "Extension vừa được nạp lại. Tải lại trang này (F5) rồi thử lại.";
+    }
+    return text;
+  }
+  return {
+    ok: (text = "Đã lưu cài đặt") => show("ok", text, 1800),
+    error: (message, prefix = "Lưu thất bại") => show("error", `${prefix}: ${explain(message)}`, 6000),
+    fromResult(res, okText) {
+      if (res?.ok) this.ok(okText);
+      else this.error(res?.error);
+      return res;
+    },
+  };
+})();
+
 const els = {
   statusLine: document.getElementById("statusLine"),
   statusDot: document.getElementById("statusDot"),
@@ -361,7 +403,7 @@ let currentPlatformSubtab = {
   maps: "review",
 };
 const leaveSelected = new Set();
-const TABS = ["project", "threads", "youtube", "instagram", "x", "facebook", "zalo", "tiktok", "maps", "guard", "logs"];
+const TABS = ["project", "threads", "youtube", "instagram", "x", "facebook", "zalo", "tiktok", "maps", "guard", "notify", "logs"];
 
 const THREADS_SUBTABS = ["comment", "scroll", "post", "reply"];
 const YOUTUBE_SUBTABS = ["keyword", "target", "scroll", "subscribe"];
@@ -690,6 +732,7 @@ const PAGE_META = {
   tiktok: { title: "TikTok", desc: "Bình luận AI, lướt For You và follow trên TikTok." },
   maps: { title: "Google Maps", desc: "Tìm địa điểm và viết đánh giá AI trên Google Maps." },
   guard: { title: "Chống ban", desc: "Giới hạn tần suất, khung giờ và warm-up để bảo vệ tài khoản." },
+  notify: { title: "Thông báo Telegram", desc: "Nhận tin trên Telegram khi bình luận, đăng bài thành công hoặc có lỗi." },
   logs: { title: "Nhật ký", desc: "Theo dõi hoạt động gần đây của extension." },
 };
 
@@ -925,7 +968,7 @@ function bind() {
   els.humanGuardEnabled?.addEventListener("change", saveSettings);
   els.humanWarmupEnabled?.addEventListener("change", saveSettings);
   els.saveGuardBtn?.addEventListener("click", () =>
-    call("SAVE_SETTINGS", { settings: collectSettings() }, els.saveGuardBtn, "Đang lưu...")
+    call("SAVE_SETTINGS", { settings: collectSettings() }, els.saveGuardBtn, "Đang lưu...", "Đã lưu cài đặt chống ban")
   );
   els.aiComment?.addEventListener("change", () => {
     syncCommentUi();
@@ -942,8 +985,9 @@ function bind() {
   });
   els.resetPostTopicsBtn?.addEventListener("click", async () => {
     const res = await chrome.runtime.sendMessage({ type: "PROJECT_APPLY_DEFAULTS", keys: ["postTopicsText"] });
-    if (!res?.ok) return alert(res?.error || "Chưa chọn dự án.");
+    if (!res?.ok) return AuraToast.error(res?.error || "Chưa chọn dự án.");
     els.postTopicsText.value = res.defaults?.postTopicsText || "";
+    AuraToast.ok("Đã lấy chủ đề từ hồ sơ dự án");
   });
   els.resetPromptBtn?.addEventListener("click", async () => {
     const res = await chrome.runtime.sendMessage({ type: "GET_DEFAULT_AI_PROMPT" });
@@ -1116,16 +1160,16 @@ function bind() {
   });
 
   for (const btn of document.querySelectorAll(".js-select-all")) {
-    btn.addEventListener("click", () => call("SET_ALL_GROUPS", { enabled: true }));
+    btn.addEventListener("click", () => call("SET_ALL_GROUPS", { enabled: true }, null, "", "Đã chọn tất cả nhóm"));
   }
   for (const btn of document.querySelectorAll(".js-select-none")) {
-    btn.addEventListener("click", () => call("SET_ALL_GROUPS", { enabled: false }));
+    btn.addEventListener("click", () => call("SET_ALL_GROUPS", { enabled: false }, null, "", "Đã bỏ chọn tất cả nhóm"));
   }
 
   els.scanBtn.addEventListener("click", () => call("SCAN_GROUPS", {}, els.scanBtn, "Đang quét..."));
   els.exportGroupsBtn.addEventListener("click", exportGroups);
   els.addUrlsBtn.addEventListener("click", async () => {
-    await call("ADD_GROUP_URLS", { text: els.groupUrls.value }, els.addUrlsBtn, "Đang thêm...");
+    await call("ADD_GROUP_URLS", { text: els.groupUrls.value }, els.addUrlsBtn, "Đang thêm...", "Đã thêm nhóm vào danh sách");
     els.groupUrls.value = "";
   });
   els.joinBtn.addEventListener("click", () =>
@@ -1914,7 +1958,7 @@ function renderTargetGroups() {
   for (const list of [els.postGroupList, els.commentGroupList]) {
     for (const input of list.querySelectorAll("input[type=checkbox]")) {
       input.addEventListener("change", () => {
-        call("SET_GROUP_ENABLED", { id: input.dataset.id, enabled: input.checked });
+        call("SET_GROUP_ENABLED", { id: input.dataset.id, enabled: input.checked }, null, "", input.checked ? "Đã chọn nhóm" : "Đã bỏ chọn nhóm");
       });
     }
   }
@@ -1976,7 +2020,13 @@ function renderLogs() {
 }
 
 async function saveSettings() {
-  await chrome.runtime.sendMessage({ type: "SAVE_SETTINGS", settings: collectSettings() });
+  try {
+    const res = await chrome.runtime.sendMessage({ type: "SAVE_SETTINGS", settings: collectSettings() });
+    return AuraToast.fromResult(res);
+  } catch (error) {
+    AuraToast.error(error.message || error);
+    return { ok: false, error: error.message || String(error) };
+  }
 }
 
 function collectThreadsSettings() {
@@ -2423,7 +2473,8 @@ function collectSettings(mode) {
   };
 }
 
-async function call(type, extra = {}, button, busyText) {
+// successText: có thì báo "đã lưu" khi thành công (dùng cho các thao tác lưu cài đặt / chọn nhóm).
+async function call(type, extra = {}, button, busyText, successText) {
   const labelEl = button?.querySelector("span") || button;
   const original = labelEl?.textContent;
   if (button) {
@@ -2432,6 +2483,7 @@ async function call(type, extra = {}, button, busyText) {
   }
   try {
     const res = await chrome.runtime.sendMessage({ type, ...extra });
+    if (successText && res?.ok) AuraToast.ok(successText);
     if (!res?.ok && res?.error) {
       const stale = /unknown message/i.test(res.error);
       alert(

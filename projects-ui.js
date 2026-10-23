@@ -443,15 +443,21 @@
 
   async function saveEditor() {
     const res = await send("PROJECT_SAVE", { project: readEditor() });
-    if (!res?.ok) return alert(res?.error || "Không lưu được.");
+    if (!res?.ok) {
+      window.AuraToast?.error(res?.error || "Không lưu được hồ sơ dự án.");
+      return res;
+    }
     renderAll(true);
     status("Đã lưu hồ sơ. AI dùng hồ sơ mới từ lượt chạy tiếp theo.");
+    window.AuraToast?.ok("Đã lưu hồ sơ dự án");
+    return res;
   }
 
   async function applyDefaults() {
-    await saveEditor();
+    if (!(await saveEditor())?.ok) return;
     const res = await send("PROJECT_APPLY_DEFAULTS");
-    if (!res?.ok) return alert(res?.error || "Không áp dụng được.");
+    if (!res?.ok) return window.AuraToast?.error(res?.error || "không rõ lỗi", "Áp dụng thất bại");
+    window.AuraToast?.ok(`Đã áp dụng ${res.applied.length} ô theo dự án`);
     status(`Đã cập nhật ${res.applied.length} ô nguồn bài / từ khoá / bộ lọc. Đang nạp lại…`);
     setTimeout(() => location.reload(), 700);
   }

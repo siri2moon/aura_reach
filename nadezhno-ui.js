@@ -164,7 +164,15 @@
     let saveTimer = null;
     const queueSave = () => {
       clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => send("NADEZHNO_SAVE_SETTINGS", { settings: collectSettings() }).then(() => render(false)), 400);
+      saveTimer = setTimeout(async () => {
+        // send() đã alert khi lỗi; thành công thì báo nhỏ để biết đã lưu.
+        const res = await send("NADEZHNO_SAVE_SETTINGS", { settings: collectSettings() }).catch((error) => {
+          window.AuraToast?.error(error.message || error);
+          return null;
+        });
+        if (res?.ok) window.AuraToast?.ok("Đã lưu cài đặt Nadezhno");
+        render(false);
+      }, 400);
     };
     for (const el of [els.dailyLimit, els.groupGap, els.prompt]) el.addEventListener("input", queueSave);
     for (const el of [els.defaultCity, els.linkMode, els.useAi, els.reviewFirst]) el.addEventListener("change", queueSave);

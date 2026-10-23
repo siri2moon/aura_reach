@@ -1,4 +1,4 @@
-importScripts("nadezhno-core.js", "nadezhno-bg.js", "group-search.js", "projects-core.js", "projects-bg.js");
+importScripts("nadezhno-core.js", "nadezhno-bg.js", "group-search.js", "projects-core.js", "projects-bg.js", "notify-bg.js");
 
 const ALARM_NAME = "fb-group-auto-tick";
 const MEMBER_ALARM = "fb-group-membership-tick";
@@ -1687,6 +1687,9 @@ async function handleMessage(message, sender) {
   if (typeof message?.type === "string" && message.type.startsWith("GROUP_SEARCH_")) {
     return handleGroupSearchMessage(message);
   }
+  if (typeof message?.type === "string" && message.type.startsWith("NOTIFY_")) {
+    return handleNotifyMessage(message);
+  }
   if (typeof message?.type === "string" && message.type.startsWith("PROJECT_")) {
     return handleProjectMessage(message);
   }
@@ -2940,11 +2943,12 @@ async function runCycle(source) {
     if (nadezhnoOutcome?.kind === "none") {
       await log("info", `[Nadezhno] «${group.name}»: ${nadezhnoOutcome.reason}`);
     } else if (nadezhnoOutcome?.kind === "draft") {
-      await log("success", `[Nadezhno] Đã soạn câu trả lời chờ duyệt trong «${group.name}»: ${clip(posted.text, 80)}`);
+      await log("success", `[Nadezhno] Đã soạn câu trả lời chờ duyệt trong «${group.name}»: ${clip(posted.text, 80)}`, "draft");
     } else {
       await log(
         "success",
-        `${posted.label} thành công trong «${group.name}»: ${clip(posted.text, 80)}`
+        `${posted.label} thành công trong «${group.name}»: ${clip(posted.text, 80)}`,
+        posted.type === "CREATE_POST" ? "post" : "comment"
       );
     }
   } catch (error) {
@@ -3945,7 +3949,7 @@ async function runMembershipStep(source) {
 
     const status = result?.status === "pending" ? "đã gửi yêu cầu" : result?.already ? "đã sẵn trạng thái này" : "thành công";
     await chrome.storage.local.set({ stats, groups, membershipIndex: index + 1 });
-    await log("success", `${label} «${result?.name || group.name}» ${status}.`);
+    await log("success", `${label} «${result?.name || group.name}» ${status}.`, "group");
   } catch (error) {
     const message = error.message || String(error);
     const stats = { ...(await getState()).stats };
@@ -4798,7 +4802,7 @@ async function runThreadsCommentSession(feedTab, sourceUrl) {
         texts.push(posted.text);
         keys.push(...posted.keys);
         postedCount += 1;
-        await log("success", `Đã đăng bình luận Threads (${postedCount}/${maxPosts}): ${clip(posted.text, 80)}`);
+        await log("success", `Đã đăng bình luận Threads (${postedCount}/${maxPosts}): ${clip(posted.text, 80)}`, "comment");
         if (postedCount >= maxPosts) break;
         const waitMinutes = intervalMin + Math.random() * (intervalMax - intervalMin);
         await log("info", `Nghỉ khoảng ${waitMinutes.toFixed(1)} phút trước khi qua bài tiếp theo...`);
@@ -5199,7 +5203,7 @@ async function runThreadsFollowOnce() {
     threadsFollowedKeys: rememberThreadsKeys(state.threadsFollowedKeys, [handle]),
   });
   if (res.followed) {
-    await log("success", `Đã follow @${handle} trên Threads. Còn ${pending.length - 1} người trong danh sách.`);
+    await log("success", `Đã follow @${handle} trên Threads. Còn ${pending.length - 1} người trong danh sách.`, "follow");
   } else {
     await log("info", `@${handle} đã được follow trước đó, bỏ qua. Còn ${pending.length - 1} người.`);
   }
@@ -5285,7 +5289,7 @@ async function runThreadsPostOnce() {
   }
   const keys = rememberThreadsKeys(state.threadsPostUsedKeys, [content.key || textKey(text)]);
   await chrome.storage.local.set({ threadsPostUsedKeys: keys });
-  await log("success", `Đã đăng bài Threads: ${clip(text, 80)}`);
+  await log("success", `Đã đăng bài Threads: ${clip(text, 80)}`, "post");
 }
 
 function threadsReplySourceList(state) {
@@ -5447,7 +5451,7 @@ async function runThreadsReplyOnce() {
         threadsRepliedKeys: keys,
         threadsReplySourceIndex: (startIndex + i + 1) % sources.length,
       });
-      await log("success", `Đã trả lời bình luận Threads: ${clip(text, 80)}`);
+      await log("success", `Đã trả lời bình luận Threads: ${clip(text, 80)}`, "reply");
       return;
     } catch (error) {
       lastError = error;
@@ -5996,7 +6000,7 @@ async function commentYoutubeVideoInTab(tab, { skipKeys, watchSeconds, label }) 
   });
   if (!postRes?.ok) throw new Error(postRes?.error || "Không gửi được bình luận YouTube.");
   if (ctx.postKey) await rememberYoutubeCommentedKeys([ctx.postKey]);
-  await log("success", `Bình luận YouTube${label ? ` (${label})` : ""} thành công: ${clip(commentText, 80)}`);
+  await log("success", `Bình luận YouTube${label ? ` (${label})` : ""} thành công: ${clip(commentText, 80)}`, "comment");
   return { posted: true, postKey: youtubeVideoKey(ctx.postKey), text: commentText };
 }
 
@@ -6126,7 +6130,7 @@ async function runYoutubeSubscribeOnce() {
   if (res.skipped) {
     await log("info", `Đã subscribe kênh trước đó: ${channelUrl}`);
   } else {
-    await log("success", `Subscribe kênh YouTube thành công: ${channelUrl}`);
+    await log("success", `Subscribe kênh YouTube thành công: ${channelUrl}`, "follow");
   }
   const keys = [channelUrl.toLowerCase(), ...(state.youtubeSubscribedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ youtubeSubscribedKeys: keys });
@@ -6177,7 +6181,7 @@ async function runInstagramCommentOnce() {
 
   const commented = [ctx.postKey, ...(state.instagramCommentedKeys || []).filter((k) => k !== ctx.postKey)].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ instagramCommentedKeys: commented });
-  await log("success", `Bình luận Instagram thành công: ${clip(commentText, 80)}`);
+  await log("success", `Bình luận Instagram thành công: ${clip(commentText, 80)}`, "comment");
 }
 
 async function runInstagramScrollOnce() {
@@ -6217,7 +6221,7 @@ async function runInstagramFollowOnce() {
   if (res.skipped) {
     await log("info", `Đã follow trước đó: @${handle}`);
   } else {
-    await log("success", `Follow tài khoản Instagram thành công: @${handle}`);
+    await log("success", `Follow tài khoản Instagram thành công: @${handle}`, "follow");
   }
   const keys = [handle.toLowerCase(), ...(state.instagramFollowedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ instagramFollowedKeys: keys });
@@ -6455,7 +6459,7 @@ async function runXCommentSession(feedTab, sourceUrl) {
         const latest = await getState();
         const xCommentedKeys = rememberThreadsKeys(latest.xCommentedKeys, posted.keys);
         await chrome.storage.local.set({ xCommentedKeys });
-        await log("success", `Đã đăng bình luận X (${postedCount}/${maxPosts}): ${clip(posted.text, 80)}`);
+        await log("success", `Đã đăng bình luận X (${postedCount}/${maxPosts}): ${clip(posted.text, 80)}`, "comment");
         if (postedCount >= maxPosts) break;
         const waitMinutes = intervalMin + Math.random() * (intervalMax - intervalMin);
         await log("info", `Nghỉ khoảng ${waitMinutes.toFixed(1)} phút trước khi qua bài tiếp theo...`);
@@ -6535,7 +6539,7 @@ async function runXPostOnce() {
 
   const usedKeys = [textKey(text), ...(state.xPostUsedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ xPostUsedKeys: usedKeys });
-  await log("success", `Đã đăng bài lên X: ${clip(text, 80)}`);
+  await log("success", `Đã đăng bài lên X: ${clip(text, 80)}`, "post");
 }
 
 async function runXFollowOnce() {
@@ -6558,7 +6562,7 @@ async function runXFollowOnce() {
   if (res.skipped) {
     await log("info", `Đã follow trước đó: @${handle}`);
   } else {
-    await log("success", `Follow tài khoản X thành công: @${handle}`);
+    await log("success", `Follow tài khoản X thành công: @${handle}`, "follow");
   }
   const keys = [handle.toLowerCase(), ...(state.xFollowedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ xFollowedKeys: keys });
@@ -6707,7 +6711,7 @@ async function runZaloFriendOnce() {
           await log("warning", `[Zalo Kết bạn] ${phone} không thể kết bạn (chặn) — bỏ qua, chuyển số tiếp theo.`);
         } else {
           sent += 1;
-          await log("success", `[Zalo Kết bạn] ✓ Đã gửi lời mời tới ${phone}`);
+          await log("success", `[Zalo Kết bạn] ✓ Đã gửi lời mời tới ${phone}`, "follow");
         }
       } else {
         skipped = true;
@@ -6785,7 +6789,7 @@ async function runZaloMessageOnce() {
       if (res?.ok) {
         doneKeys.add(target);
         sent++;
-        await log("success", `[Zalo Nhắn tin] ✓ Đã nhắn tới ${target}`);
+        await log("success", `[Zalo Nhắn tin] ✓ Đã nhắn tới ${target}`, "message");
       } else {
         await log("warning", `[Zalo Nhắn tin] Không thể nhắn tới ${target}: ${res?.error || "lỗi không xác định"}`);
       }
@@ -6873,7 +6877,7 @@ async function runZaloReplyOnce() {
       if (sendRes?.ok) {
         repliedKeys.add(msgKey);
         replied++;
-        await log("success", `[Zalo Trả lời] ✓ Đã trả lời ${conv.name}: "${clip(replyText, 80)}"`);
+        await log("success", `[Zalo Trả lời] ✓ Đã trả lời ${conv.name}: "${clip(replyText, 80)}"`, "message");
       } else {
         await log("warning", `[Zalo Trả lời] Không gửi được tới ${conv.name}: ${sendRes?.error || "lỗi"}`);
       }
@@ -7414,7 +7418,7 @@ async function runTiktokCommentOnce() {
 
   const commented = [ctx.postKey, ...(state.tiktokCommentedKeys || []).filter((k) => k !== ctx.postKey)].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ tiktokCommentedKeys: commented });
-  await log("success", `Bình luận TikTok thành công (${ctx.commentCount || "?"} cmt sẵn): ${clip(commentText, 80)}`);
+  await log("success", `Bình luận TikTok thành công (${ctx.commentCount || "?"} cmt sẵn): ${clip(commentText, 80)}`, "comment");
 }
 
 async function runTiktokScrollOnce() {
@@ -7451,7 +7455,7 @@ async function runTiktokFollowOnce() {
   if (res.skipped) {
     await log("info", `Đã follow trước đó: @${handle}`);
   } else {
-    await log("success", `Follow TikTok thành công: @${handle}`);
+    await log("success", `Follow TikTok thành công: @${handle}`, "follow");
   }
   const keys = [handle.toLowerCase(), ...(state.tiktokFollowedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ tiktokFollowedKeys: keys });
@@ -7499,7 +7503,7 @@ async function runMapsReviewOnce() {
 
   const keys = [placeKey, ...(state.mapsReviewedKeys || [])].slice(0, MAX_HISTORY);
   await chrome.storage.local.set({ mapsReviewedKeys: keys });
-  await log("success", `Đã đánh giá ${ctx.name} (${stars}★): ${clip(reviewText, 80)}`);
+  await log("success", `Đã đánh giá ${ctx.name} (${stars}★): ${clip(reviewText, 80)}`, "review");
 }
 
 async function runMapsSearchOnce() {
@@ -7550,7 +7554,7 @@ async function runMapsSearchOnce() {
           reviewed++;
           const reviewedKeys = [ctx.placeKey || key, ...(state.mapsReviewedKeys || [])].slice(0, MAX_HISTORY);
           await chrome.storage.local.set({ mapsReviewedKeys: reviewedKeys });
-          await log("success", `[Maps] Đã đánh giá ${ctx.name}: ${clip(reviewText, 80)}`);
+          await log("success", `[Maps] Đã đánh giá ${ctx.name}: ${clip(reviewText, 80)}`, "review");
         }
       }
     }
@@ -7705,7 +7709,7 @@ async function runXReplyOnce() {
         xRepliedKeys: keys,
         xReplySourceIndex: (startIndex + i + 1) % sources.length,
       });
-      await log("success", `Đã trả lời bình luận X: ${clip(text, 80)}`);
+      await log("success", `Đã trả lời bình luận X: ${clip(text, 80)}`, "reply");
       return;
     } catch (error) {
       lastError = error;
@@ -7955,12 +7959,15 @@ function publicActivityLogs(logs) {
   return (logs || []).filter((entry) => !isHiddenActivityLog(entry?.message));
 }
 
-async function log(level, message) {
+// event: khoá trong NOTIFY_EVENTS (notify-bg.js) để báo Telegram khi người dùng bật; lỗi tự tính là "error".
+async function log(level, message, event) {
   if (isHiddenActivityLog(message)) return;
   const state = await getState();
   const entry = { id: `${Date.now()}-${Math.random()}`, t: Date.now(), level, message };
   const logs = [entry, ...publicActivityLogs(state.logs)].slice(0, MAX_LOGS);
   await chrome.storage.local.set({ logs });
+  const notify = event || (level === "error" ? "error" : "");
+  if (notify) queueNotifyEvent(notify, message);
 }
 
 async function refreshBadge() {

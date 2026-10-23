@@ -1550,3 +1550,33 @@ body.gated .app { display: none; }
   .plan-step.ok .plan-step-num { color: #052e26; }
   .project-mark { color: #fff; }
 }
+
+/* Thông báo lưu cài đặt (AuraToast trong popup.js) */
+.save-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 10px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-dropdown);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.save-toast.show { opacity: 1; transform: none; pointer-events: auto; }
+.save-toast-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--text-muted); }
+.save-toast.is-ok { border-color: var(--success); }
+.save-toast.is-ok .save-toast-dot { background: var(--success); }
+.save-toast.is-error { border-color: var(--danger); color: var(--danger-text); }
+.save-toast.is-error .save-toast-dot { background: var(--danger); }
