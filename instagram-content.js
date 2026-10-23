@@ -185,6 +185,28 @@
     throw new Error("Không tìm thấy bài viết nào mới trên Instagram để tương tác.");
   }
 
+  const COMMENT_BOX_SELECTOR =
+    "textarea[aria-label*='bình luận' i], textarea[aria-label*='comment' i], textarea[placeholder*='bình luận' i], textarea[placeholder*='comment' i], textarea[aria-label*='коммент' i], form textarea";
+
+  function findCommentBox() {
+    return document.querySelector(COMMENT_BOX_SELECTOR);
+  }
+
+  // Tìm nút gửi gần ô bình luận nhất (đi ngược lên các khối cha), rồi mới tới cả trang.
+  function findSubmitButton(box) {
+    const isSubmit = (btn) => {
+      const t = (btn.textContent || "").trim().toLowerCase();
+      if (!["post", "đăng", "опубликовать"].includes(t)) return false;
+      return !btn.disabled && btn.getAttribute("aria-disabled") !== "true";
+    };
+    let scope = box?.parentElement || null;
+    for (let depth = 0; scope && depth < 8; depth += 1, scope = scope.parentElement) {
+      const hit = Array.from(scope.querySelectorAll("button, div[role='button']")).find(isSubmit);
+      if (hit) return hit;
+    }
+    return Array.from(document.querySelectorAll("button, div[role='button']")).find(isSubmit) || null;
+  }
+
   async function createInstagramComment(text, postKey) {
     if (!text) throw new Error("Nội dung bình luận Instagram rỗng.");
 
@@ -217,35 +239,39 @@
     textarea.focus();
     await sleep(300);
 
-    // Set value for React
-    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
-    if (nativeSetter) {
-      nativeSetter.call(textarea, text);
-    } else {
-      textarea.value = text;
-    }
-    textarea.dispatchEvent(new Event("input", { bubbles: true }));
-    document.execCommand("insertText", false, "");
+    // Gõ như người dùng thật: insertText phát beforeinput/input mà React của Instagram nhận. Gán .value
+    // qua native setter + Event("input") giả không cập nhật state, ô vẫn bị coi là trống và nút
+    // «Post» không bao giờ hiện ra (Instagram chỉ render nút này khi ô có chữ).
+    document.execCommand("insertText", false, text);
     await sleep(600);
-
-    // Find submit button: "Đăng" or "Post"
-    const form = textarea.closest("form") || document;
-    const buttons = Array.from(form.querySelectorAll("button, div[role='button']"));
-    let submitBtn = buttons.find((btn) => {
-      const t = (btn.textContent || "").trim().toLowerCase();
-      return t === "đăng" || t === "post";
-    });
-
-    if (!submitBtn) {
-      submitBtn = form.querySelector("button[type='submit']");
+    const typedBox = findCommentBox() || textarea;
+    if (!String(typedBox.value || "").trim()) {
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
+      if (nativeSetter) nativeSetter.call(typedBox, text);
+      else typedBox.value = text;
+      typedBox.dispatchEvent(new Event("input", { bubbles: true }));
+      await sleep(600);
     }
 
-    if (!submitBtn || submitBtn.disabled) {
+    // Nút «Post» / «Đăng» là div[role=button], không nằm trong <form> nào; chờ nó hiện và hết bị vô hiệu.
+    let submitBtn = null;
+    for (let i = 0; i < 12 && !submitBtn; i += 1) {
+      submitBtn = findSubmitButton(findCommentBox() || typedBox);
+      if (!submitBtn) await sleep(400);
+    }
+    if (!submitBtn) {
       throw new Error("Không tìm thấy hoặc nút Đăng bình luận Instagram bị vô hiệu.");
     }
 
     submitBtn.click();
-    await sleep(2500);
+    // Đăng xong Instagram xoá trống ô bình luận; còn nguyên chữ thì coi như chưa gửi được.
+    let sent = false;
+    for (let i = 0; i < 10 && !sent; i += 1) {
+      await sleep(500);
+      sent = !String(findCommentBox()?.value || "").trim();
+    }
+    if (!sent) throw new Error("Đã bấm Đăng nhưng Instagram chưa nhận bình luận (ô vẫn còn chữ).");
+    await sleep(1000);
 
     return {
       ok: true,
