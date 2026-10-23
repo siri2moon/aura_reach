@@ -198,6 +198,7 @@
     "tiktokFollowTargetsText",
     "postsText",
     "postTopicsText",
+    "instagramFilterPrompt",
     "commentsText",
     "joinUrlsText",
     "groupSearchKeywords",
@@ -369,6 +370,7 @@
       postTopicsText: joinTemplates(p.postTopics),
       youtubeKeywordsText: (p.youtubeKeywords.length ? p.youtubeKeywords : p.postKeywords).join("\n"),
       instagramSourcesText: search("instagram", p.hashtags),
+      instagramFilterPrompt: p.filterPrompt,
       tiktokSourcesText: search("tiktok", p.postKeywords),
       groupSearchKeywords: p.groupKeywords.join("\n"),
     });

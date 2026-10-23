@@ -210,6 +210,8 @@ const els = {
   instagramAiSystemPrompt: document.getElementById("instagramAiSystemPrompt"),
   resetInstagramPromptBtn: document.getElementById("resetInstagramPromptBtn"),
   instagramSourcesText: document.getElementById("instagramSourcesText"),
+  instagramFilterPrompt: document.getElementById("instagramFilterPrompt"),
+  instagramFilterIgnoreOnError: document.getElementById("instagramFilterIgnoreOnError"),
   instagramCommentRunOnceBtn: document.getElementById("instagramCommentRunOnceBtn"),
   instagramCommentToggleBtn: document.getElementById("instagramCommentToggleBtn"),
 
@@ -865,6 +867,7 @@ function bind() {
     "instagramCommentMaxMinutes",
     "instagramAiSystemPrompt",
     "instagramSourcesText",
+    "instagramFilterPrompt",
     "instagramScrollMinMinutes",
     "instagramScrollMaxMinutes",
     "instagramScrollRounds",
@@ -1085,6 +1088,7 @@ function bind() {
     saveSettings();
   });
   els.xFilterIgnoreOnError?.addEventListener("change", saveSettings);
+  els.instagramFilterIgnoreOnError?.addEventListener("change", saveSettings);
   els.xReplyFilterIgnoreOnError?.addEventListener("change", saveSettings);
   els.resetXReplyPromptBtn?.addEventListener("click", async () => {
     const res = await chrome.runtime.sendMessage({ type: "GET_DEFAULT_X_REPLY_PROMPT" });
@@ -1561,6 +1565,8 @@ function fillForm() {
   if (els.instagramCommentMaxMinutes) els.instagramCommentMaxMinutes.value = state.instagramCommentMaxMinutes ?? 55;
   if (els.instagramAiSystemPrompt) els.instagramAiSystemPrompt.value = state.instagramAiSystemPrompt || "";
   if (els.instagramSourcesText) els.instagramSourcesText.value = state.instagramSourcesText || "";
+  if (els.instagramFilterPrompt) els.instagramFilterPrompt.value = state.instagramFilterPrompt || "";
+  if (els.instagramFilterIgnoreOnError) els.instagramFilterIgnoreOnError.checked = Boolean(state.instagramFilterIgnoreOnError);
 
   if (els.instagramScrollEnabled) els.instagramScrollEnabled.checked = Boolean(state.instagramScrollEnabled);
   if (els.instagramScrollMinMinutes) els.instagramScrollMinMinutes.value = state.instagramScrollMinMinutes ?? 30;
@@ -2232,6 +2238,8 @@ function collectInstagramSettings() {
     instagramCommentMaxMinutes: commentMax,
     instagramAiSystemPrompt: els.instagramAiSystemPrompt?.value || "",
     instagramSourcesText: els.instagramSourcesText?.value || "",
+    instagramFilterPrompt: els.instagramFilterPrompt?.value || "",
+    instagramFilterIgnoreOnError: Boolean(els.instagramFilterIgnoreOnError?.checked),
 
     instagramScrollMinMinutes: scrollMin,
     instagramScrollMaxMinutes: scrollMax,

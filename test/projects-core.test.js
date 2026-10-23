@@ -31,6 +31,7 @@ test("scopedDefaults builds platform search sources from project keywords", () =
   assert.equal(d.xReplySourcesText, d.xSourcesText);
   assert.equal(d.threadsReplySourcesText, d.threadsSourcesText);
   assert.equal(d.xReplyFilterPrompt, mct().filterPrompt);
+  assert.equal(d.instagramFilterPrompt, mct().filterPrompt);
 });
 
 test("group relevance for Nadezhno matches nadezhno-core", () => {

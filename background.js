@@ -1006,6 +1006,9 @@ const DEFAULT_STATE = {
   instagramAiSystemPrompt: DEFAULT_INSTAGRAM_AI_SYSTEM_PROMPT,
   instagramSourcesText: "",
   instagramCommentedKeys: [],
+  instagramFilterPrompt: "",
+  instagramFilterIgnoreOnError: false,
+  instagramFilteredOutKeys: [],
   instagramWorkTabId: null,
 
   instagramScrollEnabled: false,
@@ -6140,32 +6143,55 @@ async function runYoutubeSubscribeOnce() {
   await chrome.storage.local.set({ youtubeSubscribedKeys: keys });
 }
 
+// Số bài Instagram tối đa được mở trong một lượt khi các bài trước bị bộ lọc AI loại.
+const INSTAGRAM_FILTER_MAX_TRIES = 3;
+
 async function runInstagramCommentOnce() {
-  const state = await withProjectFallbacks(await getState(), ["instagramSourcesText"]);
+  const state = await withProjectFallbacks(await getState(), ["instagramSourcesText", "instagramFilterPrompt"]);
   const sources = parseUrlList(state.instagramSourcesText);
   const targetUrl = sources.length ? sources[Math.floor(Math.random() * sources.length)] : "https://www.instagram.com/";
-  const tab = await openWorkTab(targetUrl, { active: true, tabIdKey: "instagramWorkTabId" });
-  await sleep(2000);
-  const ping = await sendToTab(tab.id, { type: "PING" });
-  if (ping?.state && ping.state !== "ok") throw new Error(ping.error || "Instagram không sẵn sàng.");
+  const filterPrompt = String(state.instagramFilterPrompt || "").trim();
+  const filteredOut = [...(state.instagramFilteredOutKeys || [])];
+  let tab = null;
+  let ctx = null;
 
-  let ctx = await sendToTab(tab.id, {
-    type: "EXTRACT_INSTAGRAM_CONTEXT",
-    skipKeys: state.instagramCommentedKeys || [],
-  });
-  if (ctx?.skipped) {
-    await log("info", "Bài viết Instagram này đã từng bình luận. Bỏ qua.");
-    return;
-  }
-  if (ctx?.nextUrl) {
-    const nextTab = await openWorkTab(ctx.nextUrl, { active: true, tabIdKey: "instagramWorkTabId" });
+  // Mỗi lần thử là một lần điều hướng tab thật (trang hashtag → bài), phải tuần tự.
+  for (let attempt = 1; attempt <= INSTAGRAM_FILTER_MAX_TRIES; attempt += 1) {
+    const skipKeys = [...(state.instagramCommentedKeys || []), ...filteredOut];
+    tab = await openWorkTab(targetUrl, { active: true, tabIdKey: "instagramWorkTabId" });
     await sleep(2000);
-    ctx = await sendToTab(nextTab.id, {
-      type: "EXTRACT_INSTAGRAM_CONTEXT",
-      skipKeys: state.instagramCommentedKeys || [],
+    const ping = await sendToTab(tab.id, { type: "PING" });
+    if (ping?.state && ping.state !== "ok") throw new Error(ping.error || "Instagram không sẵn sàng.");
+
+    ctx = await sendToTab(tab.id, { type: "EXTRACT_INSTAGRAM_CONTEXT", skipKeys });
+    if (ctx?.skipped) {
+      await log("info", "Bài viết Instagram này đã từng bình luận hoặc đã bị bộ lọc loại. Bỏ qua.");
+      return;
+    }
+    if (ctx?.nextUrl) {
+      tab = await openWorkTab(ctx.nextUrl, { active: true, tabIdKey: "instagramWorkTabId" });
+      await sleep(2000);
+      ctx = await sendToTab(tab.id, { type: "EXTRACT_INSTAGRAM_CONTEXT", skipKeys });
+    }
+    if (!ctx?.postText) throw new Error("Không lấy được nội dung bài viết Instagram.");
+    if (!filterPrompt) break;
+
+    await log("info", `Đang đánh giá bài Instagram của ${ctx.author || "user"} theo tiêu chí dự án...`);
+    const [allowed] = await evaluateThreadsContentGateBatch({
+      filterPrompt,
+      ignoreOnError: Boolean(state.instagramFilterIgnoreOnError),
+      posts: [{ text: ctx.postText }],
     });
+    if (allowed) break;
+
+    if (ctx.postKey) filteredOut.unshift(ctx.postKey);
+    await chrome.storage.local.set({ instagramFilteredOutKeys: filteredOut.slice(0, MAX_HISTORY) });
+    // Nguồn là link một bài cụ thể thì không có bài khác để thử.
+    const canRetry = attempt < INSTAGRAM_FILTER_MAX_TRIES && !/\/(?:p|reel|reels)\/[A-Za-z0-9_-]+/i.test(targetUrl);
+    await log("info", `Bài của ${ctx.author || "user"} không hợp tiêu chí, bỏ qua${canRetry ? ", tìm bài khác..." : "."}: ${clip(ctx.postText, 80)}`);
+    if (!canRetry) return;
+    ctx = null;
   }
-  if (!ctx?.postText) throw new Error("Không lấy được nội dung bài viết Instagram.");
 
   await log("info", `Đang gọi AI viết bình luận Instagram cho bài của ${ctx.author || "user"}...`);
   const commentText = await generateAiComment(
