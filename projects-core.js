@@ -442,7 +442,7 @@
    * @param {object} project
    * @param {{platform?: string, kind?: "comment"|"post"|"reply", mention?: boolean|"full"|"soft"|"none"}} opts
    *   mention: lượt này nhắc dự án tới đâu (background tung bằng mentionMode). true = "full", false = "none";
-   *   "soft" = ẩn ý mình đang làm một công cụ về chủ đề này, không tên, không link.
+   *   "soft" = ẩn ý mình đang làm một dự án (công cụ, kênh…) về chủ đề này, không tên, không link.
    */
   function buildPromptBlock(project, opts = {}) {
     const p = normalizeProject(project);
@@ -490,7 +490,7 @@
     } else if (mode === "soft") {
       lines.push(
         `Lượt này KHÔNG ghi tên ${p.name}, không link, không tên miền, không kêu gọi.`,
-        `Nếu nội dung gốc đúng chủ đề của dự án, được thêm thoáng qua một ý rằng bạn đang tự làm / xây một công cụ về đúng vấn đề này (ví dụ "mình đang làm một tool tính đúng cái này" — viết bằng ngôn ngữ của bình luận), như chuyện bên lề của người trong nghề, để người đọc tò mò hỏi thêm hoặc vào trang cá nhân. Không mô tả tính năng, không khen sản phẩm. Nội dung gốc không liên quan thì bỏ ý này.`
+        `Nếu nội dung gốc đúng chủ đề của dự án, được thêm thoáng qua một ý rằng bạn đang tự làm đúng loại dự án ở dòng "Dự án là gì" về chủ đề này (công cụ: "mình đang làm một tool tính đúng cái này"; kênh / nội dung: "mình cũng đang làm phim tài liệu về đúng cảnh này" — viết bằng ngôn ngữ của bình luận), như chuyện bên lề của người trong nghề, để người đọc tò mò hỏi thêm hoặc vào trang cá nhân. Không mô tả tính năng, không khen sản phẩm. Nội dung gốc không liên quan thì bỏ ý này.`
       );
     } else {
       lines.push(`Lượt này KHÔNG nhắc tên, link hay ám chỉ ${p.name}. Chỉ góp ý chuyên môn hoặc kể trải nghiệm.`);
@@ -555,6 +555,40 @@
     return "none";
   }
 
+  /**
+   * Đọc file JSON xuất từ extension (một dự án hoặc mảng dự án) để nhập lại.
+   * Dùng cho dự án riêng tư: hồ sơ nằm trong file trên máy, không cần sửa PRESETS (repo công khai).
+   * Trả về danh sách dự án đã chuẩn hoá, mỗi dự án có id; ném lỗi tiếng Việt nếu file sai.
+   */
+  function parseProjectImport(text) {
+    let data;
+    try {
+      data = JSON.parse(String(text || ""));
+    } catch {
+      throw new Error("File không phải JSON hợp lệ.");
+    }
+    const items = Array.isArray(data) ? data : [data];
+    if (!items.length) throw new Error("File không có dự án nào.");
+    return items.map((raw, i) => {
+      if (!raw || typeof raw !== "object" || !String(raw.name || "").trim()) {
+        throw new Error(`Dự án thứ ${i + 1} trong file thiếu tên (name).`);
+      }
+      const project = { id: String(raw.id || slugify(raw.name)) };
+      for (const field of EDITABLE_FIELDS) if (field in raw) project[field] = raw[field];
+      const normalized = normalizeProject(project);
+      delete normalized.preset;
+      return normalized;
+    });
+  }
+
+  /** Hồ sơ dự án ở dạng file JSON để sao lưu hoặc chuyển máy; nhập lại bằng parseProjectImport. */
+  function projectExport(project) {
+    const p = normalizeProject(project);
+    const out = { id: p.id };
+    for (const field of EDITABLE_FIELDS) out[field] = p[field];
+    return JSON.stringify(out, null, 2) + "\n";
+  }
+
   const api = {
     PLATFORMS,
     FIT,
@@ -578,6 +612,8 @@
     mentionDirective,
     containsProjectLink,
     slugify,
+    parseProjectImport,
+    projectExport,
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;

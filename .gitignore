@@ -8,3 +8,5 @@ aura-reach.zip
 .code-review-graph/
 .env
 .DS_Store
+# Hồ sơ dự án riêng tư (nhập vào extension bằng "Nhập dự án từ file JSON")
+private/

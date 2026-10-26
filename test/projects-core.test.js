@@ -134,3 +134,26 @@ test("YouTube comments never get a full mention with a domain", () => {
   assert.equal(core.mentionMode(p, "comment", r, "threads"), "full");
   assert.equal(core.mentionMode(p, "comment", () => 0.99, "youtube"), "none");
 });
+
+test("projectExport and parseProjectImport round-trip a private project", () => {
+  const project = core.normalizeProject({
+    id: "side",
+    name: "Side project",
+    language: "en",
+    youtubeKeywords: ["one", "two"],
+    platforms: { youtube: "high", x: "none" },
+  });
+  const [back] = core.parseProjectImport(core.projectExport(project));
+  assert.equal(back.id, "side");
+  assert.deepEqual(back.youtubeKeywords, ["one", "two"]);
+  assert.equal(back.platforms.youtube, "high");
+  assert.equal(back.platforms.x, "none");
+  assert.equal("preset" in back, false);
+});
+
+test("parseProjectImport accepts arrays, fills ids and rejects bad files", () => {
+  const list = core.parseProjectImport(JSON.stringify([{ name: "Alpha Beta" }, { id: "b", name: "B" }]));
+  assert.deepEqual(list.map((p) => p.id), ["alpha-beta", "b"]);
+  assert.throws(() => core.parseProjectImport("not json"), /JSON/);
+  assert.throws(() => core.parseProjectImport(JSON.stringify([{ url: "https://x.com" }])), /thiếu tên/);
+});

@@ -1354,6 +1354,7 @@ body.gated .app { display: none; }
 .gate-new-title { font-weight: 700; font-size: 13.5px; margin-bottom: 10px; }
 .gate-new-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .gate-new-row input { flex: 1 1 200px; }
+.gate-import { margin-top: 12px; text-align: center; }
 .gate-cancel { margin-top: 18px; }
 
 .project-mark {

@@ -25,6 +25,10 @@
           <button class="btn btn-secondary" type="submit"><span>Thêm &amp; chọn</span></button>
         </div>
       </form>
+      <div class="gate-import">
+        <button id="gateImport" class="btn-text-action" type="button">Nhập dự án từ file JSON</button>
+        <input id="gateImportFile" type="file" accept="application/json,.json" multiple hidden />
+      </div>
       <button id="gateCancel" class="btn-text-action gate-cancel" type="button" hidden>Quay lại dự án đang chọn</button>
     </div>
   </section>
@@ -521,6 +525,7 @@
             <div class="action-bar">
               <button id="pjReset" class="btn btn-subtle" type="button"><span>Khôi phục mặc định</span></button>
               <button id="pjDelete" class="btn btn-subtle-danger" type="button" hidden><span>Xoá dự án</span></button>
+              <button id="pjExport" class="btn btn-subtle" type="button" title="Tải hồ sơ dự án về máy để sao lưu hoặc nhập trên máy khác"><span>Xuất JSON</span></button>
               <button id="pjApply" class="btn btn-secondary" type="button"><span>Áp dụng từ khoá vào nền tảng</span></button>
               <button id="pjSave" class="btn btn-primary grow" type="button"><span>Lưu hồ sơ dự án</span></button>
             </div>

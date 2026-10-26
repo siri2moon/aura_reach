@@ -130,6 +130,8 @@ Hồ sơ dự án nằm ở cuối trang **Kế hoạch dự án** và gồm:
 - **Xem phần AI nhận thêm** hiển thị đúng đoạn được nối vào prompt, theo từng nền tảng.
 - Hồ sơ của dự án có sẵn có thể khôi phục về mặc định. Dự án bạn tự thêm có thể xoá.
 
+**Dự án riêng tư.** Repo này công khai, nên dự án không muốn lộ đừng thêm vào `PRESETS`. Giữ hồ sơ ở dạng file JSON trong thư mục `private/` (Git bỏ qua thư mục này), rồi bấm **Nhập dự án từ file JSON** ở màn chọn dự án. Hồ sơ được lưu trong `chrome.storage` như dự án tự thêm; nhập lại cùng `id` thì ghi đè bản cũ. **Xuất JSON** trong hồ sơ dự án tải hồ sơ đang chọn về máy để sao lưu hoặc chuyển sang máy khác.
+
 Nguồn bài được dựng từ từ khoá như sau:
 
 | Nền tảng | Nguồn |

@@ -469,6 +469,45 @@
     setTimeout(() => location.reload(), 700);
   }
 
+  // ---------------------------------------------------------------- nhập / xuất file JSON
+
+  // Dự án riêng tư giữ ở file trên máy (không đưa vào PRESETS vì repo công khai): nhập vào
+  // chrome.storage như dự án tự thêm. Nhập lại cùng id thì ghi đè hồ sơ cũ.
+  async function importProjects(files) {
+    let imported;
+    try {
+      const texts = await Promise.all(files.map((f) => f.text()));
+      imported = texts.flatMap((t) => Core.parseProjectImport(t));
+    } catch (error) {
+      window.AuraToast?.error(error.message, "Không nhập được file");
+      return;
+    }
+    const saved = [];
+    // Tuần tự có chủ đích: mỗi PROJECT_SAVE đọc rồi ghi lại cả mảng projects trong storage,
+    // gửi song song thì lượt sau ghi đè lượt trước.
+    for (const project of imported) {
+      const res = await send("PROJECT_SAVE", { project });
+      if (!res?.ok) {
+        window.AuraToast?.error(res?.error || "không rõ lỗi", `Không nhập được "${project.name}"`);
+        return;
+      }
+      saved.push(res.id);
+    }
+    window.AuraToast?.ok(`Đã nhập ${saved.length} dự án`);
+    await selectProject(saved[0]);
+  }
+
+  function exportActive() {
+    const p = active();
+    if (!p) return;
+    const blob = new Blob([Core.projectExport(p)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${p.id}.aura-project.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  }
+
   // ---------------------------------------------------------------- nạp & gắn sự kiện
 
   function renderAll(withEditor) {
@@ -503,6 +542,13 @@
       await selectProject(res.id);
     });
 
+    $("gateImport").addEventListener("click", () => $("gateImportFile").click());
+    $("gateImportFile").addEventListener("change", async (event) => {
+      const files = [...event.target.files];
+      event.target.value = "";
+      if (files.length) await importProjects(files);
+    });
+
     document.addEventListener("click", (event) => {
       if (event.target.closest("#heroSwitch")) return showGate(true);
       if (event.target.closest("[data-open-project]")) {
@@ -518,6 +564,7 @@
     });
 
     $("pjSave").addEventListener("click", saveEditor);
+    $("pjExport").addEventListener("click", exportActive);
     $("pjApply").addEventListener("click", applyDefaults);
     $("pjReset").addEventListener("click", async () => {
       if (!confirm("Khôi phục hồ sơ dự án về mặc định? Các chỉnh sửa hồ sơ sẽ mất (cài đặt từng nền tảng giữ nguyên).")) return;
