@@ -58,6 +58,8 @@ const SKIP = new Set([
   "README.md",
   "_metadata",
   "test",
+  // Hồ sơ dự án riêng tư: nhập bằng file JSON trên máy, không phát kèm gói.
+  "private",
 ]);
 
 const JS_FILES = new Set([
