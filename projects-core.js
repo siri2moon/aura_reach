@@ -175,6 +175,86 @@
       ],
       platforms: { facebook: "high", threads: "medium", instagram: "medium", tiktok: "medium", youtube: "low", x: "low", zalo: "none", maps: "none" },
     },
+    {
+      id: "wish-village",
+      name: "Wish Village",
+      url: "https://wishvillage.live/",
+      live: true,
+      color: "#b91c1c",
+      language: "en",
+      market: "Mỹ",
+      pitch:
+        "Làng chibi 3D miễn phí chạy trên trình duyệt (điện thoại, máy tính bảng, máy tính; không cần cài app, không cần tài khoản): làm chibi, dạo quanh làng tuyết, treo điều ước Giáng sinh lên cây thông khổng lồ và cùng tối đa 40 người thật chờ ông già Noel. Người chơi thắp sao cho điều ước của nhau, vẫy tay, ôm, tặng quà, nhảy và ném bóng tuyết.",
+      audience:
+        "Người nói tiếng Anh ở Mỹ hay lui tới nhóm meme / hài / wholesome và nhóm game casual, cozy game; thích những thứ dễ thương, nhẹ nhàng để chơi cùng bạn bè dịp Giáng sinh.",
+      persona:
+        "A casual gamer and meme enjoyer who loves cozy games and wholesome stuff, and who made a tiny Christmas browser game for fun. Writes like a normal person in the group: short, playful, reacts to the actual post first. Never sounds like marketing.",
+      facts: [
+        "Wish Village is free, runs in any modern browser on phone, tablet or computer, and needs no app and no account.",
+        "You make a chibi by picking a skin tone, hairstyle, sweater, hat and scarf, or let the dice choose.",
+        "You hang a wish on the giant Christmas tree and a timer starts while you wait for Santa, who reads the wishes on the night of December 24.",
+        "Up to 40 real players share one village; they can light a star on your wish, wave, hug, give a gift, dance or throw a snowball (and you can throw one back).",
+        "There is no chat, wishes with links, phone numbers or rude words are refused, and there is nothing to buy, no shop and no ads.",
+        "When a wish comes true you mark it, fireworks go off and the bauble stays on the tree in gold.",
+        "You get a tall share card with your chibi and your wish, and you can carry your chibi to another device with a QR code.",
+      ],
+      links: [
+        { label: "Vào làng (trang chơi)", url: "https://wishvillage.live/" },
+        { label: "Giới thiệu / cách chơi", url: "https://wishvillage.live/about" },
+      ],
+      disclosure: "I made it",
+      // Nhóm giải trí rất ghét spam: nhắc ít, chủ yếu bình luận cho vui.
+      mentionRate: 0.15,
+      postMentionRate: 0.3,
+      softMentionRate: 0.25,
+      postKeywords: [
+        "cozy games",
+        "cozy gaming",
+        "wholesome memes",
+        "christmas memes",
+        "christmas wish",
+        "browser games",
+        "games to play with friends",
+        "chibi",
+      ],
+      youtubeKeywords: [],
+      hashtags: ["cozygames", "cozygaming", "wholesomememes", "christmasmemes", "christmaswish", "chibi", "cozygamer", "kawaii"],
+      groupKeywords: [
+        "Funny memes",
+        "Wholesome memes",
+        "Christmas memes",
+        "Gaming memes",
+        "Cozy games",
+        "Cozy gamers",
+        "Indie games",
+        "Browser games",
+        "Animal Crossing",
+        "Kawaii",
+      ],
+      groupAudienceRe:
+        "meme|funny|humou?r|\\blol\\b|laugh|joke|comedy|wholesome|gam(e|es|er|ers|ing)\\b|cozy|cosy|indie|nintendo|switch|animal\\s?crossing|stardew|kawaii|chibi|anime",
+      groupTopicRe: "usa|\\bus\\b|america|christmas|xmas|holiday|winter|wholesome|cozy|cosy|cute|kawaii|chill|casual|relax|friends|community|daily|fun",
+      filterPrompt:
+        "Chỉ tương tác với bài tiếng Anh về game cozy / casual / indie / chơi trên trình duyệt, meme hài hoặc wholesome, không khí Giáng sinh và mùa đông, điều ước Giáng sinh, tranh chibi / kawaii dễ thương, hoặc người đang tìm thứ gì nhẹ nhàng để chơi cùng bạn bè. Bỏ qua chính trị, tin tức, bi kịch, tang thương hay bệnh tật, nội dung 18+ hoặc hài đen gắt, cờ bạc, crypto, giveaway, drama esports, bài mua bán và bài chỉ quảng cáo.",
+      topicFilterPrompt:
+        "Nhận nội dung tiếng Anh về meme và hài hước, game (nhất là cozy, casual, indie, game trình duyệt), Giáng sinh và mùa lễ cuối năm, tranh chibi / kawaii dễ thương, hoặc không khí cộng đồng wholesome. Không cần là câu hỏi. Bỏ qua chính trị, tin tức, bi kịch, nội dung 18+ hoặc hài đen gắt, cờ bạc, crypto, giveaway và bài chỉ quảng cáo.",
+      postTopics: [
+        "What's your Christmas wish this year? Not a thing you can buy, an actual wish",
+        "The most wholesome thing in an online game: a stranger throwing a snowball back at you",
+        "Cozy game energy: a snowy village where strangers light stars on each other's wishes",
+        "Rate my chibi's winter outfit (scarf, beanie, ugly sweater)",
+        "Small multiplayer games you can open in a browser tab with friends, no install",
+        "Waiting for Santa together: what are you counting down to this December?",
+      ],
+      avoid: [
+        "Never invent features: there is no chat, no account, no shop, no prizes, no giveaways and nothing to win.",
+        "Never mention Wish Village under posts about grief, illness, loss, politics, tragedy or anything not lighthearted.",
+        "Never pretend to be a random player who found it; when you mention it, say you made it.",
+        "Never address kids directly or ask anyone for personal information.",
+        "Never use hashtags or more than one emoji in a comment, and never repeat the same joke twice.",
+      ],
+      platforms: { facebook: "high", threads: "high", instagram: "medium", tiktok: "medium", x: "low", youtube: "low", zalo: "none", maps: "none" },
+    },
   ];
 
   // Các ô cài đặt đổi theo dự án. Khi chuyển dự án, background lưu bộ giá trị hiện tại vào

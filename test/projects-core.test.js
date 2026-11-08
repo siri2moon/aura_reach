@@ -6,12 +6,20 @@ const nadezhno = require("../nadezhno-core.js");
 const mct = () => core.mergeProjects([]).find((p) => p.id === "mycreatortax");
 const nz = () => core.mergeProjects([]).find((p) => p.id === "nadezhno");
 
-test("mergeProjects returns both presets and keeps stored edits", () => {
+test("mergeProjects returns every preset and keeps stored edits", () => {
   const list = core.mergeProjects([{ id: "nadezhno", mentionRate: 0.1 }, { id: "side", name: "Side project" }]);
-  assert.deepEqual(list.map((p) => p.id), ["mycreatortax", "nadezhno", "side"]);
+  assert.deepEqual(list.map((p) => p.id), ["mycreatortax", "nadezhno", "wish-village", "side"]);
   assert.equal(list[1].mentionRate, 0.1);
   assert.equal(list[1].url, "https://nadezhno.siri2moon.com/");
-  assert.equal(list[2].platforms.zalo, "none");
+  assert.equal(list[3].platforms.zalo, "none");
+});
+
+test("a project imported before it became a preset is merged into the preset, not listed twice", () => {
+  const list = core.mergeProjects([{ id: "wish-village", name: "Wish Village", mentionRate: 0.05 }]);
+  assert.equal(list.filter((p) => p.id === "wish-village").length, 1);
+  const wv = list.find((p) => p.id === "wish-village");
+  assert.equal(wv.preset, true);
+  assert.equal(wv.mentionRate, 0.05);
 });
 
 test("scopedDefaults builds platform search sources from project keywords", () => {
