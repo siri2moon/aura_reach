@@ -157,3 +157,46 @@ test("parseProjectImport accepts arrays, fills ids and rejects bad files", () =>
   assert.throws(() => core.parseProjectImport("not json"), /JSON/);
   assert.throws(() => core.parseProjectImport(JSON.stringify([{ url: "https://x.com" }])), /thiếu tên/);
 });
+
+test("parseProjectImport keeps the group scoring regexes of a private project", () => {
+  const [p] = core.parseProjectImport(
+    JSON.stringify({ name: "Cozy", groupAudienceRe: "meme|gam(e|er|ing)", groupTopicRe: "cozy|christmas" })
+  );
+  assert.equal(p.groupAudienceRe, "meme|gam(e|er|ing)");
+  assert.equal(core.groupRelevance(p, "Cozy Gamers"), 2);
+  assert.equal(core.groupRelevance(p, "Funny memes"), 1);
+  const [back] = core.parseProjectImport(core.projectExport(p));
+  assert.equal(back.groupTopicRe, "cozy|christmas");
+});
+
+test("communityRelevance ranks Meta-style community names above plain topic tags", () => {
+  const p = core.normalizeProject({ name: "Cozy", groupAudienceRe: "meme|gam(e|er|ing)", groupTopicRe: "cozy" });
+  assert.equal(core.communityRelevance(p, "Gaming Threads"), 2);
+  assert.equal(core.communityRelevance(p, "Meme Threads"), 2);
+  assert.equal(core.communityRelevance(p, "MemesDaily"), 1);
+  assert.equal(core.communityRelevance(p, "NBA Threads"), 0);
+  assert.equal(core.communityRelevance(p, "ManCity"), 0);
+});
+
+test("scopedDefaults seeds Threads community keywords from the group keywords", () => {
+  const d = core.scopedDefaults(core.normalizeProject({ name: "Cozy", groupKeywords: ["Cozy games", "Funny memes"] }));
+  assert.equal(d.threadsCommunityKeywords, "Cozy games\nFunny memes");
+  assert.equal(d.threadsCommunityListText, "");
+});
+
+test("membership questions asking for personal data are flagged, normal ones are not", () => {
+  for (const q of ["What's your email?", "Phone number for verification", "Please enter your ZIP code", "Số điện thoại của bạn?", "Your full name"]) {
+    assert.equal(core.sensitiveMembershipQuestion(q), true, q);
+  }
+  for (const q of ["Why do you want to join?", "Do you agree to the group rules?", "What's your favorite cozy game?", "Are you from the US?"]) {
+    assert.equal(core.sensitiveMembershipQuestion(q), false, q);
+  }
+});
+
+test("forbidsPromotion spots no-self-promo rules", () => {
+  assert.equal(core.forbidsPromotion("No self-promotion or spam. I agree"), true);
+  assert.equal(core.forbidsPromotion("Do you agree not to advertise?"), true);
+  assert.equal(core.forbidsPromotion("No links allowed in posts"), true);
+  assert.equal(core.forbidsPromotion("Be kind and respectful"), false);
+  assert.equal(core.forbidsPromotion("What games do you play?"), false);
+});

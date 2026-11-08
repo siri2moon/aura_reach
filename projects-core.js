@@ -206,6 +206,8 @@
     "commentsText",
     "joinUrlsText",
     "groupSearchKeywords",
+    "threadsCommunityKeywords",
+    "threadsCommunityListText",
   ];
 
   const EDITABLE_FIELDS = [
@@ -227,6 +229,9 @@
     "youtubeKeywords",
     "hashtags",
     "groupKeywords",
+    // Regex chấm điểm nhóm / cộng đồng. Không có ô trong form hồ sơ, chỉ đặt qua file JSON nhập vào.
+    "groupAudienceRe",
+    "groupTopicRe",
     "filterPrompt",
     "topicFilterPrompt",
     "postTopics",
@@ -379,6 +384,8 @@
       instagramFilterPrompt: topicFilter(p),
       tiktokSourcesText: search("tiktok", p.postKeywords),
       groupSearchKeywords: p.groupKeywords.join("\n"),
+      // Threads không có nhóm, chỉ có community theo chủ đề: tìm bằng cùng bộ từ khoá tìm nhóm.
+      threadsCommunityKeywords: p.groupKeywords.join("\n"),
     });
     return out;
   }
@@ -423,6 +430,33 @@
     if (phrases.some((k) => lower.includes(k))) return 2;
     const words = new Set(phrases.flatMap((k) => k.split(/\s+/)).filter((w) => w.length >= 4));
     return [...words].some((w) => lower.includes(w)) ? 1 : 0;
+  }
+
+  /**
+   * Điểm hợp của một chủ đề Threads (tìm thấy trên trang tìm kiếm) với dự án. Tên chủ đề ngắn ("Gaming
+   * Threads", "MemesDaily") nên hiếm khi khớp cả đối tượng lẫn chủ đề như tên nhóm Facebook: khớp một
+   * trong hai là đủ, và tên kiểu "… Threads" (cách Meta đặt tên community) được thêm một bậc.
+   */
+  function communityRelevance(project, name) {
+    const score = groupRelevance(project, name);
+    const looksLikeCommunity = /\bthreads$/i.test(String(name || "").trim());
+    if (!score) return 0;
+    return looksLikeCommunity ? 2 : 1;
+  }
+
+  // Câu hỏi thành viên khi xin vào nhóm Facebook: không để AI tự trả lời khi nhóm đòi thông tin cá nhân.
+  const SENSITIVE_QUESTION_RE =
+    /e-?mail|phone|cell\s?number|whats\s?app|telegram|address|zip\s?code|postal|social security|\bssn\b|date of birth|birthday|\bdob\b|real name|full name|last name|driver'?s? licen[cs]e|passport|\bid card|password|venmo|cash\s?app|paypal|zelle|credit card|bank|số điện thoại|\bsđt\b|địa chỉ|ngày sinh|họ tên|họ và tên|cmnd|cccd|mật khẩu/i;
+  // Luật nhóm cấm tự quảng cáo: vào được nhóm nhưng không nhắc dự án ở đó.
+  const NO_PROMO_RE =
+    /self[\s-]?promo|promot|advertis|\bads?\b|\bspam|no links?\b|links? (are|is) not allowed|selling|solicit|quảng cáo|pr bản thân|spam/i;
+
+  function sensitiveMembershipQuestion(text) {
+    return SENSITIVE_QUESTION_RE.test(String(text || ""));
+  }
+
+  function forbidsPromotion(text) {
+    return NO_PROMO_RE.test(String(text || ""));
   }
 
   // Nền tảng mà link trong bình luận không bấm được: chỉ ghi tên miền dạng chữ.
@@ -605,6 +639,9 @@
     searchUrl,
     scopedDefaults,
     groupRelevance,
+    communityRelevance,
+    sensitiveMembershipQuestion,
+    forbidsPromotion,
     buildPromptBlock,
     shouldMention,
     mentionMode,

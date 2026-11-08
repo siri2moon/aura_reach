@@ -22,11 +22,12 @@ async function getActiveProject() {
 /**
  * Phần nối vào system prompt cho job AI trên `platform`. Rỗng khi chưa chọn dự án hoặc dự án không
  * nhắm nền tảng này. Mức nhắc dự án (full / soft / none) được tung ở đây để mỗi lượt độc lập.
+ * opts.noMention: nơi đăng cấm tự quảng cáo (nhóm Facebook có luật đó) nên lượt này luôn "none".
  */
-async function projectPromptSuffix(platform, kind = "comment") {
+async function projectPromptSuffix(platform, kind = "comment", opts = {}) {
   const project = await getActiveProject();
   if (!project || !ProjectsCore.appliesTo(project, platform)) return { suffix: "", project: null, mention: "none" };
-  const mention = ProjectsCore.mentionMode(project, kind, Math.random, platform);
+  const mention = opts.noMention ? "none" : ProjectsCore.mentionMode(project, kind, Math.random, platform);
   return { suffix: ProjectsCore.buildPromptBlock(project, { platform, kind, mention }), project, mention };
 }
 

@@ -5,7 +5,8 @@ importScripts(
   "projects-core.js",
   "projects-bg.js",
   "notify-bg.js",
-  "follow-discover.js"
+  "follow-discover.js",
+  "threads-community.js"
 );
 
 const ALARM_NAME = "fb-group-auto-tick";
@@ -1704,6 +1705,9 @@ async function handleMessage(message, sender) {
   if (typeof message?.type === "string" && message.type.startsWith("PROJECT_")) {
     return handleProjectMessage(message);
   }
+  if (typeof message?.type === "string" && message.type.startsWith("THREADS_COMMUNITY_")) {
+    return handleThreadsCommunityMessage(message);
+  }
   switch (message?.type) {
     case "GET_STATE":
       await maybeRestoreSchedules();
@@ -3081,7 +3085,7 @@ async function generateFacebookPost(state, group) {
     const text = await generateAiComment(
       state.postAiSystemPrompt || DEFAULT_FACEBOOK_POST_AI_PROMPT,
       buildFacebookPostUserMessage(group, topic, recentPosts),
-      { platform: "facebook", kind: "post" }
+      { platform: "facebook", kind: "post", noMention: await groupForbidsPromo(group) }
     );
     if (text) return text;
   } catch (error) {
@@ -3121,7 +3125,10 @@ async function performAiComment(tab, group) {
   const state = await getState();
   await log("info", "Đang gọi AI để viết bình luận...");
   await sleep(600 + Math.round(Math.random() * 1400));
-  const text = await generateAiComment(state.aiSystemPrompt, buildAiUserMessage(ctx), { platform: "facebook" });
+  const text = await generateAiComment(state.aiSystemPrompt, buildAiUserMessage(ctx), {
+    platform: "facebook",
+    noMention: await groupForbidsPromo(group),
+  });
   if (!text) throw new Error("AI không trả về nội dung bình luận.");
   await log("info", `AI gợi ý: ${clip(text, 110)}`);
 
@@ -3295,7 +3302,7 @@ async function generateAiComment(systemPrompt, userContent, opts = {}) {
   let prompt = String(systemPrompt || "").trim() || DEFAULT_AI_SYSTEM_PROMPT;
   let linkProject = null;
   if (opts.platform) {
-    const { suffix, project, mention } = await projectPromptSuffix(opts.platform, opts.kind);
+    const { suffix, project, mention } = await projectPromptSuffix(opts.platform, opts.kind, { noMention: opts.noMention });
     if (suffix) {
       prompt = `${prompt}\n${suffix}`;
       if (mention === "full") {
@@ -3938,6 +3945,7 @@ async function runMembershipStep(source) {
       const nextTab = await openWorkTab(result.nextUrl, { active: true });
       result = await sendMembership(nextTab.id, kind);
     }
+    if (result?.needsAnswers) result = await answerGroupQuestions(tab.id, group, result.questions);
     if (result && result.ok === false) {
       throw new Error(result.error || `${label} thất bại.`);
     }
@@ -3994,6 +4002,100 @@ async function runMembershipStep(source) {
   if (source === "scheduled" || latest.membershipEnabled) {
     await scheduleMembershipNext();
   }
+}
+
+const GROUP_QUESTIONS_RESPONSE_FORMAT = {
+  type: "json_schema",
+  json_schema: {
+    name: "group_membership_answers",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        answers: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              index: { type: "integer" },
+              text: { type: "string" },
+              check: { type: "boolean" },
+              choice: { type: "integer" },
+            },
+            required: ["index", "text", "check", "choice"],
+            additionalProperties: false,
+          },
+        },
+        noPromo: { type: "boolean" },
+      },
+      required: ["answers", "noPromo"],
+      additionalProperties: false,
+    },
+  },
+};
+
+/**
+ * Nhóm có câu hỏi thành viên: AI trả lời theo vai của dự án đang chọn rồi content script điền và gửi.
+ * Nhóm hỏi thông tin cá nhân (email, SĐT, địa chỉ…) thì không tự trả lời. Nhóm cấm tự quảng cáo được
+ * ghi vào groupNoPromo để bình luận / bài đăng ở đó không nhắc dự án.
+ */
+async function answerGroupQuestions(tabId, group, questions) {
+  const list = Array.isArray(questions) ? questions : [];
+  if (!list.length) {
+    throw new Error("Nhóm yêu cầu trả lời câu hỏi thành viên. Hãy tham gia tay nhóm này.");
+  }
+  const sensitive = list.find((q) => ProjectsCore.sensitiveMembershipQuestion(`${q.question} ${q.option || ""}`));
+  if (sensitive) {
+    throw new Error(`Nhóm hỏi thông tin cá nhân («${clip(sensitive.question, 80)}») nên không tự trả lời. Tham gia tay nếu muốn.`);
+  }
+
+  const project = await getActiveProject();
+  const rules = String(list[0].rules || "");
+  const system = [
+    "You are filling in the membership questions of a Facebook group you want to join.",
+    project?.persona ? `You are this person: ${project.persona}` : "You are a friendly regular person interested in the group's topic.",
+    project?.audience ? `Your interests match this audience: ${project.audience}` : "",
+    "Answer in the language of the questions. Keep each text answer short (under 25 words), friendly, natural and consistent with who you are.",
+    "Agree to the group rules: check every box that confirms you read or agree to the rules.",
+    "For multiple choice, pick the option that best fits you (0-based index in `choice`). Use choice = -1 for non-choice questions, text = \"\" for non-text questions and check = false for non-checkbox questions.",
+    "Never invent personal data: no real name, email, phone number, address, age or exact location. If asked where you are from or for proof of identity, answer generally and honestly.",
+    project ? `Never mention ${project.name}, any product, link or promotion in the answers.` : "Never mention any product, link or promotion.",
+    "Set noPromo to true if the questions or rules forbid self-promotion, advertising, links or selling.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const user = [
+    `Group: ${group.name}`,
+    rules ? `Dialog text (rules and questions): ${clip(rules, 1500)}` : "",
+    "Questions:",
+    ...list.map((q) => {
+      if (q.kind === "choice") return `${q.index}. [choice] ${q.question}\n   options: ${q.options.map((o, i) => `${i}) ${o}`).join(" | ")}`;
+      if (q.kind === "check") return `${q.index}. [checkbox] ${q.question}${q.option && q.option !== q.question ? ` — "${q.option}"` : ""}`;
+      return `${q.index}. [text] ${q.question || "(no question text)"}`;
+    }),
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  await log("info", `Nhóm «${group.name}» có ${list.length} câu hỏi thành viên, AI đang trả lời...`);
+  const ai = await callAiJson(system, user, GROUP_QUESTIONS_RESPONSE_FORMAT);
+  const answers = Array.isArray(ai?.answers) ? ai.answers : [];
+  if (!answers.length) throw new Error("AI không trả lời được câu hỏi thành viên.");
+  const noPromo = Boolean(ai.noPromo) || ProjectsCore.forbidsPromotion(`${rules} ${list.map((q) => q.question).join(" ")}`);
+
+  const result = await sendToTab(tabId, { type: "ANSWER_GROUP_QUESTIONS", answers });
+  if (result?.ok && noPromo) {
+    const { groupNoPromo = {} } = await chrome.storage.local.get("groupNoPromo");
+    await chrome.storage.local.set({ groupNoPromo: { ...groupNoPromo, [String(group.id)]: true } });
+    await log("info", `Nhóm «${group.name}» cấm tự quảng cáo: bình luận và bài đăng ở nhóm này sẽ không nhắc dự án.`);
+  }
+  return result;
+}
+
+async function groupForbidsPromo(group) {
+  if (!group?.id) return false;
+  const { groupNoPromo = {} } = await chrome.storage.local.get("groupNoPromo");
+  return Boolean(groupNoPromo[String(group.id)]);
 }
 
 async function sendMembership(tabId, kind) {

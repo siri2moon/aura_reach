@@ -214,6 +214,16 @@
             <span>Trả lời bình luận</span>
             <span class="subtab-status-dot" id="threadsTabDot-reply" title="Trạng thái trả lời bình luận"></span>
           </button>
+          <button type="button" class="header-subtab-btn" data-threads-tab="community">
+            <svg class="subtab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Cộng đồng</span>
+            <span class="subtab-status-dot" id="threadsTabDot-community" title="Trạng thái tham gia cộng đồng"></span>
+          </button>
         </nav>
 
         <!-- YOUTUBE SUB-TABS NAVIGATION -->
@@ -1033,6 +1043,78 @@
                   <span class="slider"></span>
                 </label>
               </div>
+            </section>
+          </div>
+
+          <!-- SUB-PANE 5: CỘNG ĐỒNG (THREADS COMMUNITIES) -->
+          <div id="threads-pane-community" class="threads-subtab-pane" hidden>
+            <!-- CARD: TÌM CỘNG ĐỒNG THEO TỪ KHOÁ -->
+            <section id="tcSearchCard" class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Tìm cộng đồng theo từ khoá</h2>
+                  <p class="card-subtitle">Threads không có nhóm như Facebook. Community do Threads tạo sẵn theo chủ đề (ví dụ «Gaming Threads», «Meme Threads»). Extension đọc các chủ đề hiện trên trang tìm kiếm, bạn chọn cái phù hợp rồi thêm vào danh sách tham gia.</p>
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-header-row">
+                  <label class="field-label" for="tcKeywords">Từ khoá (mỗi dòng một từ, tối đa 10)</label>
+                  <button id="tcSuggestBtn" class="btn-text-action" type="button">Dùng từ khoá của dự án</button>
+                </div>
+                <textarea id="tcKeywords" rows="4" placeholder="Cozy games&#10;Funny memes"></textarea>
+              </div>
+              <div class="action-bar">
+                <span id="tcSummary" class="card-subtitle grow"></span>
+                <button id="tcRunBtn" class="btn btn-primary" type="button"><span>Tìm cộng đồng</span></button>
+              </div>
+              <div id="tcResultsWrap" hidden>
+                <div class="divider"></div>
+                <label class="gs-only"><input id="tcOnlyRelevant" type="checkbox" checked /> <span id="tcOnlyRelevantText">Chỉ hiện chủ đề rất hợp với dự án</span></label>
+                <div id="tcResults" class="group-list group-list-tall"></div>
+                <div class="group-actions-footer">
+                  <div class="btn-group-pill">
+                    <button id="tcSelectAll" class="btn-subtle" type="button">Chọn tất cả</button>
+                    <button id="tcSelectNone" class="btn-subtle" type="button">Bỏ chọn</button>
+                  </div>
+                  <button id="tcAddBtn" class="btn btn-primary-sm" type="button"><span>Thêm vào danh sách tham gia</span></button>
+                </div>
+              </div>
+            </section>
+
+            <!-- CARD: THAM GIA CỘNG ĐỒNG -->
+            <section class="card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h2>Tham gia cộng đồng</h2>
+                  <p class="card-subtitle">Mỗi lần mở một trang chủ đề. Có nút Join thì bấm, không có (chủ đề thường, không phải community) thì bỏ qua và nhớ lại để không thử lần nữa. Cần đăng nhập Threads trong Chrome.</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="tcList">Tên cộng đồng hoặc link (mỗi dòng một mục)</label>
+                <textarea id="tcList" rows="4" placeholder="Gaming Threads&#10;Meme Threads"></textarea>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label class="field-label" for="tcMinMinutes">Giãn cách tối thiểu</label>
+                  <div class="input-unit-wrap">
+                    <input id="tcMinMinutes" type="number" min="5" step="1" placeholder="10" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="tcMaxMinutes">Giãn cách tối đa</label>
+                  <div class="input-unit-wrap">
+                    <input id="tcMaxMinutes" type="number" min="5" step="1" placeholder="25" />
+                    <span class="unit-tag">phút</span>
+                  </div>
+                </div>
+              </div>
+              <p id="tcStatus" class="field-hint"></p>
+              <div class="action-bar">
+                <button id="tcStopBtn" class="btn btn-secondary" type="button"><span>Dừng</span></button>
+                <button id="tcStartBtn" class="btn btn-primary grow" type="button"><span>Tham gia danh sách cộng đồng</span></button>
+              </div>
+              <p id="tcJoined" class="field-hint"></p>
             </section>
           </div>
         </section>
@@ -3425,6 +3507,7 @@
   <script src="nadezhno-core.js"></script>
   <script src="nadezhno-ui.js"></script>
   <script src="group-search-ui.js"></script>
+  <script src="threads-community-ui.js"></script>
   <script src="projects-ui.js"></script>
   <script src="notify-ui.js"></script>
 </body>

@@ -407,7 +407,7 @@ let currentPlatformSubtab = {
 const leaveSelected = new Set();
 const TABS = ["project", "threads", "youtube", "instagram", "x", "facebook", "zalo", "tiktok", "maps", "guard", "notify", "logs"];
 
-const THREADS_SUBTABS = ["comment", "scroll", "post", "reply"];
+const THREADS_SUBTABS = ["comment", "scroll", "post", "reply", "community"];
 const YOUTUBE_SUBTABS = ["keyword", "target", "scroll", "subscribe"];
 const INSTAGRAM_SUBTABS = ["comment", "scroll", "follow"];
 const X_SUBTABS = ["comment", "scroll", "post", "follow", "reply"];
@@ -465,6 +465,7 @@ const THREADS_TAB_META = {
   scroll: { title: "Threads AI · Lướt bảng tin", desc: "Tự động cuộn lướt bảng tin Threads kết hợp thả tim và follow tự nhiên." },
   post: { title: "Threads AI · Đăng bài", desc: "Tự động tạo và đăng bài viết mới lên Threads bằng AI hoặc theo mẫu viết sẵn." },
   reply: { title: "Threads AI · Trả lời bình luận", desc: "Tự động tìm và trả lời bình luận của người khác dưới các bài viết chỉ định." },
+  community: { title: "Threads · Cộng đồng", desc: "Tìm community theo từ khoá dự án và tham gia lần lượt, có giãn cách." },
 };
 
 const YOUTUBE_TAB_META = {

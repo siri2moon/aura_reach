@@ -33,6 +33,7 @@
     "SCAN_GROUPS",
     "SCAN_FEED_POSTS",
     "SEARCH_GROUPS",
+    "ANSWER_GROUP_QUESTIONS",
   ]);
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -96,6 +97,16 @@
       try {
         if (message.type === "JOIN_GROUP") return await joinGroup();
         return await leaveGroup();
+      } finally {
+        actionLock = false;
+      }
+    }
+
+    if (message?.type === "ANSWER_GROUP_QUESTIONS") {
+      if (actionLock) return { ok: true, skipped: true };
+      actionLock = true;
+      try {
+        return await answerMembershipQuestions(Array.isArray(message.answers) ? message.answers : []);
       } finally {
         actionLock = false;
       }
@@ -520,11 +531,142 @@
     clickHuman(joinBtn);
     await sleep(1400);
     if (hasQuestions()) {
-      throw new Error("Nhóm yêu cầu trả lời câu hỏi thành viên. Hãy tham gia tay nhóm này.");
+      // Background nhờ AI trả lời rồi gửi lại bằng ANSWER_GROUP_QUESTIONS; tham chiếu ô giữ trong pendingQuestions.
+      await sleep(600);
+      const questions = readMembershipQuestions();
+      return { ok: false, needsAnswers: true, questions, name: pageGroupName() };
     }
     markAction("JOIN_GROUP", location.pathname);
     const after = membershipState();
     return { ok: true, status: after === "pending" ? "pending" : "joined", name: pageGroupName() };
+  }
+
+  // Ô của hộp thoại câu hỏi thành viên đọc gần nhất, theo đúng thứ tự gửi cho background.
+  let pendingQuestions = [];
+
+  const ANSWER_PLACEHOLDER_RE = /^(write an answer|viết câu trả lời|your answer|câu trả lời của bạn|answer)\b/i;
+
+  function questionDialog() {
+    const dialogs = [...document.querySelectorAll('[role="dialog"]')].filter(isVisible);
+    return dialogs.reverse().find((d) => /question|câu hỏi|membership|rules|nội quy/i.test(d.innerText || "")) || null;
+  }
+
+  function lineList(text) {
+    return String(text || "")
+      .split("\n")
+      .map((line) => line.replace(/\s+/g, " ").trim())
+      .filter((line) => line && !ANSWER_PLACEHOLDER_RE.test(line) && !/^\d+\s*\/\s*\d+$/.test(line));
+  }
+
+  // Chữ của câu hỏi gắn với một ô: leo lên tới khối đầu tiên có chữ ngoài chính ô đó.
+  function questionTextFor(el, dialog) {
+    const aria = String(el.getAttribute("aria-label") || "").trim();
+    if (aria && !ANSWER_PLACEHOLDER_RE.test(aria) && aria.length > 6) return aria.slice(0, 300);
+    let node = el;
+    for (let i = 0; i < 8 && node.parentElement && node !== dialog; i += 1) {
+      node = node.parentElement;
+      const own = String(el.innerText || el.value || "");
+      const lines = lineList(String(node.innerText || "").replace(own, ""));
+      if (lines.length) return lines.slice(0, 3).join(" ").slice(0, 300);
+    }
+    return "";
+  }
+
+  function optionLabel(el) {
+    const aria = String(el.getAttribute("aria-label") || "").trim();
+    if (aria) return aria.slice(0, 160);
+    const row = el.closest("label") || el.parentElement;
+    return lineList(row?.innerText || "").join(" ").slice(0, 160);
+  }
+
+  /** Câu hỏi trong hộp thoại: text (ô trả lời), check (một ô tick), choice (nhóm lựa chọn một). */
+  function readMembershipQuestions() {
+    const dialog = questionDialog();
+    pendingQuestions = [];
+    if (!dialog) return [];
+    for (const field of dialog.querySelectorAll("textarea, input[type='text'], [contenteditable='true'][role='textbox']")) {
+      if (!isVisible(field)) continue;
+      pendingQuestions.push({ kind: "text", question: questionTextFor(field, dialog), el: field });
+    }
+    for (const group of dialog.querySelectorAll("[role='radiogroup']")) {
+      const options = [...group.querySelectorAll("[role='radio'], input[type='radio']")].filter(
+        (el) => !(el.tagName === "INPUT" && el.closest("[role='radio']")) && (isVisible(el) || isVisible(el.parentElement))
+      );
+      if (!options.length) continue;
+      pendingQuestions.push({
+        kind: "choice",
+        question: questionTextFor(group, dialog),
+        options: options.map(optionLabel),
+        els: options,
+      });
+    }
+    for (const box of dialog.querySelectorAll("[role='checkbox'], input[type='checkbox']")) {
+      // Facebook bọc input thật trong div[role=checkbox]: chỉ lấy lớp ngoài, bấm hai lớp là bỏ tick.
+      if (box.tagName === "INPUT" && box.closest("[role='checkbox']")) continue;
+      if (box.closest("[role='radiogroup']")) continue;
+      if (!isVisible(box) && !isVisible(box.parentElement)) continue;
+      pendingQuestions.push({ kind: "check", question: questionTextFor(box, dialog), option: optionLabel(box), el: box });
+    }
+    const rules = lineList(dialog.innerText).join(" ").slice(0, 1500);
+    return pendingQuestions.map(({ kind, question, options, option }, index) => ({ index, kind, question, options, option, rules }));
+  }
+
+  async function typeIntoField(el, text) {
+    if (el.isContentEditable) {
+      await typeIntoEditable(el, text, true);
+      return;
+    }
+    el.focus();
+    el.select?.();
+    await sleep(120);
+    for (const ch of [...String(text)]) {
+      document.execCommand("insertText", false, ch);
+      await sleep(45 + Math.round(Math.random() * 90));
+    }
+    if (el.value !== String(text)) {
+      // Ô do React quản lý đôi khi bỏ qua execCommand: đặt giá trị qua setter gốc để React nhận.
+      const proto = el.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+      Object.getOwnPropertyDescriptor(proto, "value").set.call(el, String(text));
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+
+  function isChecked(el) {
+    return el.getAttribute("aria-checked") === "true" || el.checked === true;
+  }
+
+  async function answerMembershipQuestions(answers) {
+    showHud("Đang trả lời câu hỏi thành viên...");
+    try {
+      const dialog = questionDialog();
+      if (!dialog || !pendingQuestions.length) throw new Error("Không còn thấy hộp thoại câu hỏi thành viên.");
+      for (const answer of answers) {
+        const q = pendingQuestions[Number(answer?.index)];
+        if (!q) continue;
+        if (q.kind === "text" && String(answer.text || "").trim()) {
+          await typeIntoField(q.el, String(answer.text).trim());
+        } else if (q.kind === "check" && answer.check && !isChecked(q.el)) {
+          clickHuman(q.el);
+        } else if (q.kind === "choice" && q.els[Number(answer.choice)]) {
+          clickHuman(q.els[Number(answer.choice)]);
+        }
+        await sleep(500 + Math.round(Math.random() * 700));
+      }
+      const submit = findWithin(dialog, "[role='button'], button", ["submit", "gửi", "send"]);
+      if (!submit) throw new Error("Không tìm thấy nút Gửi trong hộp thoại câu hỏi.");
+      if (submit.getAttribute("aria-disabled") === "true") {
+        throw new Error("Nút Gửi còn bị khoá: có câu hỏi bắt buộc chưa điền được.");
+      }
+      clickHuman(submit);
+      await waitFor(() => !questionDialog(), 8000);
+      if (questionDialog()) throw new Error("Đã bấm Gửi nhưng hộp thoại câu hỏi vẫn còn.");
+      markAction("JOIN_GROUP", location.pathname);
+      pendingQuestions = [];
+      await sleep(800);
+      return { ok: true, status: membershipState() === "joined" ? "joined" : "pending", name: pageGroupName() };
+    } finally {
+      hideHud();
+    }
   }
 
   async function leaveGroup() {

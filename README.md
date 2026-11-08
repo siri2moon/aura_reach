@@ -26,6 +26,7 @@
 - [Bắt đầu nhanh](#bắt-đầu-nhanh)
 - [Dự án](#dự-án)
 - [Chế độ Nadezhno trên Facebook](#chế-độ-nadezhno-trên-facebook)
+- [Tham gia nhóm và cộng đồng](#tham-gia-nhóm-và-cộng-đồng)
 - [Chống khoá tài khoản](#chống-khoá-tài-khoản)
 - [Kiến trúc](#kiến-trúc)
 - [Phát triển](#phát-triển)
@@ -67,8 +68,8 @@ Chọn dự án ──► Hồ sơ dự án ──┬──► Nguồn bài theo
 
 | Nền tảng | Chức năng |
 | --- | --- |
-| **Facebook** | Đăng bài nhóm, bình luận nhóm (AI hoặc mẫu), tìm / quét / tham gia / rời nhóm |
-| **Threads** | Bình luận AI, lướt feed (tim, follow), đăng bài, trả lời bình luận |
+| **Facebook** | Đăng bài nhóm, bình luận nhóm (AI hoặc mẫu), tìm / quét / tham gia / rời nhóm, AI trả lời câu hỏi thành viên |
+| **Threads** | Bình luận AI, lướt feed (tim, follow), đăng bài, trả lời bình luận, tìm / tham gia Communities |
 | **X (Twitter)** | Bình luận AI, lướt feed và like, đăng tweet, follow, trả lời bình luận |
 | **YouTube** | Bình luận theo từ khoá (có bộ lọc tìm kiếm), lướt video và like, subscribe kênh |
 | **Instagram** | Bình luận AI, lướt feed (tim, follow), follow theo danh sách |
@@ -107,7 +108,7 @@ Sau khi sửa code, bấm **Tải lại extension** ở cuối sidebar để n�
 
 1. Mở Aura Reach và chọn dự án ở màn **Hôm nay quảng bá dự án nào?**.
 2. Ở trang **Kế hoạch dự án**, mỗi nền tảng có 3 bước kèm trạng thái. Bấm vào một bước để mở đúng chỗ cài đặt.
-3. Với Facebook, vào **Quản lý nhóm › Tìm nhóm theo từ khoá**, chọn nhóm phù hợp rồi tham gia theo hàng đợi có giãn cách.
+3. Với Facebook, vào **Quản lý nhóm › Tìm nhóm theo từ khoá**, chọn nhóm phù hợp rồi tham gia theo hàng đợi có giãn cách. Với Threads, làm tương tự ở **Threads › Cộng đồng**.
 4. Kiểm tra nguồn bài và bộ lọc ở từng nền tảng. Các ô này đã được điền sẵn từ hồ sơ dự án.
 5. Bấm **Chạy thử 1 lần** và đọc tab **Nhật ký hoạt động**. Nhật ký ghi rõ lượt đó AI có được nhắc dự án hay không.
 6. Khi kết quả đã ổn, bấm **Bật lịch**.
@@ -152,6 +153,22 @@ Khi đang chọn dự án Nadezhno, job **Facebook › Bình luận** chạy the
 - Job bỏ qua bài đã có người nhắc Nadezhno, bài rao vặt, bài về đổi tiền / USDT và visa.
 - Mục **Người hỏi mà Nadezhno chưa có địa chỉ** thống kê các danh mục được hỏi nhưng chưa có dữ liệu, để biết nên bổ sung gì.
 
+## Tham gia nhóm và cộng đồng
+
+**Câu hỏi thành viên trên Facebook.** Nhóm có câu hỏi khi xin vào thì AI trả lời theo *Vai của AI khi viết* trong hồ sơ dự án, tick đồng ý nội quy rồi bấm Gửi. Câu trả lời không bao giờ nhắc dự án hay link.
+
+- Nhóm hỏi thông tin cá nhân (email, số điện thoại, địa chỉ, họ tên thật, ngày sinh…) thì bỏ qua và ghi nhật ký để bạn tự quyết.
+- Nội quy hoặc câu hỏi cấm tự quảng cáo thì nhóm được ghi vào `groupNoPromo`. Bình luận và bài đăng ở nhóm đó luôn ở mức "không nhắc dự án".
+- Chỉ áp dụng cho giao diện www. Bản m. / mbasic vẫn báo để bạn tham gia tay.
+
+**Communities trên Threads.** Threads không có nhóm như Facebook. Community do Threads tạo sẵn theo chủ đề («Gaming Threads», «Meme Threads»…), và trang của community chính là trang chủ đề `threads.com/search?q=<tên>&serp_type=tags`.
+
+- **Tìm**: extension mở trang tìm kiếm theo từng từ khoá (mặc định lấy từ khoá tìm nhóm của dự án) và đọc các chủ đề đang hiện. Chủ đề được chấm theo regex nhóm của dự án; tên dạng «… Threads» được ưu tiên.
+- **Tham gia**: mỗi lượt mở một trang chủ đề. Có nút Join thì bấm, không có thì ghi là "không phải community" và không thử lại. Giãn cách mặc định 10–25 phút, áp dụng Chống ban như các job khác.
+- Cần đăng nhập Threads trong Chrome. Chưa đăng nhập thì hàng đợi tự dừng.
+
+Hồ sơ dự án nhập từ file JSON có thể đặt `groupAudienceRe` và `groupTopicRe` (regex đối tượng và chủ đề) để chấm điểm nhóm và community. Không đặt thì so theo từ khoá tìm nhóm.
+
 ## Chống khoá tài khoản
 
 Tab **Chống ban** áp dụng cho mọi lịch chạy (chạy thử thủ công không bị chặn):
@@ -192,6 +209,8 @@ app.html  ──message──►  background.js (service worker)  ──message�
 ├── nadezhno-ui.js           Thẻ Nadezhno trong Facebook › Bình luận
 ├── group-search.js          Tìm nhóm Facebook theo từ khoá
 ├── group-search-ui.js       Giao diện tìm nhóm
+├── threads-community.js     Tìm / tham gia Communities trên Threads
+├── threads-community-ui.js  Giao diện Threads › Cộng đồng
 ├── content.js · sniff.js    Facebook (sniff.js chạy ở MAIN world, nạp sớm)
 ├── threads-content.js       Threads
 ├── x-content.js             X
@@ -238,7 +257,7 @@ node build.js
 `build.js` làm 3 việc:
 
 1. Obfuscate các file JS chính: `background.js`, `content.js`, `popup.js`, `sniff.js` và content script của Threads, YouTube, Instagram, X.
-2. Copy nguyên các file còn lại (HTML, CSS, JSON, icon, các script khác).
+2. Copy nguyên các file còn lại (HTML, CSS, JSON, icon, các script khác). Thư mục `private/` không được đưa vào gói.
 3. Đóng gói thành `aura-reach.zip`.
 
 Người dùng giải nén file zip rồi **Load unpacked** thư mục vừa giải nén.
