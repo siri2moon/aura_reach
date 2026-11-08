@@ -7770,8 +7770,9 @@ async function openWorkTab(url, options = {}) {
     }
   }
   if (tab) {
-    const current = (tab.url || "").split("?")[0].replace(/\/$/, "");
-    const target = url.split("?")[0].replace(/\/$/, "");
+    // So cả query: các trang tìm kiếm chỉ khác nhau ở ?q=, bỏ query thì tab sẽ tải lại từ khoá cũ.
+    const current = (tab.url || "").split("#")[0].replace(/\/$/, "");
+    const target = url.split("#")[0].replace(/\/$/, "");
     if (current === target) await chrome.tabs.reload(tab.id);
     else await chrome.tabs.update(tab.id, { url, active });
     if (active && !tab.active) await chrome.tabs.update(tab.id, { active: true });
