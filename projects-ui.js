@@ -181,7 +181,7 @@
       strip.innerHTML = applies
         ? `<span class="project-dot"></span>
            <span>AI trên ${escapeHtml(PLATFORM_LABEL[platform])} đang viết cho <strong>${escapeHtml(p.name)}</strong>
-           · ${escapeHtml(LANG_LABEL[p.language] || p.language)} theo bài gốc
+           · chỉ viết ${escapeHtml(LANG_LABEL[p.language] || p.language)}
            · ${
              platform === "youtube"
                ? `chỉ nhắc khéo, không tên miền (YouTube ẩn bình luận có link) ở khoảng ${Math.round((p.mentionRate + p.softMentionRate) * 100)}% bình luận`
@@ -213,7 +213,7 @@
       <p class="hero-pitch">${escapeHtml(p.pitch)}</p>
       <dl class="hero-facts">
         <div><dt>Đối tượng</dt><dd>${escapeHtml(p.audience || "—")}</dd></div>
-        <div><dt>Viết bằng</dt><dd>${escapeHtml(LANG_LABEL[p.language] || p.language)} (hoặc ngôn ngữ của bài gốc)</dd></div>
+        <div><dt>Viết bằng</dt><dd>Chỉ ${escapeHtml(LANG_LABEL[p.language] || p.language)}, kể cả khi bài gốc viết tiếng khác</dd></div>
         <div><dt>Nhắc dự án</dt><dd>~${Math.round(p.mentionRate * 100)}% bình luận, ~${Math.round(p.postMentionRate * 100)}% bài đăng, luôn nói rõ là dự án của mình; thêm ~${Math.round(p.softMentionRate * 100)}% bình luận nhắc khéo, không tên, không link</dd></div>
       </dl>`;
   }

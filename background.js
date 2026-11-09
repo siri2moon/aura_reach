@@ -3071,7 +3071,7 @@ function buildFacebookPostUserMessage(group, topic, recentPosts) {
     topic
       ? `Chủ đề bài lượt này: ${topic}`
       : "Tự chọn một chủ đề thuộc dự án đang quảng bá mà thành viên nhóm này thật sự cần.",
-    "Ngôn ngữ: viết bằng ngôn ngữ thành viên nhóm dùng (đoán từ tên nhóm); không đoán được thì theo ngôn ngữ của dự án.",
+    "Ngôn ngữ: theo ngôn ngữ của dự án đang quảng bá; không có dự án thì viết bằng ngôn ngữ thành viên nhóm dùng (đoán từ tên nhóm).",
     ...(recentPosts.length
       ? ["", "Các bài gần đây đã đăng (KHÔNG lặp lại ý hay câu mở của chúng):", ...recentPosts.map((t) => `- ${clip(t, 160)}`)]
       : []),
@@ -3312,14 +3312,18 @@ function buildAiUserMessage(ctx) {
 async function generateAiComment(systemPrompt, userContent, opts = {}) {
   let prompt = String(systemPrompt || "").trim() || DEFAULT_AI_SYSTEM_PROMPT;
   let linkProject = null;
+  let langProject = null;
   if (opts.platform) {
     const { suffix, project, mention } = await projectPromptSuffix(opts.platform, opts.kind, { noMention: opts.noMention });
     if (suffix) {
       prompt = `${prompt}\n${suffix}`;
+      langProject = project;
       if (mention === "full") {
         userContent = `${userContent}\n\n${ProjectsCore.mentionDirective(project, { platform: opts.platform })}`;
         linkProject = project;
       }
+      // Prompt mặc định và khung tin nhắn viết tiếng Việt: nhắc ngôn ngữ của dự án ở dòng cuối cùng.
+      userContent = `${userContent}\n\n${ProjectsCore.languageDirective(project)}`;
       const mentionLabel = {
         full: "lượt này được nhắc dự án kèm link",
         soft: "lượt này nhắc khéo, không tên, không link",
@@ -3332,9 +3336,23 @@ async function generateAiComment(systemPrompt, userContent, opts = {}) {
     { role: "system", content: prompt },
     { role: "user", content: userContent },
   ];
-  const text = await requestAiText(messages);
+  let text = await requestAiText(messages);
+  if (langProject && ProjectsCore.wrongLanguage(langProject, text)) text = await rewriteInProjectLanguage(messages, text, langProject);
   if (!linkProject || ProjectsCore.containsProjectLink(linkProject, text)) return text;
   return addMissingProjectLink(messages, text, linkProject, opts);
+}
+
+// AI vẫn viết sai ngôn ngữ dự án (ví dụ tiếng Việt cho dự án thị trường Mỹ): nhờ viết lại một lần.
+// Vẫn sai thì bỏ lượt này thay vì đăng nội dung sai ngôn ngữ vào nhóm.
+async function rewriteInProjectLanguage(messages, text, project) {
+  await log("warning", `AI viết sai ngôn ngữ của ${project.name}: ${clip(text, 80)}. Đang nhờ viết lại.`);
+  const fixed = await requestAiText([
+    ...messages,
+    { role: "assistant", content: text },
+    { role: "user", content: ProjectsCore.languageFixDirective(project) },
+  ]);
+  if (ProjectsCore.wrongLanguage(project, fixed)) throw new Error(`AI vẫn viết sai ngôn ngữ của ${project.name}, bỏ lượt này.`);
+  return fixed;
 }
 
 // Lượt được nhắc dự án mà AI bỏ link (hay gặp với bài meme / game: AI cho là "không dính chủ đề"):

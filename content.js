@@ -858,10 +858,9 @@
     return "";
   }
 
-  function pickFromPool(items) {
-    const pool = items.slice(0, Math.min(8, items.length));
-    if (pool.length > 2 && Math.random() < 0.55) pool.shift();
-    return pool[Math.floor(Math.random() * pool.length)];
+  // Bài trên cùng của bảng tin (thường đang hot nhất) trong số bài chưa bình luận: phủ nhanh hơn chọn ngẫu nhiên.
+  function pickTopPost(items) {
+    return items[0];
   }
 
   function cleanExtract(value) {
@@ -890,7 +889,7 @@
       if (!targets.length) {
         throw new Error(`Không tìm thấy bài viết để bình luận trên trang nhóm (${location.hostname}${location.pathname}).`);
       }
-      const pick = pickFromPool(targets);
+      const pick = pickTopPost(targets);
       return { ok: true, nextUrl: pick.url, postKey: pick.key };
     }
 
@@ -975,7 +974,7 @@
 
   async function extractWwwContext(skipKeys) {
     if (!isPostPage()) {
-      await prepareWwwFeed();
+      await prepareWwwFeed(skipKeys);
     } else {
       await sleep(600);
       clickSeeMoreIn(document.body);
@@ -984,9 +983,10 @@
 
     const cards = collectWwwPostCards();
     const fresh = cards.filter((card) => card.key && !skipKeys.includes(card.key));
-    const pool = fresh.length ? fresh : cards;
+    // Ngoài bảng tin chỉ lấy bài chưa bình luận; đang ở trang một bài thì bài đó là bài cần bình luận.
+    const pool = isPostPage() && !fresh.length ? cards : fresh;
     if (pool.length) {
-      const pick = isPostPage() ? pool[0] : pickFromPool(pool);
+      const pick = pickTopPost(pool);
       if (pick && !isPostPage() && pick.permalink) {
         return { ok: true, nextUrl: pick.permalink, postKey: pick.key };
       }
@@ -1003,7 +1003,7 @@
 
     const links = collectWwwPostLinks(skipKeys);
     if (links.length) {
-      const pick = pickFromPool(links);
+      const pick = pickTopPost(links);
       return { ok: true, nextUrl: pick.url, postKey: pick.key };
     }
 
@@ -1012,7 +1012,8 @@
     );
   }
 
-  async function prepareWwwFeed() {
+  // skipKeys: cuộn tới khi thấy ít nhất một bài chưa bình luận (bài trên cùng thường đã bình luận ở lượt trước).
+  async function prepareWwwFeed(skipKeys) {
     dismissWwwPopups();
     await clickGroupDiscussionTab();
     await waitFor(
@@ -1023,7 +1024,7 @@
       14000
     );
     const main = document.querySelector('[role="main"]');
-    for (let i = 0; i < 8; i += 1) {
+    for (let i = 0; i < (skipKeys ? 14 : 8); i += 1) {
       if (main) main.scrollTop += Math.round((main.clientHeight || 700) * 0.9);
       window.scrollBy(0, Math.round(window.innerHeight * 0.95));
       if (document.scrollingElement) {
@@ -1031,7 +1032,10 @@
       }
       await sleep(450 + Math.round(Math.random() * 350));
       dismissWwwPopups();
-      if (collectWwwPostCards().length >= 2 || collectWwwPostLinks([]).length >= 2) break;
+      if (skipKeys) {
+        const freshCard = collectWwwPostCards().some((card) => card.key && !skipKeys.includes(card.key));
+        if (freshCard || collectWwwPostLinks(skipKeys).length) break;
+      } else if (collectWwwPostCards().length >= 2 || collectWwwPostLinks([]).length >= 2) break;
     }
     await sleep(400);
   }

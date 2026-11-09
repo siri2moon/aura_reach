@@ -254,7 +254,8 @@ test("a post that carries an image is always a full mention, comments keep their
   const wv = core.mergeProjects([]).find((p) => p.id === "wish-village");
   assert.equal(core.mentionMode(wv, "post", () => 0.99, "facebook", { withImage: true }), "full");
   assert.equal(core.mentionMode(wv, "post", () => 0.99, "facebook"), "none");
-  assert.equal(core.mentionMode(wv, "comment", () => 0.99, "facebook", { withImage: true }), "none");
+  assert.equal(core.mentionMode(mct(), "comment", () => 0.99, "facebook", { withImage: true }), "none");
+  assert.equal(core.mentionMode(wv, "comment", () => 0.99, "facebook"), "full");
   assert.equal(core.canAttachImages("threads"), true);
   assert.equal(core.canAttachImages("x"), false);
 });
@@ -263,4 +264,23 @@ test("image stamp shows the bare project domain", () => {
   assert.equal(core.imageStampText(core.mergeProjects([]).find((p) => p.id === "wish-village")), "wishvillage.live");
   assert.equal(core.imageStampText(mct()), "mycreatortax.com");
   assert.equal(core.imageStampText({ id: "x", name: "No site" }), "");
+});
+
+test("AI writes only in the project language, whatever the original post is in", () => {
+  const wv = core.mergeProjects([]).find((p) => p.id === "wish-village");
+  const block = core.buildPromptBlock(wv, { platform: "facebook", mention: "none" });
+  assert.match(block, /CHỈ viết bằng tiếng Anh \(English\)/);
+  assert.doesNotMatch(block, /viết đúng ngôn ngữ của nội dung gốc/);
+  assert.match(core.languageDirective(wv), /Chỉ viết bằng English/);
+  assert.match(core.languageDirective(nz()), /русский/);
+  assert.match(core.mentionDirective(wv, { platform: "facebook" }), /viết bằng English/);
+});
+
+test("wrongLanguage catches Vietnamese or non-Latin text in an English project", () => {
+  const wv = core.mergeProjects([]).find((p) => p.id === "wish-village");
+  assert.equal(core.wrongLanguage(wv, "Cái chi tiết mọi người hay bỏ qua là ông ấy ngồi ngay trong cabin loader"), true);
+  assert.equal(core.wrongLanguage(wv, "हार्वेस्टर खरीदने के बाद"), true);
+  assert.equal(core.wrongLanguage(wv, "lol the café scene got me 🎄 I made a tiny snowy village: https://wishvillage.live/"), false);
+  assert.equal(core.wrongLanguage(nz(), "Great dentist in Nha Trang"), true);
+  assert.equal(core.wrongLanguage(nz(), "Хороший стоматолог в Нячанге"), false);
 });

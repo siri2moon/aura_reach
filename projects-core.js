@@ -15,6 +15,8 @@
   const FIT = { high: 3, medium: 2, low: 1, none: 0 };
 
   const LANGUAGE_NAMES = { en: "tiếng Anh", ru: "tiếng Nga", vi: "tiếng Việt" };
+  // Tên ngôn ngữ bằng chính ngôn ngữ đó: nhắc kèm trong prompt cho AI khỏi hiểu nhầm khi prompt viết tiếng Việt.
+  const LANGUAGE_NATIVE = { en: "English", ru: "русский", vi: "tiếng Việt" };
 
   const PRESETS = [
     {
@@ -205,10 +207,10 @@
       // Ảnh có sẵn đính kèm bài đăng / bình luận có link (xem presetImages). Đường dẫn tính từ gốc extension.
       images: ["project-images/wish-village-plaza.jpg"],
       disclosure: "I made it",
-      // Bài của chính mình mang link phần lớn; bình luận ở nhóm giải trí vẫn nhắc thưa để không bị coi là spam.
-      mentionRate: 0.3,
+      // Ưu tiên phủ nhanh: mọi bình luận đều kèm link (và ảnh). Bài đăng kèm ảnh luôn có link (mentionMode withImage).
+      mentionRate: 1,
       postMentionRate: 0.7,
-      softMentionRate: 0.2,
+      softMentionRate: 0,
       postKeywords: [
         "cozy games",
         "cozy gaming",
@@ -605,7 +607,7 @@
       p.pitch && `Dự án là gì: ${p.pitch}`,
       p.audience && `Người cần dự án: ${p.audience}`,
       p.persona && `Vai của bạn khi viết: ${p.persona}`,
-      `Ngôn ngữ: viết đúng ngôn ngữ của nội dung gốc; nếu không rõ thì viết ${langName}. Khi nội dung gốc không phải tiếng Việt, bỏ qua mọi yêu cầu về tiếng Việt, teencode hay giọng người Việt ở trên, nhưng vẫn giữ giọng người thật, ngắn gọn.`,
+      languageRule(p),
     ];
     if (p.facts.length) {
       lines.push("Kiến thức dùng khi góp ý (chỉ dùng khi đúng chủ đề, không bịa thêm số liệu hay tên địa điểm):");
@@ -641,7 +643,7 @@
     } else if (mode === "soft") {
       lines.push(
         `Lượt này KHÔNG ghi tên ${p.name}, không link, không tên miền, không kêu gọi.`,
-        `Nếu nội dung gốc đúng chủ đề của dự án, được thêm thoáng qua một ý rằng bạn đang tự làm đúng loại dự án ở dòng "Dự án là gì" về chủ đề này (công cụ: "mình đang làm một tool tính đúng cái này"; kênh / nội dung: "mình cũng đang làm phim tài liệu về đúng cảnh này" — viết bằng ngôn ngữ của bình luận), như chuyện bên lề của người trong nghề, để người đọc tò mò hỏi thêm hoặc vào trang cá nhân. Không mô tả tính năng, không khen sản phẩm. Nội dung gốc không liên quan thì bỏ ý này.`
+        `Nếu nội dung gốc đúng chủ đề của dự án, được thêm thoáng qua một ý rằng bạn đang tự làm đúng loại dự án ở dòng "Dự án là gì" về chủ đề này (công cụ: "mình đang làm một tool tính đúng cái này"; kênh / nội dung: "mình cũng đang làm phim tài liệu về đúng cảnh này" — viết bằng ${langName}), như chuyện bên lề của người trong nghề, để người đọc tò mò hỏi thêm hoặc vào trang cá nhân. Không mô tả tính năng, không khen sản phẩm. Nội dung gốc không liên quan thì bỏ ý này.`
       );
     } else {
       lines.push(`Lượt này KHÔNG nhắc tên, link hay ám chỉ ${p.name}. Chỉ góp ý chuyên môn hoặc kể trải nghiệm.`);
@@ -670,7 +672,7 @@
       "### NHẮC DỰ ÁN LƯỢT NÀY (ưu tiên hơn dòng CTA ở trên)",
       `- Kết thúc bằng đúng 1 câu ngắn nhắc ${p.name}, nói rõ là dự án của bạn${p.disclosure ? ` ("${p.disclosure}")` : ""}, kèm đúng 1 link chép nguyên văn từ danh sách:`,
       ...projectLinkLines(p, opts.platform || ""),
-      "- Câu này phải gắn với điều vừa nói ở trên, nghe như gợi ý của người quen, không giọng quảng cáo.",
+      `- Câu này viết bằng ${LANGUAGE_NATIVE[p.language]}, gắn với điều vừa nói ở trên, nghe như gợi ý của người quen, không giọng quảng cáo.`,
     ].join("\n");
   }
 
@@ -683,13 +685,49 @@
     const lines = [
       `Bạn chưa chèn link của ${p.name}. Trả về lại đúng nội dung vừa viết, không sửa chữ nào, chỉ thêm đúng 1 câu ngắn ở cuối nhắc ${p.name}, nói rõ là dự án của bạn${p.disclosure ? ` ("${p.disclosure}")` : ""}, kèm đúng 1 link chép nguyên văn từ danh sách:`,
       ...projectLinkLines(p, opts.platform || ""),
-      "Câu đó viết cùng ngôn ngữ với nội dung, gắn với điều vừa nói, nghe như gợi ý của người quen, không giọng quảng cáo.",
+      `Câu đó viết bằng ${LANGUAGE_NATIVE[p.language]}, gắn với điều vừa nói, nghe như gợi ý của người quen, không giọng quảng cáo.`,
     ];
     if (opts.kind !== "post") {
       lines.push("Nếu nội dung gốc là chuyện buồn hoặc nghiêm trọng (mất mát, bệnh tật, chính trị, bi kịch) thì trả về y nguyên nội dung vừa viết, không thêm gì.");
     }
     lines.push("Chỉ trả về toàn bộ nội dung cần đăng, không giải thích.");
     return lines.join("\n");
+  }
+
+  /**
+   * Dự án nhắm một thị trường nên AI chỉ viết bằng ngôn ngữ của dự án, kể cả khi bài gốc viết tiếng khác hay
+   * không có chữ. Trước đây AI "theo ngôn ngữ bài gốc" và bài chỉ có video thì viết tiếng Việt theo prompt.
+   */
+  function languageRule(p) {
+    const name = `${LANGUAGE_NAMES[p.language]} (${LANGUAGE_NATIVE[p.language]})`;
+    if (p.language === "vi") return `Ngôn ngữ: CHỈ viết bằng ${name}, kể cả khi nội dung gốc viết bằng tiếng khác hoặc không có chữ.`;
+    return `Ngôn ngữ: CHỈ viết bằng ${name}, kể cả khi nội dung gốc viết bằng tiếng khác, không có chữ, hay khi các hướng dẫn ở đây viết bằng tiếng Việt. Bỏ qua mọi yêu cầu về tiếng Việt, teencode hay giọng người Việt ở trên, nhưng vẫn giữ giọng người thật, ngắn gọn.`;
+  }
+
+  /** Dòng nối vào CUỐI tin nhắn user ở mọi lượt viết theo dự án: chỉ dẫn đứng cuối được AI nghe nhất. */
+  function languageDirective(project) {
+    const p = normalizeProject(project);
+    return `### NGÔN NGỮ (bắt buộc)\n- Chỉ viết bằng ${LANGUAGE_NATIVE[p.language]}, kể cả khi bài gốc viết tiếng khác hoặc không có chữ.`;
+  }
+
+  /**
+   * Nội dung AI trả về sai ngôn ngữ của dự án không. Dự án tiếng Anh: có dấu tiếng Việt hoặc chữ không phải
+   * Latin (Kirin, Devanagari, Ả Rập, Hán, Kana, Hàn). Dự án tiếng Nga: không có chữ Kirin nào. Tiếng Việt: không xét.
+   */
+  function wrongLanguage(project, text) {
+    const p = normalizeProject(project);
+    const value = String(text || "");
+    if (p.language === "en") {
+      return /[ăâđêôơưĂÂĐÊÔƠƯ\u1EA0-\u1EF9\u0400-\u04FF\u0900-\u097F\u0600-\u06FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF]/.test(value);
+    }
+    if (p.language === "ru") return !/[\u0400-\u04FF]/.test(value);
+    return false;
+  }
+
+  /** Tin nhắn hỏi tiếp khi AI viết sai ngôn ngữ: viết lại đúng ý đó bằng ngôn ngữ dự án, giữ nguyên link. */
+  function languageFixDirective(project) {
+    const p = normalizeProject(project);
+    return `Bạn vừa viết sai ngôn ngữ. Viết lại đúng nội dung đó bằng ${LANGUAGE_NATIVE[p.language]}, giữ nguyên ý, giữ nguyên mọi link nếu có. Chỉ trả về nội dung cần đăng, không giải thích.`;
   }
 
   /** Bình luận / bài có chứa một trong các link (hoặc tên miền) của dự án không. */
@@ -789,6 +827,9 @@
     topicFilter,
     mentionDirective,
     linkFixDirective,
+    languageDirective,
+    wrongLanguage,
+    languageFixDirective,
     containsProjectLink,
     slugify,
     parseProjectImport,

@@ -40,7 +40,7 @@ Aura Reach làm việc theo **dự án**. Bạn chọn dự án cần quảng b�
 
 1. **Vào đúng cộng đồng**: tìm và tham gia nhóm Facebook hợp đối tượng, follow hoặc subscribe tài khoản trong ngách.
 2. **Tìm bài đúng chủ đề**: nguồn bài là kết quả tìm kiếm theo từ khoá của dự án, kèm bộ lọc AI bỏ qua bài lạc đề.
-3. **Bình luận và đăng bài**: AI viết bằng ngôn ngữ của bài gốc, dựa trên hồ sơ dự án. Phần lớn bình luận chỉ góp ý chuyên môn. Chỉ một tỉ lệ nhỏ (mặc định 25–30%) được nhắc tên hoặc link, và luôn nói rõ đó là dự án của bạn.
+3. **Bình luận và đăng bài**: AI chỉ viết bằng ngôn ngữ của dự án (kể cả khi bài gốc viết tiếng khác), dựa trên hồ sơ dự án. Phần lớn bình luận chỉ góp ý chuyên môn. Chỉ một tỉ lệ nhỏ (mặc định 25–30%) được nhắc tên hoặc link, và luôn nói rõ đó là dự án của bạn.
 
 Ba dự án có sẵn:
 
@@ -122,7 +122,7 @@ Hồ sơ dự án nằm ở cuối trang **Kế hoạch dự án** và gồm:
 
 | Nhóm | Trường |
 | --- | --- |
-| Giới thiệu | Tên, website, ngôn ngữ mặc định, thị trường, mô tả, đối tượng, vai của AI khi viết |
+| Giới thiệu | Tên, website, ngôn ngữ viết, thị trường, mô tả, đối tượng, vai của AI khi viết |
 | Tìm ở đâu | Từ khoá tìm bài, từ khoá tìm nhóm Facebook, từ khoá YouTube, hashtag Instagram, bộ lọc nội dung |
 | Nói gì | Kiến thức AI được dùng, chủ đề bài đăng, link được nhắc, điều không được làm |
 | Nhắc dự án | Câu nói rõ đây là dự án của bạn, tỉ lệ bình luận / bài đăng được nhắc |
