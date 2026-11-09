@@ -44,6 +44,10 @@
     return (rows || []).sort((a, b) => a.addedAt - b.addedAt);
   }
 
+  async function count(projectId) {
+    return withStore("readonly", (store) => store.index("projectId").count(String(projectId)));
+  }
+
   /** Thêm nhiều ảnh trong một transaction. items: [{ name, type, dataUrl }]. */
   async function addMany(projectId, items) {
     const now = Date.now();
@@ -66,5 +70,5 @@
     await withStore("readwrite", (store) => store.delete(String(id)));
   }
 
-  root.ProjectImages = { list, addMany, remove };
+  root.ProjectImages = { list, count, addMany, remove };
 })(typeof self !== "undefined" ? self : globalThis);

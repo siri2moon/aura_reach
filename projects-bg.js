@@ -23,12 +23,19 @@ async function getActiveProject() {
  * Phần nối vào system prompt cho job AI trên `platform`. Rỗng khi chưa chọn dự án hoặc dự án không
  * nhắm nền tảng này. Mức nhắc dự án (full / soft / none) được tung ở đây để mỗi lượt độc lập.
  * opts.noMention: nơi đăng cấm tự quảng cáo (nhóm Facebook có luật đó) nên lượt này luôn "none".
+ * Bài đăng sẽ kèm ảnh dự án (projectImageFor) thì luôn "full" để ảnh đi cùng link.
  */
 async function projectPromptSuffix(platform, kind = "comment", opts = {}) {
   const project = await getActiveProject();
   if (!project || !ProjectsCore.appliesTo(project, platform)) return { suffix: "", project: null, mention: "none" };
-  const mention = opts.noMention ? "none" : ProjectsCore.mentionMode(project, kind, Math.random, platform);
+  const withImage = !opts.noMention && kind === "post" && ProjectsCore.canAttachImages(platform) && (await projectHasImages(project));
+  const mention = opts.noMention ? "none" : ProjectsCore.mentionMode(project, kind, Math.random, platform, { withImage });
   return { suffix: ProjectsCore.buildPromptBlock(project, { platform, kind, mention }), project, mention };
+}
+
+async function projectHasImages(project) {
+  if (ProjectsCore.presetImages(project.id).length) return true;
+  return (await ProjectImages.count(project.id).catch(() => 0)) > 0;
 }
 
 /**
@@ -43,12 +50,14 @@ async function projectImageFor(kind, text, opts = {}) {
   const hasLink = ProjectsCore.containsProjectLink(project, text);
   if (!ProjectsCore.shouldAttachImage({ kind, hasLink, noPromo: opts.noPromo })) return null;
   try {
-    const bundled = ProjectsCore.presetImages(project.id).map((path) => ({ path }));
+    const bundled = ProjectsCore.presetImages(project.id).map((path) => ({ path, name: path.split("/").pop() }));
     const uploaded = await ProjectImages.list(project.id);
     const pool = [...bundled, ...uploaded];
     if (!pool.length) return null;
     const pick = pool[Math.floor(Math.random() * pool.length)];
-    const image = pick.dataUrl ? { name: pick.name, type: pick.type, dataUrl: pick.dataUrl } : await bundledImage(pick.path);
+    const res = await fetch(pick.dataUrl || chrome.runtime.getURL(pick.path));
+    if (!res.ok) throw new Error(`thiếu file ${pick.path}`);
+    const image = await stampedImage(await res.blob(), pick.name, project);
     await log("info", `Kèm ảnh «${image.name}» vào ${kind === "post" ? "bài đăng" : "bình luận"} (${pool.length} ảnh của ${project.name}).`);
     return image;
   } catch (error) {
@@ -57,16 +66,51 @@ async function projectImageFor(kind, text, opts = {}) {
   }
 }
 
-// File ảnh trong extension -> data URL để gửi qua tin nhắn cho content script.
-async function bundledImage(path) {
-  const res = await fetch(chrome.runtime.getURL(path));
-  if (!res.ok) throw new Error(`thiếu file ${path}`);
-  const blob = await res.blob();
+/**
+ * In tên miền dự án lên một dải màu ở giữa cạnh trên ảnh (ảnh game thường có nút ở cạnh dưới), để ai lướt qua
+ * ảnh cũng biết vào đâu, kể cả khi bài không có link bấm được. In hỏng thì gửi ảnh gốc.
+ */
+async function stampedImage(blob, name, project) {
+  const label = ProjectsCore.imageStampText(project);
+  if (!label) return { name, type: blob.type || "image/jpeg", dataUrl: await blobToDataUrl(blob) };
+  try {
+    const bitmap = await createImageBitmap(blob);
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(bitmap, 0, 0);
+    const size = Math.max(16, Math.round(Math.max(bitmap.width, bitmap.height) * 0.028));
+    bitmap.close();
+    ctx.font = `700 ${size}px "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif`;
+    const padX = Math.round(size * 0.8);
+    const height = Math.round(size * 1.9);
+    const width = Math.round(ctx.measureText(label).width) + padX * 2;
+    const x = Math.round((canvas.width - width) / 2);
+    const y = Math.round(size * 0.6);
+    ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+    ctx.shadowBlur = Math.round(size * 0.4);
+    ctx.fillStyle = project.color || "#4f46e5";
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height, height / 2);
+    ctx.fill();
+    ctx.shadowColor = "transparent";
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, canvas.width / 2, y + height / 2 + 1);
+    const out = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.9 });
+    return { name: `${String(name).replace(/\.[^.]+$/, "")}.jpg`, type: "image/jpeg", dataUrl: await blobToDataUrl(out) };
+  } catch (error) {
+    await log("warning", `Không in được ${label} lên ảnh (${error?.message || error}), gửi ảnh gốc.`);
+    return { name, type: blob.type || "image/jpeg", dataUrl: await blobToDataUrl(blob) };
+  }
+}
+
+// Data URL để gửi ảnh qua tin nhắn cho content script.
+async function blobToDataUrl(blob) {
   const bytes = new Uint8Array(await blob.arrayBuffer());
   let binary = "";
   for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  const type = blob.type || "image/jpeg";
-  return { name: path.split("/").pop(), type, dataUrl: `data:${type};base64,${btoa(binary)}` };
+  return `data:${blob.type || "image/jpeg"};base64,${btoa(binary)}`;
 }
 
 /**

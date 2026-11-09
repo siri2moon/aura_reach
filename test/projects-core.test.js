@@ -249,3 +249,18 @@ test("images go on every post, and on comments or replies only when they carry t
   assert.equal(core.shouldAttachImage({ kind: "post", noPromo: true }), false);
   assert.equal(core.shouldAttachImage({ kind: "comment", hasLink: true, noPromo: true }), false);
 });
+
+test("a post that carries an image is always a full mention, comments keep their rates", () => {
+  const wv = core.mergeProjects([]).find((p) => p.id === "wish-village");
+  assert.equal(core.mentionMode(wv, "post", () => 0.99, "facebook", { withImage: true }), "full");
+  assert.equal(core.mentionMode(wv, "post", () => 0.99, "facebook"), "none");
+  assert.equal(core.mentionMode(wv, "comment", () => 0.99, "facebook", { withImage: true }), "none");
+  assert.equal(core.canAttachImages("threads"), true);
+  assert.equal(core.canAttachImages("x"), false);
+});
+
+test("image stamp shows the bare project domain", () => {
+  assert.equal(core.imageStampText(core.mergeProjects([]).find((p) => p.id === "wish-village")), "wishvillage.live");
+  assert.equal(core.imageStampText(mct()), "mycreatortax.com");
+  assert.equal(core.imageStampText({ id: "x", name: "No site" }), "");
+});

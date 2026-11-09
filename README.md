@@ -133,7 +133,7 @@ Hồ sơ dự án nằm ở cuối trang **Kế hoạch dự án** và gồm:
 - **Xem phần AI nhận thêm** hiển thị đúng đoạn được nối vào prompt, theo từng nền tảng.
 - Hồ sơ của dự án có sẵn có thể khôi phục về mặc định. Dự án bạn tự thêm có thể xoá.
 
-**Ảnh đính kèm (Facebook, Threads).** Mỗi bài đăng kèm một ảnh chọn ngẫu nhiên. Bình luận và trả lời chỉ kèm ảnh khi có link dự án. Nhóm Facebook cấm tự quảng cáo thì không kèm. Ảnh lấy từ hai nguồn:
+**Ảnh đính kèm (Facebook, Threads).** Mỗi bài đăng kèm một ảnh chọn ngẫu nhiên và luôn được nhắc dự án kèm link, bất kể tỉ lệ bài đăng được nhắc. Bình luận và trả lời chỉ kèm ảnh khi có link dự án. Nhóm Facebook cấm tự quảng cáo thì không kèm. Lúc gửi, tên miền của dự án được in lên một dải màu ở giữa cạnh trên ảnh. Ảnh lấy từ hai nguồn:
 
 - **Ảnh có sẵn**: file trong `project-images/`, khai báo ở `images` của preset trong `projects-core.js`. Máy nào pull repo về cũng có.
 - **Ảnh tự tải lên**: bấm **Thêm ảnh** trong hồ sơ dự án. Ảnh được thu về cạnh dài 1600px, lưu trong IndexedDB của extension và chỉ nằm trên máy đó.

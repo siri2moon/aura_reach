@@ -342,6 +342,19 @@
     return kind === "post" || Boolean(hasLink);
   }
 
+  // Nền tảng mà content script gắn được ảnh (attach-image.js).
+  const IMAGE_PLATFORMS = new Set(["facebook", "threads"]);
+
+  function canAttachImages(platform) {
+    return IMAGE_PLATFORMS.has(platform);
+  }
+
+  /** Chữ in lên ảnh đính kèm: tên miền của dự án, ví dụ "wishvillage.live". Rỗng nếu dự án chưa có website. */
+  function imageStampText(project) {
+    const p = normalizeProject(project);
+    return plainUrl(p.url || p.links[0]?.url || "").split("/")[0];
+  }
+
   function clamp01(value, fallback) {
     const n = Number(value);
     if (!Number.isFinite(n)) return fallback;
@@ -699,8 +712,10 @@
    * (ẩn ý, không tên, không link) theo softMentionRate, còn lại "none". Bài đăng của chính mình không
    * có mức "soft". Trả lời bình luận dùng nửa tỉ lệ cho cả hai mức. Bình luận trên SOFT_ONLY_PLATFORMS
    * không bao giờ "full".
+   * opts.withImage: bài đăng sẽ kèm ảnh dự án, nên luôn "full": ảnh mà thiếu link thì người xem không biết vào đâu.
    */
-  function mentionMode(project, kind, random = Math.random, platform = "") {
+  function mentionMode(project, kind, random = Math.random, platform = "", opts = {}) {
+    if (kind === "post" && opts.withImage) return "full";
     const p = normalizeProject(project);
     const scale = kind === "reply" ? 0.5 : 1;
     const full = (kind === "post" ? p.postMentionRate : p.mentionRate) * scale;
@@ -755,6 +770,8 @@
     presetById,
     presetImages,
     shouldAttachImage,
+    canAttachImages,
+    imageStampText,
     normalizeProject,
     mergeProjects,
     fitOf,
