@@ -75,6 +75,28 @@ test("prompt block switches language and only mentions the project when allowed"
   assert.doesNotMatch(off, /quarterly-tax-due-dates/);
 });
 
+test("own posts on a full turn must carry the link, comments may still skip off-topic posts", () => {
+  const wv = core.mergeProjects([]).find((p) => p.id === "wish-village");
+  const post = core.buildPromptBlock(wv, { platform: "threads", kind: "post", mention: "full" });
+  assert.match(post, /bắt buộc có câu đó/);
+  assert.doesNotMatch(post, /Chỉ bỏ cả câu này/);
+  const comment = core.buildPromptBlock(wv, { platform: "threads", kind: "comment", mention: "full" });
+  assert.match(comment, /Chỉ bỏ cả câu này/);
+});
+
+test("link fix directive keeps the text and adds one closing sentence with a project link", () => {
+  const wv = core.mergeProjects([]).find((p) => p.id === "wish-village");
+  const post = core.linkFixDirective(wv, { platform: "threads", kind: "post" });
+  assert.match(post, /chưa chèn link của Wish Village/);
+  assert.match(post, /"I made it"/);
+  assert.match(post, /https:\/\/wishvillage\.live\//);
+  assert.doesNotMatch(post, /chuyện buồn/);
+  assert.match(core.linkFixDirective(wv, { platform: "facebook", kind: "comment" }), /chuyện buồn/);
+  const plain = core.linkFixDirective(wv, { platform: "instagram", kind: "comment" });
+  assert.match(plain, /wishvillage\.live/);
+  assert.doesNotMatch(plain, /https:\/\//);
+});
+
 test("prompt block writes plain domains where links are not clickable", () => {
   const block = core.buildPromptBlock(nz(), { platform: "tiktok", mention: true });
   assert.match(block, /tiếng Nga/);

@@ -203,10 +203,10 @@
         { label: "Giới thiệu / cách chơi", url: "https://wishvillage.live/about" },
       ],
       disclosure: "I made it",
-      // Nhóm giải trí rất ghét spam: nhắc ít, chủ yếu bình luận cho vui.
-      mentionRate: 0.15,
-      postMentionRate: 0.3,
-      softMentionRate: 0.25,
+      // Bài của chính mình mang link phần lớn; bình luận ở nhóm giải trí vẫn nhắc thưa để không bị coi là spam.
+      mentionRate: 0.3,
+      postMentionRate: 0.7,
+      softMentionRate: 0.2,
       postKeywords: [
         "cozy games",
         "cozy gaming",
@@ -595,7 +595,12 @@
     const mode = opts.mention === true ? "full" : opts.mention || "none";
     if (mode === "full") {
       lines.push(
-        `Lượt này ĐƯỢC PHÉP nhắc tới ${p.name} đúng một lần, kèm đúng MỘT link trong danh sách dưới. Nhắc tên mà không có link là sai. Nói rõ đây là dự án của bạn${p.disclosure ? ` (ví dụ "${p.disclosure}")` : ""}. Đặt ở cuối, một câu, như gợi ý của người quen, không giọng quảng cáo. Chỉ bỏ cả câu này khi nội dung gốc hoàn toàn không dính gì tới chủ đề của dự án.`,
+        `Lượt này ĐƯỢC PHÉP nhắc tới ${p.name} đúng một lần, kèm đúng MỘT link trong danh sách dưới. Nhắc tên mà không có link là sai. Nói rõ đây là dự án của bạn${p.disclosure ? ` (ví dụ "${p.disclosure}")` : ""}. Đặt ở cuối, một câu, như gợi ý của người quen, không giọng quảng cáo. ${
+          // Bài của chính mình luôn đúng chủ đề dự án nên không có đường lui: AI hay viện cớ "lạc đề" để bỏ link.
+          kind === "post"
+            ? "Bài này bắt buộc có câu đó."
+            : "Chỉ bỏ cả câu này khi nội dung gốc hoàn toàn không dính gì tới chủ đề của dự án."
+        }`,
         plainLink
           ? "Nền tảng này không bấm được link: chỉ ghi tên miền dạng chữ, không có https://. Chép nguyên văn một đường dẫn hợp nhất:"
           : "Chép nguyên văn một link hợp nhất với nội dung:",
@@ -635,6 +640,24 @@
       ...projectLinkLines(p, opts.platform || ""),
       "- Câu này phải gắn với điều vừa nói ở trên, nghe như gợi ý của người quen, không giọng quảng cáo.",
     ].join("\n");
+  }
+
+  /**
+   * Tin nhắn hỏi tiếp khi lượt nhắc đầy đủ trả về nội dung không có link: AI giữ nguyên bài và chỉ thêm
+   * câu cuối. Bình luận / trả lời vẫn được giữ nguyên nếu bài gốc buồn hoặc nghiêm trọng; bài của mình thì không.
+   */
+  function linkFixDirective(project, opts = {}) {
+    const p = normalizeProject(project);
+    const lines = [
+      `Bạn chưa chèn link của ${p.name}. Trả về lại đúng nội dung vừa viết, không sửa chữ nào, chỉ thêm đúng 1 câu ngắn ở cuối nhắc ${p.name}, nói rõ là dự án của bạn${p.disclosure ? ` ("${p.disclosure}")` : ""}, kèm đúng 1 link chép nguyên văn từ danh sách:`,
+      ...projectLinkLines(p, opts.platform || ""),
+      "Câu đó viết cùng ngôn ngữ với nội dung, gắn với điều vừa nói, nghe như gợi ý của người quen, không giọng quảng cáo.",
+    ];
+    if (opts.kind !== "post") {
+      lines.push("Nếu nội dung gốc là chuyện buồn hoặc nghiêm trọng (mất mát, bệnh tật, chính trị, bi kịch) thì trả về y nguyên nội dung vừa viết, không thêm gì.");
+    }
+    lines.push("Chỉ trả về toàn bộ nội dung cần đăng, không giải thích.");
+    return lines.join("\n");
   }
 
   /** Bình luận / bài có chứa một trong các link (hoặc tên miền) của dự án không. */
@@ -727,6 +750,7 @@
     mentionMode,
     topicFilter,
     mentionDirective,
+    linkFixDirective,
     containsProjectLink,
     slugify,
     parseProjectImport,

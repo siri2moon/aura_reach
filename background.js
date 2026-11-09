@@ -3298,7 +3298,6 @@ function buildAiUserMessage(ctx) {
 // opts.platform: job này thuộc nền tảng nào; có thì nối hướng dẫn của dự án đang chọn (projects-bg.js).
 // opts.kind: "comment" | "post" | "reply". Không truyền opts (Maps, Nadezhno) thì prompt giữ nguyên.
 async function generateAiComment(systemPrompt, userContent, opts = {}) {
-  await ensureAiOriginRule();
   let prompt = String(systemPrompt || "").trim() || DEFAULT_AI_SYSTEM_PROMPT;
   let linkProject = null;
   if (opts.platform) {
@@ -3309,17 +3308,46 @@ async function generateAiComment(systemPrompt, userContent, opts = {}) {
         userContent = `${userContent}\n\n${ProjectsCore.mentionDirective(project, { platform: opts.platform })}`;
         linkProject = project;
       }
-      const mentionLabel = { full: "lượt này được nhắc dự án", soft: "lượt này nhắc khéo, không tên, không link", none: "lượt này không nhắc dự án" };
+      const mentionLabel = {
+        full: "lượt này được nhắc dự án kèm link",
+        soft: "lượt này nhắc khéo, không tên, không link",
+        none: opts.noMention ? "nhóm này có luật cấm tự quảng cáo nên không nhắc dự án" : "lượt này không nhắc dự án",
+      };
       await log("info", `AI viết theo dự án ${project.name} (${mentionLabel[mention] || mentionLabel.none}).`);
     }
   }
-  const payload = {
-    stream: false,
-    messages: [
-      { role: "system", content: prompt },
-      { role: "user", content: userContent },
-    ],
-  };
+  const messages = [
+    { role: "system", content: prompt },
+    { role: "user", content: userContent },
+  ];
+  const text = await requestAiText(messages);
+  if (!linkProject || ProjectsCore.containsProjectLink(linkProject, text)) return text;
+  return addMissingProjectLink(messages, text, linkProject, opts);
+}
+
+// Lượt được nhắc dự án mà AI bỏ link (hay gặp với bài meme / game: AI cho là "không dính chủ đề"):
+// hỏi tiếp trong cùng cuộc hội thoại để thêm câu cuối có link. Vẫn không có link thì đăng bản cũ.
+async function addMissingProjectLink(messages, text, project, opts) {
+  try {
+    const fixed = await requestAiText([
+      ...messages,
+      { role: "assistant", content: text },
+      { role: "user", content: ProjectsCore.linkFixDirective(project, { platform: opts.platform, kind: opts.kind }) },
+    ]);
+    if (ProjectsCore.containsProjectLink(project, fixed)) {
+      await log("info", `AI quên link ${project.name}, đã nhờ thêm câu cuối có link.`);
+      return fixed;
+    }
+  } catch (error) {
+    await log("warning", `Nhờ AI thêm link ${project.name} không thành công (${error?.message || error}).`);
+  }
+  await log("warning", `Lượt nhắc ${project.name} nhưng AI không chèn link (có thể vì bài gốc buồn hoặc lạc chủ đề).`);
+  return text;
+}
+
+async function requestAiText(messages) {
+  await ensureAiOriginRule();
+  const payload = { stream: false, messages };
 
   let lastError = null;
   for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -3348,9 +3376,6 @@ async function generateAiComment(systemPrompt, userContent, opts = {}) {
       }
       const text = parseGenerateResponse(raw);
       if (!text) throw new Error("API AI trả về rỗng.");
-      if (linkProject && !ProjectsCore.containsProjectLink(linkProject, text)) {
-        await log("warning", `Lượt nhắc ${linkProject.name} nhưng AI không chèn link (có thể vì bài gốc lạc chủ đề).`);
-      }
       return text;
     } catch (error) {
       if (error.name === "AbortError") throw new Error("API AI hết thời gian chờ.");
@@ -8251,14 +8276,27 @@ function fitThreadsComment(text) {
   const value = String(text || "").trim();
   if (value.length <= THREADS_MAX_CHARS) return value;
 
-  const head = value.slice(0, THREADS_MAX_CHARS);
-  const lastStop = Math.max(
-    head.lastIndexOf("."),
-    head.lastIndexOf("!"),
-    head.lastIndexOf("?"),
-    head.lastIndexOf("\n")
-  );
-  if (lastStop >= THREADS_MAX_CHARS * 0.6) return head.slice(0, lastStop + 1).trim();
+  // Câu nhắc dự án kèm link luôn nằm cuối: cắt bớt phần thân để giữ nguyên câu đó, không cắt mất link.
+  const urls = [...value.matchAll(/https?:\/\/\S+/g)];
+  const lastUrl = urls[urls.length - 1];
+  if (lastUrl) {
+    const before = value.slice(0, lastUrl.index);
+    const stop = Math.max(before.lastIndexOf(". "), before.lastIndexOf("! "), before.lastIndexOf("? "), before.lastIndexOf("\n"));
+    const body = stop > 0 ? value.slice(0, stop + 1).trim() : "";
+    const tail = stop > 0 ? value.slice(stop + 1).trim() : "";
+    if (body && tail.length <= THREADS_MAX_CHARS / 2) {
+      const sep = value.slice(body.length, value.length - tail.length).includes("\n") ? "\n" : " ";
+      return `${cutThreadsText(body, THREADS_MAX_CHARS - tail.length - sep.length)}${sep}${tail}`;
+    }
+  }
+  return cutThreadsText(value, THREADS_MAX_CHARS);
+}
+
+function cutThreadsText(value, limit) {
+  if (value.length <= limit) return value;
+  const head = value.slice(0, limit);
+  const lastStop = Math.max(head.lastIndexOf("."), head.lastIndexOf("!"), head.lastIndexOf("?"), head.lastIndexOf("\n"));
+  if (lastStop >= limit * 0.6) return head.slice(0, lastStop + 1).trim();
 
   const lastSpace = head.lastIndexOf(" ");
   return (lastSpace > 0 ? head.slice(0, lastSpace) : head).trim();
