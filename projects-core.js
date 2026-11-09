@@ -202,6 +202,8 @@
         { label: "Vào làng (trang chơi)", url: "https://wishvillage.live/" },
         { label: "Giới thiệu / cách chơi", url: "https://wishvillage.live/about" },
       ],
+      // Ảnh có sẵn đính kèm bài đăng / bình luận có link (xem presetImages). Đường dẫn tính từ gốc extension.
+      images: ["project-images/wish-village-plaza.jpg"],
       disclosure: "I made it",
       // Bài của chính mình mang link phần lớn; bình luận ở nhóm giải trí vẫn nhắc thưa để không bị coi là spam.
       mentionRate: 0.3,
@@ -321,6 +323,23 @@
 
   function presetById(id) {
     return PRESETS.find((p) => p.id === id) || null;
+  }
+
+  /**
+   * Ảnh có sẵn của dự án (file trong repo). Đọc thẳng từ PRESETS, không qua normalizeProject, để bản dự án
+   * đã lưu trong storage không giữ mãi danh sách ảnh cũ khi repo thêm / bớt ảnh.
+   */
+  function presetImages(id) {
+    return [...(presetById(id)?.images || [])];
+  }
+
+  /**
+   * Có kèm ảnh dự án vào nội dung sắp đăng không: bài đăng luôn kèm, bình luận / trả lời chỉ kèm khi có link
+   * dự án (ảnh minh hoạ cho câu nhắc). Nơi cấm tự quảng cáo thì không bao giờ kèm.
+   */
+  function shouldAttachImage({ kind = "comment", hasLink = false, noPromo = false } = {}) {
+    if (noPromo) return false;
+    return kind === "post" || Boolean(hasLink);
   }
 
   function clamp01(value, fallback) {
@@ -734,6 +753,8 @@
     SCOPED_KEYS,
     EDITABLE_FIELDS,
     presetById,
+    presetImages,
+    shouldAttachImage,
     normalizeProject,
     mergeProjects,
     fitOf,

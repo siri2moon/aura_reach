@@ -126,11 +126,19 @@ Hồ sơ dự án nằm ở cuối trang **Kế hoạch dự án** và gồm:
 | Tìm ở đâu | Từ khoá tìm bài, từ khoá tìm nhóm Facebook, từ khoá YouTube, hashtag Instagram, bộ lọc nội dung |
 | Nói gì | Kiến thức AI được dùng, chủ đề bài đăng, link được nhắc, điều không được làm |
 | Nhắc dự án | Câu nói rõ đây là dự án của bạn, tỉ lệ bình luận / bài đăng được nhắc |
+| Ảnh đính kèm | Ảnh có sẵn trong repo và ảnh tự tải lên |
 | Nền tảng | Mức phù hợp của từng nền tảng |
 
 - **Áp dụng từ khoá vào nền tảng** ghi lại các ô nguồn bài, từ khoá và bộ lọc từ hồ sơ. Nội dung tự viết như mẫu bài đăng hay danh sách follow được giữ nguyên.
 - **Xem phần AI nhận thêm** hiển thị đúng đoạn được nối vào prompt, theo từng nền tảng.
 - Hồ sơ của dự án có sẵn có thể khôi phục về mặc định. Dự án bạn tự thêm có thể xoá.
+
+**Ảnh đính kèm (Facebook, Threads).** Mỗi bài đăng kèm một ảnh chọn ngẫu nhiên. Bình luận và trả lời chỉ kèm ảnh khi có link dự án. Nhóm Facebook cấm tự quảng cáo thì không kèm. Ảnh lấy từ hai nguồn:
+
+- **Ảnh có sẵn**: file trong `project-images/`, khai báo ở `images` của preset trong `projects-core.js`. Máy nào pull repo về cũng có.
+- **Ảnh tự tải lên**: bấm **Thêm ảnh** trong hồ sơ dự án. Ảnh được thu về cạnh dài 1600px, lưu trong IndexedDB của extension và chỉ nằm trên máy đó.
+
+Không gắn được ảnh thì nội dung vẫn được đăng, chỉ có chữ. Nhật ký ghi rõ lượt đó đã kèm ảnh hay chưa. Bản `mbasic` / `m.facebook.com` không gắn ảnh.
 
 **Dự án riêng tư.** Repo này công khai, nên dự án không muốn lộ đừng thêm vào `PRESETS`. Giữ hồ sơ ở dạng file JSON trong thư mục `private/` (Git bỏ qua thư mục này), rồi bấm **Nhập dự án từ file JSON** ở màn chọn dự án. Hồ sơ được lưu trong `chrome.storage` như dự án tự thêm; nhập lại cùng `id` thì ghi đè bản cũ. **Xuất JSON** trong hồ sơ dự án tải hồ sơ đang chọn về máy để sao lưu hoặc chuyển sang máy khác.
 
@@ -205,6 +213,9 @@ app.html  ──message──►  background.js (service worker)  ──message�
 ├── projects-core.js         Dự án: preset, nguồn bài, chấm điểm nhóm, prompt (logic thuần)
 ├── projects-bg.js           Dự án: chọn / lưu / đổi, tách cài đặt theo dự án
 ├── projects-ui.js           Màn chọn dự án, Kế hoạch dự án, hồ sơ
+├── project-images.js        Ảnh tự tải lên của dự án (IndexedDB)
+├── project-images/          Ảnh có sẵn của dự án
+├── attach-image.js          Gắn ảnh vào ô soạn (Facebook, Threads)
 ├── nadezhno-core.js         Nadezhno: phân loại bài, soạn câu trả lời (logic thuần)
 ├── nadezhno-bg.js           Nadezhno: quét nhóm, hàng chờ duyệt
 ├── nadezhno-ui.js           Thẻ Nadezhno trong Facebook › Bình luận

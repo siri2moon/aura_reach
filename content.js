@@ -72,12 +72,13 @@
       }
       actionLock = true;
       try {
-        if (message.type === "CREATE_POST") return await createPost(text);
+        if (message.type === "CREATE_POST") return await createPost(text, message.image);
         const submit = message.submit !== false;
         const result = await createComment(text, {
           postKey: message.postKey,
           humanize: message.humanize !== false,
           submit,
+          image: message.image,
         });
         if (!submit && result?.ok && !result.nextUrl) {
           showHud("Đã điền sẵn bình luận. Kiểm tra, sửa nếu cần rồi tự bấm Enter để đăng.");
@@ -749,12 +750,13 @@
     return { ok: true, status: "left", name: pageGroupName() };
   }
 
-  async function createPost(text) {
+  // image: ảnh dự án cần đính kèm (attach-image.js); bản mbasic / m. không gắn ảnh, chỉ đăng chữ.
+  async function createPost(text, image) {
     if (!text.trim()) throw new Error("Nội dung bài viết trống.");
     showHud("Đang soạn bài viết...");
     try {
       if (isMbasic()) return await mbasicCreatePost(text);
-      return await wwwCreatePost(text);
+      return await wwwCreatePost(text, image);
     } finally {
       hideHud();
     }
@@ -770,10 +772,10 @@
         try {
           return await mbasicCreateComment(text, submit);
         } catch {
-          return await wwwCreateComment(text, extra.postKey, extra.humanize, submit);
+          return await wwwCreateComment(text, extra.postKey, extra.humanize, submit, extra.image);
         }
       }
-      return await wwwCreateComment(text, extra.postKey, extra.humanize, submit);
+      return await wwwCreateComment(text, extra.postKey, extra.humanize, submit, extra.image);
     } finally {
       hideHud();
     }
@@ -1366,7 +1368,7 @@
     return { field, submit, form };
   }
 
-  async function wwwCreatePost(text) {
+  async function wwwCreatePost(text, image) {
     await openComposer();
     const dialog = await waitFor(() => findComposerDialog(), 10000);
     if (!dialog) throw new Error("Không mở được cửa sổ tạo bài viết trên Facebook.");
@@ -1376,20 +1378,30 @@
 
     await typeIntoEditable(box, text, false);
     await sleep(900);
+    const imageStatus = await attachImage(image, box, dialog);
 
     let postBtn = await waitFor(() => findPostButton(dialog), 6000);
     if (!postBtn) postBtn = findPostButton(document.body);
     if (!postBtn) throw new Error("Không tìm thấy nút Đăng.");
 
-    for (let i = 0; i < 4 && isDisabled(postBtn); i += 1) {
+    // Có ảnh thì nút Đăng có thể khoá thêm lúc ảnh đang tải lên.
+    for (let i = 0; i < (imageStatus ? 25 : 4) && isDisabled(postBtn); i += 1) {
       await sleep(600);
       postBtn = findPostButton(dialog) || findPostButton(document.body) || postBtn;
     }
 
     markAction("CREATE_POST", text);
     postBtn.click();
-    await sleep(2000);
-    return { ok: true };
+    await sleep(imageStatus ? 3500 : 2000);
+    return { ok: true, image: imageStatus };
+  }
+
+  // Trả về trạng thái đính kèm ("attached" / "unverified" / "failed"), hoặc undefined khi lượt này không có ảnh.
+  async function attachImage(image, box, scope) {
+    if (!image?.dataUrl) return undefined;
+    if (typeof globalThis.AuraAttachImage !== "function") return "failed";
+    showHud("Đang đính kèm ảnh...");
+    return globalThis.AuraAttachImage(image, { box, scope });
   }
 
   async function openComposer() {
@@ -1498,7 +1510,7 @@
     el.click();
   }
 
-  async function wwwCreateComment(text, postKey, humanize, submit = true) {
+  async function wwwCreateComment(text, postKey, humanize, submit = true, image) {
     await autoScroll(isPostPage() ? 1 : 4);
     await sleep(500 + Math.round(Math.random() * 500));
 
@@ -1506,13 +1518,13 @@
       const cards = collectWwwPostCards();
       const match = cards.find((card) => card.key === postKey);
       if (match?.card) {
-        return commentOnWwwCard(match.card, text, humanize, submit);
+        return commentOnWwwCard(match.card, text, humanize, submit, image);
       }
     }
 
     if (isPostPage()) {
       const article = document.querySelector('[role="article"]');
-      if (article) return commentOnWwwCard(article, text, humanize, submit);
+      if (article) return commentOnWwwCard(article, text, humanize, submit, image);
     }
 
     const boxes = [...document.querySelectorAll('div[role="textbox"][contenteditable="true"]')].filter((el) => {
@@ -1548,10 +1560,10 @@
     }
 
     if (!box) throw new Error("Không tìm thấy ô bình luận trên bảng tin nhóm.");
-    return submitWwwCommentBox(box, text, humanize, submit);
+    return submitWwwCommentBox(box, text, humanize, submit, image);
   }
 
-  async function commentOnWwwCard(card, text, humanize, submit = true) {
+  async function commentOnWwwCard(card, text, humanize, submit = true, image) {
     card.scrollIntoView({ block: "center" });
     await sleep(350 + Math.round(Math.random() * 400));
     let box = [...card.querySelectorAll('div[role="textbox"][contenteditable="true"]')].find(isVisible);
@@ -1571,22 +1583,24 @@
       });
     }
     if (!box) throw new Error("Không tìm thấy ô bình luận của bài viết này.");
-    return submitWwwCommentBox(box, text, humanize, submit);
+    return submitWwwCommentBox(box, text, humanize, submit, image, card);
   }
 
-  async function submitWwwCommentBox(box, text, humanize, submit = true) {
+  async function submitWwwCommentBox(box, text, humanize, submit = true, image, card) {
     box.scrollIntoView({ block: "center" });
     await sleep(250 + Math.round(Math.random() * 350));
     await typeIntoEditable(box, text, Boolean(humanize));
+    const imageStatus = await attachImage(image, box, card || box.closest('[role="article"]'));
     if (!submit) {
       box.focus();
-      return { ok: true, filled: true };
+      return { ok: true, filled: true, image: imageStatus };
     }
     await sleep(400 + Math.round(Math.random() * 500));
     markAction("CREATE_COMMENT", text);
+    if (imageStatus) box.focus();
     box.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true }));
-    await sleep(1200);
-    return { ok: true };
+    await sleep(imageStatus ? 2500 : 1200);
+    return { ok: true, image: imageStatus };
   }
 
   function fillField(el, value) {

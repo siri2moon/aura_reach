@@ -3,6 +3,7 @@ importScripts(
   "nadezhno-bg.js",
   "group-search.js",
   "projects-core.js",
+  "project-images.js",
   "projects-bg.js",
   "notify-bg.js",
   "follow-discover.js",
@@ -2932,9 +2933,9 @@ async function runCycle(source) {
     } else if (action.aiPost) {
       const text = await generateFacebookPost(state, group);
       posted = { ...action, text };
-      result = await performAction(tab, posted);
+      result = await performAction(tab, { ...posted, image: await facebookImageFor(posted, group) });
     } else {
-      result = await performAction(tab, action);
+      result = await performAction(tab, { ...action, image: await facebookImageFor(action, group) });
     }
 
     if (!result?.ok) {
@@ -3037,11 +3038,20 @@ async function sendAction(tabId, action) {
       text: action.text,
       postKey: action.postKey,
       humanize: action.type === "CREATE_COMMENT",
+      image: action.image,
     });
   } catch (error) {
     if (isPortClosed(error)) return { ok: true, navigated: true };
     throw error;
   }
+}
+
+// Ảnh dự án kèm bài / bình luận Facebook. Không lưu vào action gốc: actionHistory chỉ giữ chữ.
+async function facebookImageFor(action, group) {
+  return projectImageFor(action.type === "CREATE_POST" ? "post" : "comment", action.text, {
+    platform: "facebook",
+    noPromo: await groupForbidsPromo(group),
+  });
 }
 
 // Chủ đề bài đăng Facebook: ô «Chủ đề gợi ý» của dự án; để trống thì lấy thẳng postTopics trong hồ sơ dự án.
@@ -3125,9 +3135,10 @@ async function performAiComment(tab, group) {
   const state = await getState();
   await log("info", "Đang gọi AI để viết bình luận...");
   await sleep(600 + Math.round(Math.random() * 1400));
+  const noPromo = await groupForbidsPromo(group);
   const text = await generateAiComment(state.aiSystemPrompt, buildAiUserMessage(ctx), {
     platform: "facebook",
-    noMention: await groupForbidsPromo(group),
+    noMention: noPromo,
   });
   if (!text) throw new Error("AI không trả về nội dung bình luận.");
   await log("info", `AI gợi ý: ${clip(text, 110)}`);
@@ -3137,6 +3148,7 @@ async function performAiComment(tab, group) {
     type: "CREATE_COMMENT",
     text,
     postKey: ctx.postKey,
+    image: await projectImageFor("comment", text, { platform: "facebook", noPromo }),
   };
   let result = await sendAction(currentTab.id, action);
   if (result?.nextUrl) {
@@ -4809,7 +4821,8 @@ async function interactWithThreadsPost(item, feedTab, skipKeys) {
     await log("info", `AI gợi ý: ${clip(text, 110)}`);
 
     await sleep(900 + Math.round(Math.random() * 1800));
-    const action = { type: "CREATE_THREADS_COMMENT", text, postKey: ctx.postKey, skipKeys };
+    const image = await projectImageFor("comment", text, { platform: "threads" });
+    const action = { type: "CREATE_THREADS_COMMENT", text, postKey: ctx.postKey, skipKeys, image };
     let result;
     try {
       result = await sendThreadsAction(workTab.id, action);
@@ -5008,6 +5021,7 @@ async function sendThreadsAction(tabId, action) {
       text: action.text,
       postKey: action.postKey,
       skipKeys: action.skipKeys || [],
+      image: action.image,
     });
     if (result?.ok && action.type === "CREATE_THREADS_COMMENT" && !result.nextUrl && !result.posted && !result.skipped) {
       throw new Error("Không xác nhận được comment đã gửi trên Threads.");
@@ -5426,7 +5440,8 @@ async function runThreadsPostOnce() {
   assertThreadsSession(tab);
   const ping = await sendToTab(tab.id, { type: "PING" });
   if (ping?.state && ping.state !== "ok") throw new Error(threadsStateMessage(ping.state));
-  const res = await sendToTab(tab.id, { type: "CREATE_THREADS_POST", text });
+  const image = await projectImageFor("post", text, { platform: "threads" });
+  const res = await sendToTab(tab.id, { type: "CREATE_THREADS_POST", text, image });
   if (!res?.ok) throw new Error(res?.error || "Không đăng được bài Threads.");
   if (res.skipped) {
     await log("info", "Bỏ qua lượt đăng trùng lặp.");
@@ -5585,6 +5600,7 @@ async function runThreadsReplyOnce() {
         type: "REPLY_THREADS_COMMENT",
         text,
         replyKey: ctx.replyKey,
+        image: await projectImageFor("reply", text, { platform: "threads" }),
       });
       if (!res?.ok) throw new Error(res?.error || "Không gửi được trả lời bình luận.");
       if (res.skipped) {
@@ -8043,9 +8059,10 @@ async function ensureContentScript(tabId, expectedUrl) {
     }
     try {
       const scriptFile = PLATFORM_SCRIPTS[wantPlatform] || "content.js";
+      // attach-image.js: gắn ảnh dự án vào ô soạn, content script Facebook / Threads gọi qua globalThis.AuraAttachImage.
       await chrome.scripting.executeScript({
         target: { tabId },
-        files: [scriptFile],
+        files: ["attach-image.js", scriptFile],
       });
     } catch {
       // restricted page
@@ -8098,7 +8115,9 @@ async function sendToTab(tabId, payload) {
     payload?.type === "CREATE_MAPS_REVIEW" ||
     payload?.type === "MAPS_OPEN_PLACE";
   try {
-    return await chrome.tabs.sendMessage(tabId, payload);
+    const res = await chrome.tabs.sendMessage(tabId, payload);
+    if (payload?.image) await logImageOutcome(res);
+    return res;
   } catch (error) {
     if (mutating) throw error;
     await sleep(800);
@@ -8109,6 +8128,13 @@ async function sendToTab(tabId, payload) {
       throw new Error(error.message || "Mất kết nối với tab đang chạy.");
     }
   }
+}
+
+// Content script báo lại việc gắn ảnh (attach-image.js). Gắn hỏng thì nội dung vẫn được đăng, chỉ thiếu ảnh.
+async function logImageOutcome(res) {
+  if (res?.image === "attached") await log("info", "Đã đính kèm ảnh.");
+  else if (res?.image === "unverified") await log("warning", "Đã chọn ảnh nhưng không thấy ảnh xem trước, có thể nội dung đăng lên không kèm ảnh.");
+  else if (res?.image === "failed") await log("warning", "Không đính kèm được ảnh (không thấy chỗ thêm ảnh), nội dung đăng lên chỉ có chữ.");
 }
 
 async function failAndMaybeStop(message) {

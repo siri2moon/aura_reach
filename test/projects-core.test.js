@@ -230,3 +230,22 @@ test("forbidsPromotion spots no-self-promo rules", () => {
   assert.equal(core.forbidsPromotion("Be kind and respectful"), false);
   assert.equal(core.forbidsPromotion("What games do you play?"), false);
 });
+
+test("preset images come straight from PRESETS so a stored copy never pins an old list", () => {
+  assert.deepEqual(core.presetImages("wish-village"), ["project-images/wish-village-plaza.jpg"]);
+  assert.deepEqual(core.presetImages("side"), []);
+  const stored = core.mergeProjects([{ id: "wish-village", images: ["old.jpg"] }]).find((p) => p.id === "wish-village");
+  assert.equal("images" in stored, false);
+  const fs = require("node:fs");
+  const path = require("node:path");
+  for (const file of core.presetImages("wish-village")) assert.ok(fs.existsSync(path.join(__dirname, "..", file)), file);
+});
+
+test("images go on every post, and on comments or replies only when they carry the project link", () => {
+  assert.equal(core.shouldAttachImage({ kind: "post" }), true);
+  assert.equal(core.shouldAttachImage({ kind: "comment" }), false);
+  assert.equal(core.shouldAttachImage({ kind: "comment", hasLink: true }), true);
+  assert.equal(core.shouldAttachImage({ kind: "reply", hasLink: true }), true);
+  assert.equal(core.shouldAttachImage({ kind: "post", noPromo: true }), false);
+  assert.equal(core.shouldAttachImage({ kind: "comment", hasLink: true, noPromo: true }), false);
+});

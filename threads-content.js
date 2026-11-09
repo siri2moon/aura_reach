@@ -62,7 +62,7 @@
       }
       actionLock = true;
       try {
-        return await createComment(text, message.postKey, skipKeys);
+        return await createComment(text, message.postKey, skipKeys, message.image);
       } finally {
         actionLock = false;
       }
@@ -108,7 +108,7 @@
       }
       actionLock = true;
       try {
-        return await createPost(text);
+        return await createPost(text, message.image);
       } finally {
         actionLock = false;
       }
@@ -129,7 +129,7 @@
       }
       actionLock = true;
       try {
-        return await replyToComment(text, replyKey);
+        return await replyToComment(text, replyKey, message.image);
       } finally {
         actionLock = false;
       }
@@ -1311,7 +1311,8 @@
     return scored[0].el;
   }
 
-  async function createPost(text) {
+  // image: ảnh dự án cần đính kèm (attach-image.js), gắn sau khi gõ chữ, trước khi bấm Đăng.
+  async function createPost(text, image) {
     const want = String(text || "").trim();
     if (!want) throw new Error("Nội dung bài đăng trống.");
     showHud("Đang mở ô soạn bài Threads...");
@@ -1341,12 +1342,13 @@
         await sleep(150);
       }
       await sleep(600 + Math.round(Math.random() * 700));
+      const imageStatus = await attachImage(image, box);
 
       const notOpener = (btn) => !btn || !opener || (btn !== opener && !btn.contains(opener));
       const submit = await waitFor(() => {
         const btn = findPostButton(box.closest("[role='dialog']") || document.body, box);
         return btn && !isDisabled(btn) && notOpener(btn) ? btn : null;
-      }, 8000);
+      }, imageStatus ? 20000 : 8000);
       if (!submit) throw new Error("Không tìm thấy nút Đăng đang bật cho bài viết mới.");
 
       const snippet = want.replace(/\s+/g, " ").trim().slice(0, 48);
@@ -1354,15 +1356,15 @@
       clickReact(submit);
 
       // Chờ lâu hơn sau lần click đầu để tránh retry khi bài đã đăng nhưng UI chưa cập nhật
-      if (await waitUntilPosted(snippet, box, submit)) {
+      if (await waitUntilPosted(snippet, box, submit, imageStatus)) {
         markAction("CREATE_THREADS_POST", want, "");
-        return { ok: true, posted: true, text: want };
+        return { ok: true, posted: true, text: want, image: imageStatus };
       }
 
       // Kiểm tra bài đã xuất hiện trên trang trước khi retry (tránh đăng trùng)
       if (snippetOutsideComposer(snippet, box)) {
         markAction("CREATE_THREADS_POST", want, "");
-        return { ok: true, posted: true, text: want };
+        return { ok: true, posted: true, text: want, image: imageStatus };
       }
 
       // Chỉ retry nếu chắc chắn bài chưa được đăng:
@@ -1377,18 +1379,18 @@
         // Kiểm tra lần cuối trước khi thực sự click lần 2
         if (snippetOutsideComposer(snippet, box)) {
           markAction("CREATE_THREADS_POST", want, "");
-          return { ok: true, posted: true, text: want };
+          return { ok: true, posted: true, text: want, image: imageStatus };
         }
         clickReact(submit);
-        if (await waitUntilPosted(snippet, box, submit)) {
+        if (await waitUntilPosted(snippet, box, submit, imageStatus)) {
           markAction("CREATE_THREADS_POST", want, "");
-          return { ok: true, posted: true, text: want };
+          return { ok: true, posted: true, text: want, image: imageStatus };
         }
       }
 
       if (snippetOutsideComposer(snippet, box) || (box.isConnected && !editorText(box))) {
         markAction("CREATE_THREADS_POST", want, "");
-        return { ok: true, posted: true, text: want };
+        return { ok: true, posted: true, text: want, image: imageStatus };
       }
       const actErr = findThreadsActionError();
       dismissComposer();
@@ -1500,7 +1502,7 @@
     return null;
   }
 
-  async function replyToComment(text, replyKey) {
+  async function replyToComment(text, replyKey, image) {
     const want = String(text || "").trim();
     if (!want) throw new Error("Nội dung trả lời trống.");
     const fitted = want.length > 500 ? want.slice(0, 500).trim() : want;
@@ -1540,21 +1542,22 @@
         await sleep(150);
       }
       await sleep(500 + Math.round(Math.random() * 500));
+      const imageStatus = await attachImage(image, box);
 
       const notOpener = (btn) => !btn || (btn !== replyBtn && !btn.contains(replyBtn));
       const submit = await waitFor(() => {
         const btn = findReplySubmitNear(box);
         return btn && !isDisabled(btn) && notOpener(btn) ? btn : null;
-      }, 8000);
+      }, imageStatus ? 20000 : 8000);
       if (!submit) throw new Error("Không tìm thấy nút Đăng đang bật cho phần trả lời.");
 
       const snippet = wantNorm.slice(0, 48);
       showHud("Đang gửi trả lời...");
       clickReact(submit);
 
-      if (await waitUntilPosted(snippet, box, submit)) {
+      if (await waitUntilPosted(snippet, box, submit, imageStatus)) {
         markAction("REPLY_THREADS_COMMENT", fitted, replyKey);
-        return { ok: true, posted: true, replyKey, text: fitted };
+        return { ok: true, posted: true, replyKey, text: fitted, image: imageStatus };
       }
 
       const stillHasText = box.isConnected && editorText(box).includes(wantNorm.slice(0, 20));
@@ -1562,15 +1565,15 @@
         clickReact(submit);
         await sleep(500);
         pressSubmitKeys(box);
-        if (await waitUntilPosted(snippet, box, submit)) {
+        if (await waitUntilPosted(snippet, box, submit, imageStatus)) {
           markAction("REPLY_THREADS_COMMENT", fitted, replyKey);
-          return { ok: true, posted: true, replyKey, text: fitted };
+          return { ok: true, posted: true, replyKey, text: fitted, image: imageStatus };
         }
       }
 
       if (snippetOutsideComposer(snippet, box) || (box.isConnected && !editorText(box))) {
         markAction("REPLY_THREADS_COMMENT", fitted, replyKey);
-        return { ok: true, posted: true, replyKey, text: fitted };
+        return { ok: true, posted: true, replyKey, text: fitted, image: imageStatus };
       }
       const actErr = findThreadsActionError();
       dismissComposer();
@@ -1605,7 +1608,7 @@
     };
   }
 
-  async function createComment(text, postKey, skipKeys) {
+  async function createComment(text, postKey, skipKeys, image) {
     if (!text.trim()) throw new Error("Nội dung bình luận trống.");
     if (text.length > 500) text = text.slice(0, 500).trim();
     showHud("Đang bình luận Threads...");
@@ -1626,7 +1629,7 @@
           if (match?.url) return { ok: true, nextUrl: match.url, postKey };
           throw new Error("Đang ở bài Threads khác với bài đã chọn.");
         }
-        return await commentOnPostPage(text, pageKey || postKey);
+        return await commentOnPostPage(text, pageKey || postKey, image);
       }
 
       if (postKey) {
@@ -1641,7 +1644,7 @@
     }
   }
 
-  async function commentOnPostPage(text, postKey) {
+  async function commentOnPostPage(text, postKey, image) {
     const replyBtn = findMainReplyButton();
     if (replyBtn) {
       clickReact(replyBtn);
@@ -1662,13 +1665,14 @@
       await sleep(120);
     }
     await sleep(500 + Math.round(Math.random() * 400));
+    const imageStatus = await attachImage(image, box);
 
     const notOpener = (btn) =>
       btn && btn !== replyBtn && !(replyBtn && (replyBtn.contains(btn) || btn.contains(replyBtn)));
     let submit = await waitFor(() => {
       const btn = findReplySubmitNear(box);
       return btn && !isDisabled(btn) && notOpener(btn) ? btn : null;
-    }, 8000);
+    }, imageStatus ? 20000 : 8000);
     if (!submit) {
       const btn = findReplySubmitNear(box);
       if (notOpener(btn)) submit = btn;
@@ -1682,9 +1686,9 @@
     showHud("Đang bấm Đăng...");
     clickReact(submit);
 
-    if (await waitUntilPosted(snippet, box, submit)) {
+    if (await waitUntilPosted(snippet, box, submit, imageStatus)) {
       markAction("CREATE_THREADS_COMMENT", text, postKey);
-      return { ok: true, posted: true, postKey: postKey || "" };
+      return { ok: true, posted: true, postKey: postKey || "", image: imageStatus };
     }
 
     const stillHasText = box && box.isConnected && wantNorm && editorText(box).includes(wantNorm.slice(0, 20));
@@ -1693,15 +1697,15 @@
       clickReact(submit);
       await sleep(400);
       pressSubmitKeys(box);
-      if (await waitUntilPosted(snippet, box, submit)) {
+      if (await waitUntilPosted(snippet, box, submit, imageStatus)) {
         markAction("CREATE_THREADS_COMMENT", text, postKey);
-        return { ok: true, posted: true, postKey: postKey || "" };
+        return { ok: true, posted: true, postKey: postKey || "", image: imageStatus };
       }
     }
 
     if (snippetOutsideComposer(snippet, box) || (box && box.isConnected && !editorText(box))) {
       markAction("CREATE_THREADS_COMMENT", text, postKey);
-      return { ok: true, posted: true, postKey: postKey || "" };
+      return { ok: true, posted: true, postKey: postKey || "", image: imageStatus };
     }
 
     const actErr = findThreadsActionError();
@@ -1811,8 +1815,9 @@
     return false;
   }
 
-  async function waitUntilPosted(snippet, box, submit) {
-    for (let i = 0; i < 16; i += 1) {
+  // withImage: bài / bình luận có ảnh đăng lâu hơn (tải ảnh lên), chờ tới khoảng 14 giây thay vì 5,6 giây.
+  async function waitUntilPosted(snippet, box, submit, withImage) {
+    for (let i = 0; i < (withImage ? 40 : 16); i += 1) {
       await sleep(350);
       if (snippetOutsideComposer(snippet, box)) return true;
       const editorEmpty = !box || !box.isConnected || !editorText(box);
@@ -1826,6 +1831,14 @@
       if (submitLocked && editorEmpty && i >= 3) return true;
     }
     return false;
+  }
+
+  // Trả về trạng thái đính kèm ("attached" / "unverified" / "failed"), hoặc undefined khi lượt này không có ảnh.
+  async function attachImage(image, box) {
+    if (!image?.dataUrl) return undefined;
+    if (typeof globalThis.AuraAttachImage !== "function") return "failed";
+    showHud("Đang đính kèm ảnh...");
+    return globalThis.AuraAttachImage(image, { box, scope: box.closest("[role='dialog']") });
   }
 
   function pressSubmitKeys(el) {

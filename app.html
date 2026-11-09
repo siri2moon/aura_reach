@@ -516,6 +516,17 @@
             <p class="field-hint">Nhắc khéo: không tên, không link, chỉ thoáng qua rằng bạn đang làm một công cụ về đúng vấn đề đó để người đọc tò mò vào trang cá nhân. Phần còn lại AI chỉ góp ý chuyên môn. Tài khoản nào cũng nhắc sản phẩm thì sớm bị coi là spam.</p>
 
             <div class="divider"></div>
+            <h3 class="form-section">Ảnh đính kèm</h3>
+            <p class="field-hint">Facebook và Threads: mỗi bài đăng kèm một ảnh chọn ngẫu nhiên; bình luận và trả lời chỉ kèm ảnh khi có link dự án. Nhóm Facebook có luật cấm tự quảng cáo thì không kèm ảnh.</p>
+            <div id="pjImages" class="pj-images"></div>
+            <div class="pj-images-actions">
+              <label class="btn btn-subtle" for="pjImageInput"><span>Thêm ảnh</span></label>
+              <input id="pjImageInput" type="file" accept="image/*" multiple hidden />
+              <span id="pjImagesNote" class="field-hint"></span>
+            </div>
+            <p class="field-hint">Ảnh tải lên được thu về khổ 1600px và chỉ lưu trên máy này. Ảnh «có sẵn» nằm trong thư mục project-images/ của repo nên máy nào pull về cũng có.</p>
+
+            <div class="divider"></div>
             <h3 class="form-section">Nền tảng</h3>
             <div id="pjPlatforms" class="fit-grid"></div>
 
@@ -3503,6 +3514,7 @@
   </div>
 
   <script src="projects-core.js"></script>
+  <script src="project-images.js"></script>
   <script src="popup.js"></script>
   <script src="nadezhno-core.js"></script>
   <script src="nadezhno-ui.js"></script>

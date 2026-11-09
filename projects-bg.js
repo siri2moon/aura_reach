@@ -32,6 +32,44 @@ async function projectPromptSuffix(platform, kind = "comment", opts = {}) {
 }
 
 /**
+ * Ảnh dự án gửi kèm lệnh đăng cho content script (attach-image.js), hoặc null nếu lượt này không kèm ảnh.
+ * Quy tắc ở ProjectsCore.shouldAttachImage: bài đăng luôn kèm, bình luận / trả lời chỉ khi có link dự án,
+ * nơi cấm tự quảng cáo (opts.noPromo) thì không. Chọn ngẫu nhiên giữa ảnh có sẵn trong repo và ảnh tự tải lên.
+ * Lỗi đọc ảnh chỉ ghi nhật ký: lượt đó vẫn đăng chữ.
+ */
+async function projectImageFor(kind, text, opts = {}) {
+  const project = await getActiveProject();
+  if (!project || !ProjectsCore.appliesTo(project, opts.platform)) return null;
+  const hasLink = ProjectsCore.containsProjectLink(project, text);
+  if (!ProjectsCore.shouldAttachImage({ kind, hasLink, noPromo: opts.noPromo })) return null;
+  try {
+    const bundled = ProjectsCore.presetImages(project.id).map((path) => ({ path }));
+    const uploaded = await ProjectImages.list(project.id);
+    const pool = [...bundled, ...uploaded];
+    if (!pool.length) return null;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    const image = pick.dataUrl ? { name: pick.name, type: pick.type, dataUrl: pick.dataUrl } : await bundledImage(pick.path);
+    await log("info", `Kèm ảnh «${image.name}» vào ${kind === "post" ? "bài đăng" : "bình luận"} (${pool.length} ảnh của ${project.name}).`);
+    return image;
+  } catch (error) {
+    await log("warning", `Không đọc được ảnh của ${project.name} (${error?.message || error}), lượt này chỉ đăng chữ.`);
+    return null;
+  }
+}
+
+// File ảnh trong extension -> data URL để gửi qua tin nhắn cho content script.
+async function bundledImage(path) {
+  const res = await fetch(chrome.runtime.getURL(path));
+  if (!res.ok) throw new Error(`thiếu file ${path}`);
+  const blob = await res.blob();
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  const type = blob.type || "image/jpeg";
+  return { name: path.split("/").pop(), type, dataUrl: `data:${type};base64,${btoa(binary)}` };
+}
+
+/**
  * Ô project-scoped bị để trống (nguồn bài, từ khoá, chủ đề đăng bài) thì lúc chạy lấy giá trị suy ra từ
  * hồ sơ dự án đang chọn, để job không rơi về feed chung / chủ đề chung không dính gì tới dự án.
  * Chỉ đổi bản state trong bộ nhớ của lượt chạy, không ghi đè ô người dùng.

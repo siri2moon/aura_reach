@@ -38,7 +38,7 @@
         "https://m.facebook.com/*",
         "https://mbasic.facebook.com/*"
       ],
-      "js": ["content.js"],
+      "js": ["attach-image.js", "content.js"],
       "run_at": "document_idle"
     },
     {
@@ -50,7 +50,7 @@
         "https://threads.com/*",
         "https://*.threads.com/*"
       ],
-      "js": ["threads-content.js"],
+      "js": ["attach-image.js", "threads-content.js"],
       "run_at": "document_idle"
     },
     {

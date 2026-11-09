@@ -415,6 +415,66 @@
     $("pjReset").hidden = !p.preset;
     $("pjDelete").hidden = p.preset;
     renderPreview();
+    renderImages();
+  }
+
+  // ---------------------------------------------------------------- ảnh đính kèm (project-images.js)
+
+  const MAX_IMAGE_SIDE = 1600;
+
+  async function renderImages() {
+    const p = active();
+    if (!p || !window.ProjectImages) return;
+    const uploaded = await window.ProjectImages.list(p.id).catch(() => []);
+    if (editorFor !== p.id) return;
+    const bundled = Core.presetImages(p.id);
+    $("pjImages").innerHTML = [
+      ...bundled.map((path) => imageCard(path, `${path.split("/").pop()} · có sẵn`, "")),
+      ...uploaded.map((img) => imageCard(img.dataUrl, img.name, img.id)),
+    ].join("");
+    const total = bundled.length + uploaded.length;
+    $("pjImagesNote").textContent = total ? `${total} ảnh` : "Chưa có ảnh: bài đăng và bình luận chỉ có chữ.";
+  }
+
+  function imageCard(src, caption, removeId) {
+    return `<figure class="pj-image">
+      <img src="${escapeHtml(src)}" alt="" loading="lazy" />
+      <figcaption>
+        <span title="${escapeHtml(caption)}">${escapeHtml(caption)}</span>
+        ${removeId ? `<button type="button" class="pj-image-remove" data-remove-image="${escapeHtml(removeId)}">Xoá</button>` : ""}
+      </figcaption>
+    </figure>`;
+  }
+
+  // Thu về cạnh dài 1600px, JPEG: đủ nét cho Facebook / Threads mà mỗi ảnh chỉ vài trăm KB.
+  async function shrinkImage(file) {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_IMAGE_SIDE / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff"; // ảnh PNG nền trong suốt sang JPEG thành nền trắng thay vì đen
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const base = file.name.replace(/\.[^.]+$/, "") || "image";
+    return { name: `${base}.jpg`, type: "image/jpeg", dataUrl: canvas.toDataURL("image/jpeg", 0.86) };
+  }
+
+  async function addImages(files) {
+    const p = active();
+    const images = files.filter((f) => f.type.startsWith("image/"));
+    if (!p || !images.length) return;
+    $("pjImagesNote").textContent = `Đang thêm ${images.length} ảnh...`;
+    try {
+      const items = await Promise.all(images.map(shrinkImage));
+      await window.ProjectImages.addMany(p.id, items);
+      window.AuraToast?.ok(`Đã thêm ${items.length} ảnh cho ${p.name}`);
+    } catch (error) {
+      window.AuraToast?.error(error?.message || String(error), "Không thêm được ảnh");
+    }
+    renderImages();
   }
 
   function readEditor() {
@@ -579,6 +639,17 @@
     });
     $("projectEditor").addEventListener("input", renderPreview);
     $("projectEditor").addEventListener("change", renderPreview);
+    $("pjImageInput").addEventListener("change", (event) => {
+      const files = [...event.target.files];
+      event.target.value = "";
+      addImages(files);
+    });
+    $("pjImages").addEventListener("click", async (event) => {
+      const btn = event.target.closest("[data-remove-image]");
+      if (!btn || !confirm("Xoá ảnh này khỏi dự án?")) return;
+      await window.ProjectImages.remove(btn.dataset.removeImage).catch(() => {});
+      renderImages();
+    });
   }
 
   async function init() {
