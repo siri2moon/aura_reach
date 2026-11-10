@@ -283,4 +283,9 @@ test("wrongLanguage catches Vietnamese or non-Latin text in an English project",
   assert.equal(core.wrongLanguage(wv, "lol the café scene got me 🎄 I made a tiny snowy village: https://wishvillage.live/"), false);
   assert.equal(core.wrongLanguage(nz(), "Great dentist in Nha Trang"), true);
   assert.equal(core.wrongLanguage(nz(), "Хороший стоматолог в Нячанге"), false);
+  const de = { name: "Pfotengedanken", language: "de" };
+  assert.equal(core.wrongLanguage(de, "Mein Hund macht das auch jeden Abend, sobald ich ins Bett gehe"), false);
+  assert.equal(core.wrongLanguage(de, "My dog does this every single night before bed"), true);
+  assert.equal(core.wrongLanguage(de, "Chó nhà tôi cũng vậy"), true);
+  assert.equal(core.wrongLanguage(de, "Süß! 🐶"), false);
 });

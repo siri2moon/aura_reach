@@ -14,9 +14,9 @@
   // Mức phù hợp của nền tảng với dự án: quyết định thứ tự trong sidebar và việc AI có viết theo dự án hay không.
   const FIT = { high: 3, medium: 2, low: 1, none: 0 };
 
-  const LANGUAGE_NAMES = { en: "tiếng Anh", ru: "tiếng Nga", vi: "tiếng Việt" };
+  const LANGUAGE_NAMES = { en: "tiếng Anh", ru: "tiếng Nga", vi: "tiếng Việt", de: "tiếng Đức" };
   // Tên ngôn ngữ bằng chính ngôn ngữ đó: nhắc kèm trong prompt cho AI khỏi hiểu nhầm khi prompt viết tiếng Việt.
-  const LANGUAGE_NATIVE = { en: "English", ru: "русский", vi: "tiếng Việt" };
+  const LANGUAGE_NATIVE = { en: "English", ru: "русский", vi: "tiếng Việt", de: "Deutsch" };
 
   const PRESETS = [
     {
@@ -710,17 +710,30 @@
     return `### NGÔN NGỮ (bắt buộc)\n- Chỉ viết bằng ${LANGUAGE_NATIVE[p.language]}, kể cả khi bài gốc viết tiếng khác hoặc không có chữ.`;
   }
 
+  const NON_LATIN_OR_VIETNAMESE =
+    /[ăâđêôơưĂÂĐÊÔƠƯ\u1EA0-\u1EF9\u0400-\u04FF\u0900-\u097F\u0600-\u06FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF]/;
+  const GERMAN_COMMON_WORDS = new Set(
+    "und ist nicht ich du sie er es wir ihr der die das den dem des ein eine einen einem einer mit auf für von zu im in auch so wie wenn dass aber oder noch schon sehr mein meine dein deine sein seine hat habe hast sind war mal nur doch ja nein immer".split(" "),
+  );
+
   /**
    * Nội dung AI trả về sai ngôn ngữ của dự án không. Dự án tiếng Anh: có dấu tiếng Việt hoặc chữ không phải
-   * Latin (Kirin, Devanagari, Ả Rập, Hán, Kana, Hàn). Dự án tiếng Nga: không có chữ Kirin nào. Tiếng Việt: không xét.
+   * Latin (Kirin, Devanagari, Ả Rập, Hán, Kana, Hàn). Dự án tiếng Nga: không có chữ Kirin nào. Tiếng Đức: như tiếng
+   * Anh, thêm câu từ 6 từ trở lên mà không có từ tiếng Đức thông dụng nào (AI hay trả lời tiếng Anh theo video gốc).
+   * Tiếng Việt: không xét.
    */
   function wrongLanguage(project, text) {
     const p = normalizeProject(project);
     const value = String(text || "");
     if (p.language === "en") {
-      return /[ăâđêôơưĂÂĐÊÔƠƯ\u1EA0-\u1EF9\u0400-\u04FF\u0900-\u097F\u0600-\u06FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF]/.test(value);
+      return NON_LATIN_OR_VIETNAMESE.test(value);
     }
     if (p.language === "ru") return !/[\u0400-\u04FF]/.test(value);
+    if (p.language === "de") {
+      if (NON_LATIN_OR_VIETNAMESE.test(value)) return true;
+      const words = value.replace(/https?:\/\/\S+/g, " ").toLowerCase().match(/[a-zäöüß]+/g) || [];
+      return words.length >= 6 && !words.some((w) => GERMAN_COMMON_WORDS.has(w));
+    }
     return false;
   }
 

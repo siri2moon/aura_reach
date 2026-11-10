@@ -122,7 +122,7 @@ Hồ sơ dự án nằm ở cuối trang **Kế hoạch dự án** và gồm:
 
 | Nhóm | Trường |
 | --- | --- |
-| Giới thiệu | Tên, website, ngôn ngữ viết, thị trường, mô tả, đối tượng, vai của AI khi viết |
+| Giới thiệu | Tên, website, ngôn ngữ viết (tiếng Anh, Nga, Việt hoặc Đức), thị trường, mô tả, đối tượng, vai của AI khi viết |
 | Tìm ở đâu | Từ khoá tìm bài, từ khoá tìm nhóm Facebook, từ khoá YouTube, hashtag Instagram, bộ lọc nội dung |
 | Nói gì | Kiến thức AI được dùng, chủ đề bài đăng, link được nhắc, điều không được làm |
 | Nhắc dự án | Câu nói rõ đây là dự án của bạn, tỉ lệ bình luận / bài đăng được nhắc |
