@@ -42,13 +42,14 @@ Aura Reach làm việc theo **dự án**. Bạn chọn dự án cần quảng b�
 2. **Tìm bài đúng chủ đề**: nguồn bài là kết quả tìm kiếm theo từ khoá của dự án, kèm bộ lọc AI bỏ qua bài lạc đề.
 3. **Bình luận và đăng bài**: AI chỉ viết bằng ngôn ngữ của dự án (kể cả khi bài gốc viết tiếng khác), dựa trên hồ sơ dự án. Phần lớn bình luận chỉ góp ý chuyên môn. Chỉ một tỉ lệ nhỏ (mặc định 25–30%) được nhắc tên hoặc link, và luôn nói rõ đó là dự án của bạn.
 
-Ba dự án có sẵn:
+Bốn dự án có sẵn:
 
 | Dự án | Website | Ngôn ngữ | Kênh chính |
 | --- | --- | --- | --- |
 | **MyCreatorTax**: ước tính thuế cho creator và freelancer 1099 ở Mỹ | [mycreatortax.com](https://mycreatortax.com) | Tiếng Anh | Threads, X, YouTube |
 | **Nadezhno**: danh bạ dịch vụ tin cậy cho người nói tiếng Nga ở Việt Nam | [nadezhno.siri2moon.com](https://nadezhno.siri2moon.com/) | Tiếng Nga | Facebook |
 | **Wish Village**: làng chibi 3D treo điều ước Giáng sinh, chơi trên trình duyệt | [wishvillage.live](https://wishvillage.live/) | Tiếng Anh | Facebook, Threads |
+| **Pfotengedanken**: kênh YouTube tiếng Đức về tâm lý chó và mèo | [@pfotengedanken](https://www.youtube.com/@pfotengedanken) | Tiếng Đức | YouTube |
 
 Bạn có thể thêm dự án khác ngay trong extension.
 

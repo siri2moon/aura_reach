@@ -259,6 +259,88 @@
       ],
       platforms: { facebook: "high", threads: "high", instagram: "medium", tiktok: "medium", x: "low", youtube: "low", zalo: "none", maps: "none" },
     },
+    {
+      id: "pfotengedanken",
+      name: "Pfotengedanken",
+      url: "https://www.youtube.com/@pfotengedanken",
+      color: "#e2553b",
+      language: "de",
+      market: "Đức, Áo, Thụy Sĩ (DACH)",
+      pitch:
+        "Kênh YouTube tiếng Đức về tâm lý chó và mèo: hành vi của chúng thật sự có nghĩa gì, chúng cảm thấy gì, và mối gắn bó với chủ nói gì về chúng ta. Giải thích bằng nghiên cứu hành vi, hình minh hoạ nét mực, giọng đọc chậm và ấm.",
+      audience:
+        "Người nói tiếng Đức nuôi chó, mèo ở Đức, Áo, Thụy Sĩ, phần lớn 25–65 tuổi, coi thú cưng như người nhà, hay xem video về hành vi, ngôn ngữ cơ thể và sự gắn bó giữa người và thú.",
+      persona:
+        "A German dog and cat lover who reads about animal behaviour research for fun and has lived with both a dog and a cat. Writes in natural, warm, casual German with \"du\", like a fellow pet owner in the comments: one short personal observation or one accurate detail that fits the video, sometimes a friendly question back to the creator or other viewers. Never lectures, never corrects people rudely, no emoji spam (one at most).",
+      facts: [
+        "Langsames Blinzeln wirkt bei Katzen wie ein Lächeln: In einer Studie der University of Sussex (2020) näherten sich Katzen Menschen eher, die ihnen langsam zublinzelten.",
+        "Katzen erkennen ihren eigenen Namen und unterscheiden ihn von ähnlich klingenden Wörtern, das zeigte eine Studie aus Japan (2019).",
+        "Viele Katzen bauen eine sichere Bindung zu ihrem Menschen auf, ähnlich wie Kleinkinder; das ergab eine Studie der Oregon State University (2019).",
+        "Wenn Hund und Mensch sich liebevoll in die Augen schauen, steigt bei beiden das Bindungshormon Oxytocin (Studie aus Japan, veröffentlicht 2015 in Science).",
+        "Hunde haben im Lauf der Domestizierung einen Muskel über den Augen entwickelt, mit dem sie den typischen \"Hundeblick\" machen; Wölfen fehlt er weitgehend (Studie 2019).",
+        "Treteln mit den Pfoten stammt bei Katzen aus der Babyzeit, als sie beim Säugen den Milchfluss anregten; erwachsene Katzen treteln oft, wenn sie sich sicher und wohl fühlen.",
+        "Wenn eine Katze dir den Kopf entgegenstößt, markiert sie dich mit Duftdrüsen an Kopf und Wangen als Teil ihrer Gruppe.",
+        "Hunde können in Studien am Geruch von Atem und Schweiß erkennen, wenn ein Mensch gestresst ist (Queen's University Belfast, 2022).",
+        "Auch Hunde können sich vom Gähnen ihres Menschen anstecken lassen; Forscher deuten das als ein Zeichen sozialer Verbundenheit.",
+      ],
+      links: [{ label: "Kênh YouTube", url: "https://www.youtube.com/@pfotengedanken" }],
+      disclosure: "das ist mein eigener Kanal",
+      // Kênh mới, chưa có video: chỉ bình luận như một người nuôi thú, chưa nhắc kênh. Nâng lên 0.1–0.15 khi có khoảng 5 video.
+      mentionRate: 0,
+      postMentionRate: 0,
+      softMentionRate: 0,
+      postKeywords: [
+        "hundepsychologie",
+        "katzenverhalten",
+        "hund verstehen",
+        "katze verstehen",
+      ],
+      youtubeKeywords: [
+        "hundepsychologie",
+        "hund verstehen zeichen",
+        "zeichen dass dein hund dich liebt",
+        "hund schläft im bett bedeutung",
+        "warum macht mein hund das",
+        "hunde körpersprache erklärt",
+        "katzenverhalten verstehen",
+        "zeichen dass deine katze dich liebt",
+        "katzensprache verstehen",
+        "katzenpsychologie",
+        "warum starrt mich meine katze an",
+        "seltsame hundeverhalten bedeutung",
+      ],
+      // Kênh tiếng Đức cùng ngách (kèm kênh mẫu tiếng Anh Midnight Oracle) để subscribe trước khi tự tìm theo từ khoá.
+      youtubeChannels: [
+        "https://www.youtube.com/@Hundeverstehenn",
+        "https://www.youtube.com/@knuddel-die-katz",
+        "https://www.youtube.com/@tier-geschichten",
+        "https://www.youtube.com/@fantastischetierfakten",
+        "https://www.youtube.com/@Wufftastisch",
+        "https://www.youtube.com/@schnueffelschnuten",
+        "https://www.youtube.com/@Hundeherz7",
+        "https://www.youtube.com/@Tierischschlau",
+        "https://www.youtube.com/@KathisTierwelt",
+        "https://www.youtube.com/@doguniversity",
+        "https://www.youtube.com/@MindfuHaustiereTierpsychologie",
+        "https://www.youtube.com/@MidnightOracIe",
+      ],
+      hashtags: ["hundepsychologie", "katzenverhalten", "hundeliebe", "katzenliebe", "hundeverstehen"],
+      groupKeywords: [],
+      filterPrompt:
+        "Chỉ tương tác với video tiếng Đức về hành vi, ngôn ngữ cơ thể, cảm xúc hoặc tâm lý của chó, mèo nuôi trong nhà, hoặc về sự gắn bó giữa chủ và thú cưng. Bỏ qua video tiếng Anh hay tiếng khác, video dành cho trẻ em, quảng cáo và đập hộp sản phẩm, bán thức ăn, ngược đãi động vật, thú bị thương hay sắp chết, an tử, bán thú giống, chính trị và nội dung không liên quan tới chó mèo nuôi.",
+      topicFilterPrompt:
+        "Nhận nội dung tiếng Đức về chó, mèo nuôi: hành vi, ngôn ngữ cơ thể, huấn luyện cơ bản, sự gắn bó giữa người và thú, khoảnh khắc đời thường hài hước hoặc cảm động. Không cần là câu hỏi. Bỏ qua tiếng khác, nội dung trẻ em, quảng cáo, ngược đãi hay thú đau ốm, an tử, bán thú giống, chính trị và nội dung lạc đề.",
+      postTopics: [],
+      avoid: [
+        "Never invent studies, numbers, universities or researchers; use the facts listed above or say nothing specific.",
+        "Never give veterinary advice, diagnoses, doses or medication; for health questions say kindly to ask the Tierärztin or Tierarzt.",
+        "Never pretend to be a vet, a dog trainer or a scientist.",
+        "Never criticise, correct or compete with the creator of the video, and never advertise another channel.",
+        "Never mention or link Pfotengedanken while the channel has no videos; just be a helpful fellow pet owner.",
+        "Never comment on videos about grief, a pet's death or illness with jokes or facts; skip them.",
+      ],
+      platforms: { youtube: "high", facebook: "none", threads: "none", x: "none", instagram: "none", tiktok: "none", zalo: "none", maps: "none" },
+    },
   ];
 
   // Các ô cài đặt đổi theo dự án. Khi chuyển dự án, background lưu bộ giá trị hiện tại vào
@@ -311,6 +393,8 @@
     "softMentionRate",
     "postKeywords",
     "youtubeKeywords",
+    // Kênh YouTube cần subscribe trước (nạp vào ô "Danh sách kênh chỉ định"). Không có ô trong form hồ sơ, chỉ đặt qua preset hoặc file JSON nhập vào.
+    "youtubeChannels",
     "hashtags",
     "groupKeywords",
     // Regex chấm điểm nhóm / cộng đồng. Không có ô trong form hồ sơ, chỉ đặt qua file JSON nhập vào.
@@ -413,6 +497,7 @@
       softMentionRate: clamp01(p.softMentionRate, 0.35),
       postKeywords: list(p.postKeywords),
       youtubeKeywords: list(p.youtubeKeywords),
+      youtubeChannels: list(p.youtubeChannels).filter((u) => /^https?:\/\//i.test(u)),
       hashtags: list(p.hashtags).map((t) => t.replace(/^#/, "")),
       groupKeywords: list(p.groupKeywords),
       groupAudienceRe: String(p.groupAudienceRe || ""),
@@ -494,6 +579,7 @@
       xReplyFilterPrompt: p.filterPrompt,
       postTopicsText: joinTemplates(p.postTopics),
       youtubeKeywordsText: (p.youtubeKeywords.length ? p.youtubeKeywords : p.postKeywords).join("\n"),
+      youtubeSubscribeChannelsText: p.youtubeChannels.join("\n"),
       instagramSourcesText: search("instagram", p.hashtags),
       instagramFilterPrompt: topicFilter(p),
       tiktokSourcesText: search("tiktok", p.postKeywords),

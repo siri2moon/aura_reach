@@ -8,10 +8,10 @@ const nz = () => core.mergeProjects([]).find((p) => p.id === "nadezhno");
 
 test("mergeProjects returns every preset and keeps stored edits", () => {
   const list = core.mergeProjects([{ id: "nadezhno", mentionRate: 0.1 }, { id: "side", name: "Side project" }]);
-  assert.deepEqual(list.map((p) => p.id), ["mycreatortax", "nadezhno", "wish-village", "side"]);
+  assert.deepEqual(list.map((p) => p.id), ["mycreatortax", "nadezhno", "wish-village", "pfotengedanken", "side"]);
   assert.equal(list[1].mentionRate, 0.1);
   assert.equal(list[1].url, "https://nadezhno.siri2moon.com/");
-  assert.equal(list[3].platforms.zalo, "none");
+  assert.equal(list[4].platforms.zalo, "none");
 });
 
 test("a project imported before it became a preset is merged into the preset, not listed twice", () => {
@@ -20,6 +20,18 @@ test("a project imported before it became a preset is merged into the preset, no
   const wv = list.find((p) => p.id === "wish-village");
   assert.equal(wv.preset, true);
   assert.equal(wv.mentionRate, 0.05);
+});
+
+test("a preset's YouTube channel list fills the subscribe list and keeps zero mention rates", () => {
+  const pg = core.mergeProjects([]).find((p) => p.id === "pfotengedanken");
+  assert.equal(pg.language, "de");
+  assert.equal(pg.mentionRate, 0);
+  const d = core.scopedDefaults(pg);
+  assert.equal(d.youtubeSubscribeChannelsText.split("\n")[0], "https://www.youtube.com/@Hundeverstehenn");
+  assert.equal(d.youtubeSubscribeChannelsText.split("\n").length, pg.youtubeChannels.length);
+  assert.equal(core.scopedDefaults(mct()).youtubeSubscribeChannelsText, "");
+  const imported = core.normalizeProject({ name: "X", youtubeChannels: ["https://www.youtube.com/@a", "not a url"] });
+  assert.deepEqual(imported.youtubeChannels, ["https://www.youtube.com/@a"]);
 });
 
 test("scopedDefaults builds platform search sources from project keywords", () => {
