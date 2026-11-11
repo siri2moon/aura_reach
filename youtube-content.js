@@ -993,7 +993,7 @@
       if (seen.has(node)) continue;
       seen.add(node);
       const label = controlLabel(node);
-      if (!/đăng ký|subscribe/.test(label)) continue;
+      if (!/đăng ký|subscribe|abonnier/.test(label)) continue;
       let score = 4;
       if (node.closest("#subscribe-button")) score += 2;
       scored.push({ node, score });
@@ -1003,12 +1003,40 @@
     return scored[0].node;
   }
 
+  // Nút đã đăng ký kiểu mới là nút chuông "Subscribed ⌄" với aria-label dài kiểu
+  // "Current setting is personalized notifications. Tap to change your notification setting for X",
+  // nên không thể chỉ so khớp nguyên văn "subscribed". Nút chưa đăng ký chỉ có "Subscribe" / "Subscribe to X".
   function isSubscribedLabel(label) {
     return (
-      /hủy đăng ký|unsubscribe/.test(label) ||
-      /đã đăng ký/.test(label) ||
-      /^subscribed$/.test(label)
+      /hủy đăng ký|unsubscribe|đã đăng ký|\bsubscribed\b|abonniert|deabonnieren/.test(label) ||
+      /notification setting|cài đặt thông báo|benachrichtigungseinstellung/.test(label)
     );
+  }
+
+  function isYoutubeSubscribed(btn) {
+    if (!btn) return false;
+    const host = btn.closest("ytd-subscribe-button-renderer, yt-subscribe-button-view-model, #subscribe-button");
+    if (host?.hasAttribute("subscribed")) return true;
+    return isSubscribedLabel(controlLabel(btn)) || (host ? isSubscribedLabel(controlLabel(host)) : false);
+  }
+
+  // Menu thông báo (All / Personalized / None / Unsubscribe) chỉ mở ra khi bấm vào nút của kênh đã đăng ký.
+  function findOpenSubscriptionMenu() {
+    const menus = document.querySelectorAll(
+      "tp-yt-iron-dropdown, ytd-menu-popup-renderer, yt-sheet-view-model, yt-list-view-model, [role='menu'], [role='listbox']"
+    );
+    for (const menu of menus) {
+      if (!isVisible(menu)) continue;
+      if (/hủy đăng ký|unsubscribe|deabonnieren/.test(controlLabel(menu))) return menu;
+    }
+    return null;
+  }
+
+  function closeOpenMenus() {
+    const opts = { key: "Escape", code: "Escape", keyCode: 27, which: 27, bubbles: true, cancelable: true };
+    const target = document.activeElement || document.body;
+    target.dispatchEvent(new KeyboardEvent("keydown", opts));
+    target.dispatchEvent(new KeyboardEvent("keyup", opts));
   }
 
   async function subscribeYoutubeChannel() {
@@ -1019,8 +1047,12 @@
       throw new Error("Không tìm thấy nút Đăng ký (Subscribe) trên kênh YouTube này.");
     }
 
-    const label = controlLabel(subBtn);
-    if (isSubscribedLabel(label)) {
+    // Nút có thể hiện "Subscribe" một nhịp trước khi YouTube nạp xong trạng thái: chờ thêm cho chắc.
+    const alreadyBefore = await waitFor(() => {
+      const btn = findYoutubeSubscribeButton();
+      return btn && isYoutubeSubscribed(btn) ? btn : null;
+    }, 1500);
+    if (alreadyBefore) {
       hideHud();
       return { ok: true, skipped: true, alreadySubscribed: true };
     }
@@ -1032,10 +1064,17 @@
     await sleep(1200);
     dismissYoutubeConsent(); // đóng popup xin quyền thông báo xuất hiện ngay sau khi subscribe
 
+    // Lỡ bấm vào nút của kênh đã đăng ký thì YouTube chỉ mở menu thông báo: đóng menu và coi như đã sub.
+    if (findOpenSubscriptionMenu()) {
+      closeOpenMenus();
+      hideHud();
+      return { ok: true, skipped: true, alreadySubscribed: true };
+    }
+
     const confirmed = await waitFor(() => {
       const btn = findYoutubeSubscribeButton();
-      return btn && isSubscribedLabel(controlLabel(btn)) ? btn : null;
-    }, 4000);
+      return btn && isYoutubeSubscribed(btn) ? btn : null;
+    }, 5000);
     if (!confirmed) {
       throw new Error("Đã bấm Subscribe nhưng không xác nhận được trạng thái đã đăng ký.");
     }
