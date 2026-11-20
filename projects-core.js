@@ -271,7 +271,7 @@
       audience:
         "Người nói tiếng Đức nuôi chó, mèo ở Đức, Áo, Thụy Sĩ, phần lớn 25–65 tuổi, coi thú cưng như người nhà, hay xem video về hành vi, ngôn ngữ cơ thể và sự gắn bó giữa người và thú.",
       persona:
-        "A German dog and cat lover who reads about animal behaviour research for fun and has lived with both a dog and a cat. Writes in natural, warm, casual German with \"du\", like a fellow pet owner in the comments: one short personal observation or one accurate detail that fits the video, sometimes a friendly question back to the creator or other viewers. Never lectures, never corrects people rudely, no emoji spam (one at most).",
+        "A German dog and cat lover who reads about animal behaviour research for fun and has lived with both a dog and a cat. Writes in natural, warm, casual German with \"du\", like a fellow pet owner in the comments: one short personal observation or one accurate detail that fits the video or post, sometimes a friendly question back to the creator or other viewers. Never lectures, never corrects people rudely, no emoji spam (one at most).",
       facts: [
         "Langsames Blinzeln wirkt bei Katzen wie ein Lächeln: In einer Studie der University of Sussex (2020) näherten sich Katzen Menschen eher, die ihnen langsam zublinzelten.",
         "Katzen erkennen ihren eigenen Namen und unterscheiden ihn von ähnlich klingenden Wörtern, das zeigte eine Studie aus Japan (2019).",
@@ -282,12 +282,17 @@
         "Wenn eine Katze dir den Kopf entgegenstößt, markiert sie dich mit Duftdrüsen an Kopf und Wangen als Teil ihrer Gruppe.",
         "Hunde können in Studien am Geruch von Atem und Schweiß erkennen, wenn ein Mensch gestresst ist (Queen's University Belfast, 2022).",
         "Auch Hunde können sich vom Gähnen ihres Menschen anstecken lassen; Forscher deuten das als ein Zeichen sozialer Verbundenheit.",
+        "In einer US-Umfrage unter 962 Frauen (Canisius College, 2018) teilte mehr als die Hälfte das Bett mit mindestens einem Hund; Hunde im Bett wurden als weniger störend und beruhigender empfunden als ein menschlicher Partner.",
+        "Die Mayo Clinic (2017) maß den Schlaf von 40 Erwachsenen und ihren Hunden: Ein Hund im Schlafzimmer störte kaum, ein Hund im Bett senkte die Schlafeffizienz etwas.",
+        "Hunde schlafen in kurzen Etappen: In einer australischen Studie (1993) hatten sie in acht Nachtstunden im Schnitt 23 Schlaf-Wach-Zyklen, etwa 16 Minuten Schlaf und 5 Minuten wach.",
+        "Im Fremde-Situation-Test aus Budapest (1998) zeigten Hunde Bindungsverhalten zu ihrem Menschen wie Kleinkinder zu ihren Eltern.",
       ],
       links: [{ label: "Kênh YouTube", url: "https://www.youtube.com/@pfotengedanken" }],
       disclosure: "das ist mein eigener Kanal",
-      // Kênh mới, chưa có video: chỉ bình luận như một người nuôi thú, chưa nhắc kênh. Nâng lên 0.1–0.15 khi có khoảng 5 video.
+      // Bình luận và trả lời trên bài của người khác không bao giờ nhắc kênh (link trong reply trên X dễ bị coi là spam).
+      // Tweet của chính kênh thì cứ khoảng 1/3 dẫn về kênh YouTube (từ 20 Nov 2026, kênh đã có 4 video).
       mentionRate: 0,
-      postMentionRate: 0,
+      postMentionRate: 0.3,
       softMentionRate: 0,
       postKeywords: [
         "hundepsychologie",
@@ -309,6 +314,18 @@
         "warum starrt mich meine katze an",
         "seltsame hundeverhalten bedeutung",
       ],
+      // X: tìm bài tiếng Đức (lang:de), bỏ reply để chỉ còn bài gốc. Nửa có min_faves để bình luận dưới bài đang
+      // được nhiều người xem (lộ tên kênh), nửa không có để gặp chủ nuôi bình thường, dễ follow lại hơn.
+      xKeywords: [
+        "hund lang:de -filter:replies min_faves:20",
+        "katze lang:de -filter:replies min_faves:20",
+        "\"mein hund\" lang:de -filter:replies",
+        "\"meine katze\" lang:de -filter:replies",
+        "hundeliebe lang:de -filter:replies",
+        "katzenliebe lang:de -filter:replies",
+        "hundepsychologie OR hundeverhalten lang:de",
+        "katzenverhalten OR katzensprache lang:de",
+      ],
       // Kênh tiếng Đức cùng ngách (kèm kênh mẫu tiếng Anh Midnight Oracle) để subscribe trước khi tự tìm theo từ khoá.
       youtubeChannels: [
         "https://www.youtube.com/@Hundeverstehenn",
@@ -327,19 +344,32 @@
       hashtags: ["hundepsychologie", "katzenverhalten", "hundeliebe", "katzenliebe", "hundeverstehen"],
       groupKeywords: [],
       filterPrompt:
-        "Chỉ tương tác với video tiếng Đức về hành vi, ngôn ngữ cơ thể, cảm xúc hoặc tâm lý của chó, mèo nuôi trong nhà, hoặc về sự gắn bó giữa chủ và thú cưng. Bỏ qua video tiếng Anh hay tiếng khác, video dành cho trẻ em, quảng cáo và đập hộp sản phẩm, bán thức ăn, ngược đãi động vật, thú bị thương hay sắp chết, an tử, bán thú giống, chính trị và nội dung không liên quan tới chó mèo nuôi.",
+        "Chỉ tương tác với video hoặc bài đăng tiếng Đức về chó, mèo nuôi trong nhà: hành vi, ngôn ngữ cơ thể, cảm xúc, tâm lý, sự gắn bó giữa chủ và thú cưng, hoặc khoảnh khắc đời thường của chủ nuôi với con vật của mình (ảnh chó mèo kèm vài dòng cũng được). Bỏ qua nội dung tiếng Anh hay tiếng khác, nội dung dành cho trẻ em, quảng cáo và đập hộp sản phẩm, bán thức ăn, ngược đãi động vật, thú bị thương hay sắp chết, an tử, bán thú giống, chính trị và nội dung không liên quan tới chó mèo nuôi.",
       topicFilterPrompt:
         "Nhận nội dung tiếng Đức về chó, mèo nuôi: hành vi, ngôn ngữ cơ thể, huấn luyện cơ bản, sự gắn bó giữa người và thú, khoảnh khắc đời thường hài hước hoặc cảm động. Không cần là câu hỏi. Bỏ qua tiếng khác, nội dung trẻ em, quảng cáo, ngược đãi hay thú đau ốm, an tử, bán thú giống, chính trị và nội dung lạc đề.",
-      postTopics: [],
+      // Chủ đề tweet của chính kênh trên X: mỗi tweet một ý từ các tập đã làm, kết bằng một câu hỏi để người đọc kể về con vật của họ.
+      postTopics: [
+        "Hund im Bett: Die Mayo Clinic fand, dass ein Hund im Schlafzimmer kaum stört, im Bett aber etwas. Frage: Wo schläft dein Hund?",
+        "Hunde schlafen in Etappen: rund 23 Schlaf-Wach-Zyklen pro Nacht. Frage: Weckt dich dein Hund nachts auch?",
+        "Warum dir dein Hund überallhin folgt, sogar ins Bad: Du bist seine Bindungsperson. Frage: Wohin folgt dir deiner?",
+        "Langsames Blinzeln ist bei Katzen wie ein Lächeln. Kleine Aufforderung: Probier es heute Abend mit deiner Katze aus und erzähl, was passiert.",
+        "Warum Katzen nachts über dich laufen oder dich um 4 Uhr wecken. Frage: Um wie viel Uhr weckt dich deine Katze?",
+        "Dein Hund sieht dich nicht als Rudelführer, sondern eher wie ein Kind seine Eltern. Frage: Woran merkst du, dass er dir vertraut?",
+        "Hund und Mensch schauen sich in die Augen und bei beiden steigt Oxytocin. Frage: Wer schaut bei euch länger?",
+        "Katzen erkennen ihren Namen, sie entscheiden nur selbst, ob sie kommen. Frage: Kommt deine Katze, wenn du rufst?",
+        "Treteln: Warum deine Katze dich wie einen Teig knetet. Frage: Auf welcher Decke tretelt deine am liebsten?",
+        "Hunde riechen, wenn du gestresst bist. Frage: Merkt dein Hund, wenn es dir nicht gut geht?",
+      ],
       avoid: [
         "Never invent studies, numbers, universities or researchers; use the facts listed above or say nothing specific.",
         "Never give veterinary advice, diagnoses, doses or medication; for health questions say kindly to ask the Tierärztin or Tierarzt.",
         "Never pretend to be a vet, a dog trainer or a scientist.",
-        "Never criticise, correct or compete with the creator of the video, and never advertise another channel.",
-        "Never mention or link Pfotengedanken while the channel has no videos; just be a helpful fellow pet owner.",
+        "Never criticise, correct or compete with the creator of the video or post, and never advertise another channel.",
+        "Never mention or link Pfotengedanken in comments or replies on other people's videos or posts; only the channel's own posts may point to it.",
+        "Never ask people to follow back, never use follow-for-follow hashtags, and never send the same text twice.",
         "Never comment on videos about grief, a pet's death or illness with jokes or facts; skip them.",
       ],
-      platforms: { youtube: "high", facebook: "none", threads: "none", x: "none", instagram: "none", tiktok: "none", zalo: "none", maps: "none" },
+      platforms: { youtube: "high", x: "high", facebook: "none", threads: "none", instagram: "none", tiktok: "none", zalo: "none", maps: "none" },
     },
   ];
 
@@ -393,6 +423,8 @@
     "softMentionRate",
     "postKeywords",
     "youtubeKeywords",
+    // Từ khoá tìm bài riêng cho X (có toán tử tìm kiếm như lang:de). Trống thì dùng postKeywords.
+    "xKeywords",
     // Kênh YouTube cần subscribe trước (nạp vào ô "Danh sách kênh chỉ định"). Không có ô trong form hồ sơ, chỉ đặt qua preset hoặc file JSON nhập vào.
     "youtubeChannels",
     "hashtags",
@@ -497,6 +529,7 @@
       softMentionRate: clamp01(p.softMentionRate, 0.35),
       postKeywords: list(p.postKeywords),
       youtubeKeywords: list(p.youtubeKeywords),
+      xKeywords: list(p.xKeywords),
       youtubeChannels: list(p.youtubeChannels).filter((u) => /^https?:\/\//i.test(u)),
       hashtags: list(p.hashtags).map((t) => t.replace(/^#/, "")),
       groupKeywords: list(p.groupKeywords),
@@ -572,10 +605,10 @@
       // Trả lời bình luận cũng tìm bài theo từ khoá dự án thay vì lướt bảng tin chung.
       threadsReplySourcesText: search("threads", p.postKeywords),
       threadsReplyFilterPrompt: p.filterPrompt,
-      xSourcesText: search("x", p.postKeywords),
+      xSourcesText: search("x", p.xKeywords.length ? p.xKeywords : p.postKeywords),
       xFilterPrompt: p.filterPrompt,
       xPostTopicsText: joinTemplates(p.postTopics),
-      xReplySourcesText: search("x", p.postKeywords),
+      xReplySourcesText: search("x", p.xKeywords.length ? p.xKeywords : p.postKeywords),
       xReplyFilterPrompt: p.filterPrompt,
       postTopicsText: joinTemplates(p.postTopics),
       youtubeKeywordsText: (p.youtubeKeywords.length ? p.youtubeKeywords : p.postKeywords).join("\n"),

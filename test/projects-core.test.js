@@ -34,6 +34,18 @@ test("a preset's YouTube channel list fills the subscribe list and keeps zero me
   assert.deepEqual(imported.youtubeChannels, ["https://www.youtube.com/@a"]);
 });
 
+test("X keywords drive the X search sources, falling back to the post keywords", () => {
+  const pg = core.mergeProjects([]).find((p) => p.id === "pfotengedanken");
+  assert.equal(pg.platforms.x, "high");
+  assert.equal(pg.mentionRate, 0);
+  const d = core.scopedDefaults(pg);
+  const first = d.xSourcesText.split("\n")[0];
+  assert.equal(first, "https://x.com/search?q=hund%20lang%3Ade%20-filter%3Areplies%20min_faves%3A20&f=live");
+  assert.equal(d.xSourcesText.split("\n").length, pg.xKeywords.length);
+  assert.equal(d.xReplySourcesText, d.xSourcesText);
+  assert.match(core.scopedDefaults(mct()).xSourcesText.split("\n")[0], /^https:\/\/x\.com\/search\?q=creator%20taxes/);
+});
+
 test("scopedDefaults builds platform search sources from project keywords", () => {
   const d = core.scopedDefaults(mct());
   assert.deepEqual(Object.keys(d).sort(), [...core.SCOPED_KEYS].sort());

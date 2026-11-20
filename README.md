@@ -49,7 +49,7 @@ Bốn dự án có sẵn:
 | **MyCreatorTax**: ước tính thuế cho creator và freelancer 1099 ở Mỹ | [mycreatortax.com](https://mycreatortax.com) | Tiếng Anh | Threads, X, YouTube |
 | **Nadezhno**: danh bạ dịch vụ tin cậy cho người nói tiếng Nga ở Việt Nam | [nadezhno.siri2moon.com](https://nadezhno.siri2moon.com/) | Tiếng Nga | Facebook |
 | **Wish Village**: làng chibi 3D treo điều ước Giáng sinh, chơi trên trình duyệt | [wishvillage.live](https://wishvillage.live/) | Tiếng Anh | Facebook, Threads |
-| **Pfotengedanken**: kênh YouTube tiếng Đức về tâm lý chó và mèo | [@pfotengedanken](https://www.youtube.com/@pfotengedanken) | Tiếng Đức | YouTube |
+| **Pfotengedanken**: kênh YouTube tiếng Đức về tâm lý chó và mèo | [@pfotengedanken](https://www.youtube.com/@pfotengedanken) | Tiếng Đức | YouTube, X |
 
 Bạn có thể thêm dự án khác ngay trong extension.
 
