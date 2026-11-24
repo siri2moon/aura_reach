@@ -297,3 +297,13 @@ id_group=-1001234567890
 ## License
 
 ISC. Xem `package.json`.
+
+## Mời mình một ly cà phê ☕
+
+Nếu Aura Reach giúp ích cho bạn, bạn có thể mời mình một ly cà phê để mình tiếp tục phát triển dự án.
+
+<a href="https://buymeacoffee.com/siri2moon"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" /></a>
+
+<img src="docs/bmc-qr.png" alt="QR code: Buy Me a Coffee - siri2moon" width="160" />
+
+[buymeacoffee.com/siri2moon](https://buymeacoffee.com/siri2moon)
